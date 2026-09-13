@@ -1,39 +1,32 @@
-{
-    "name": "Soccer Odds AI Predictions",
-    "flow": [
-        {
-            "id": 4,
-            "module": "placeholder:Placeholder",
-            "filter": null,
-            "metadata": {
-                "designer": {
-                    "x": -290,
-                    "y": 407
-                }
-            }
-        },
-        {
-            "id": 1,
-            "module": "http:MakeRequest",
-            "version": 4,
-            "parameters": {
-                "authenticationType": "noAuth",
-                "tlsType": ""
-            },
-            "mapper": {
-                "url": "https://api.the-odds-api.com/v4/sports/soccer_epl/odds/?apiKey=d29bcb40d314689540070106810e6aad&regions=eu&markets=h2h,totals",
-                "method": "get",
-                "parseResponse": false,
-                "stopOnHttpError": true,
-                "allowRedirects": true,
-                "shareCookies": false,
-                "requestCompressedContent": true
-            },
-            "metadata": {
-                "designer": {
-                    "x": 10,
-                    "y": 407,
-                    "name": "Fetch Soccer Odds"
+name: Soccer Bot Auto Run
+
+on:
+  schedule:
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install requests google-generativeai
+
+      - name: Run script
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+        run: python main.py
                 },
                 "restore": {
                     "parameters": {
