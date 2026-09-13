@@ -1,32 +1,41 @@
-name: Soccer Bot Auto Run
+import os
+import requests
+import google.generativeai as genai
 
-on:
-  schedule:
-    # 这里设置每隔 4 小时自动运行一次（你可以根据需要修改 Cron 表达式）
-    - cron: '0 */4 * * *'
-  workflow_dispatch: # 允许你在网页上手动点一下立即测试
+# 1. 获取环境变量
+ODDS_API_KEY = os.environ.get("ODDS_API_KEY")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN")
+TG_CHAT_ID = os.environ.get("TG_CHAT_ID")
 
-jobs:
-  run-bot:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+def fetch_soccer_odds():
+    url = "https://api.the-odds-api.com/v4/sports/soccer_epl/odds/?apiKey=" + ODDS_API_KEY + "&regions=eu&markets=h2h"
+    response = requests.get(url)
+    if response.status_code != 200:
+        return "获取赔率数据失败，状态码：" + str(response.status_code)
+    return response.text
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
+def format_with_gemini(raw_data):
+    genai.configure(api_key=GEMINI_API_KEY)
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    prompt = "你是一个专业的足球数据分析师。请将以下英超赔率数据进行精简、美观的排版，提取出重点对阵和欧赔参考，适合用 Telegram 消息推送展示：\n\n" + raw_data[:3000]
+    response = model.generate_content(prompt)
+    return response.text
 
-      - name: Install dependencies
-        run: pip install requests google-generativeai
+def send_telegram_message(message):
+    url = f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage"
+    payload = {
+        "chat_id": TG_CHAT_ID,
+        "text": message,
+        "parse_mode": "Markdown"
+    }
+    requests.post(url, json=payload)
 
-      - name: Run script
-        env:
-          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
-          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
-        run: python main.py
-
-
+if __name__ == "__main__":
+    print("开始获取足球数据...")
+    data = fetch_soccer_odds()
+    print("调用 Gemini 进行润色排版...")
+    ai_content = format_with_gemini(data)
+    print("推送到 Telegram...")
+    send_telegram_message(ai_content)
+    print("推送完成！")
