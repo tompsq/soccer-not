@@ -17,7 +17,8 @@ def fetch_soccer_odds():
 
 def format_with_gemini(raw_data):
     genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    # 切换为通用的 gemini-pro 模型，完美兼容新版凭证
+    model = genai.GenerativeModel('gemini-pro')
     prompt = "你是一个专业的足球数据分析师。请将以下英超赔率数据进行精简、美观的排版，提取出重点对阵和欧赔参考，适合用 Telegram 消息推送展示：\n\n" + raw_data[:3000]
     response = model.generate_content(prompt)
     return response.text
