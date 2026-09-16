@@ -56,24 +56,31 @@ def get_odds():
             h, a = sn(m.get("home_team","")), sn(m.get("away_team",""))
             bm = m.get("bookmakers", [])
             h2h_str, sp_str, tot_str = "", "", ""
-            
+            all_spreads, all_totals = [], []
+
             for b in bm:
                 mk = b.get("markets", [])
                 for x in mk:
                     ots = x.get("outcomes", [])
                     if not h2h_str and x.get("key") == "h2h" and len(ots) == 3:
                         h2h_str = f"欧: {ots[0].get('price')} {ots[1].get('price')} {ots[2].get('price')}"
-                    elif not sp_str and x.get("key") == "spreads" and len(ots) == 2:
-                        p = ots[0].get("point")
-                        if p is not None:
-                            sp_str = f"亚: 主{p:+g} ({ots[0].get('price')}) / 客 ({ots[1].get('price')})"
-                    elif not tot_str and x.get("key") == "totals" and len(ots) == 2:
-                        p = ots[0].get("point")
-                        if p is not None:
-                            tot_str = f"球: {p} (大{ots[0].get('price')} / 小{ots[1].get('price')})"
-                if h2h_str and sp_str and tot_str:
-                    break
-                    
+                    elif x.get("key") == "spreads" and len(ots) == 2:
+                        p0, p1 = ots[0].get("price", 0), ots[1].get("price", 0)
+                        all_spreads.append((abs(p0 - p1), ots[0].get("point"), p0, p1))
+                    elif x.get("key") == "totals" and len(ots) == 2:
+                        p0, p1 = ots[0].get("price", 0), ots[1].get("price", 0)
+                        all_totals.append((abs(p0 - p1), ots[0].get("point"), p0, p1))
+            
+            if all_spreads:
+                all_spreads.sort(key=lambda x: x[0])
+                b_sp = all_spreads[0]
+                sp_str = f"亚: 主{b_sp[1]:+g} ({b_sp[2]}) / 客 ({b_sp[3]})"
+                
+            if all_totals:
+                all_totals.sort(key=lambda x: x[0])
+                b_tot = all_totals[0]
+                tot_str = f"球: {b_tot[1]} (大{b_tot[2]} / 小{b_tot[3]})"
+
             if h and (h2h_str or sp_str or tot_str):
                 ml = [f"{h} vs {a}"]
                 if h2h_str: ml.append(h2h_str)
@@ -84,7 +91,6 @@ def get_odds():
             res.append(f"\n[{name}]")
             res.extend(blk)
     return "\n".join(res)
-
 def get_scores():
     res = ["【近期完场比分】"]
     for name, key in L.items():
@@ -101,8 +107,10 @@ def get_scores():
             scs = m.get("scores", [])
             hs, as_ = "0", "0"
             for s in scs:
-                if sn(s.get("name","")) == h: hs = s.get("score","0")
-                elif sn(s.get("name","")) == a: as_ = s.get("score","0")
+                if sn(s.get("name","")) == h:
+                    hs = s.get("score","0")
+                elif sn(s.get("name","")) == a:
+                    as_ = s.get("score","0")
             sc_list.append(f"{h} {hs}-{as_} {a}")
         if sc_list:
             res.append(f"\n[{name}]")
@@ -114,7 +122,7 @@ if __name__ == "__main__":
     sc = get_scores()
     parts = []
     if sc != "【近期完场比分】": parts.append(sc)
-    if oc != "【【赛前赔率、亚盘与大小球】".replace("【【","【"): parts.append(oc)
+    if oc != "【赛前赔率、亚盘与大小球】": parts.append(oc)
     final = "\n\n--------------------\n\n".join(parts)
     send(final)
     print("推送完成")
