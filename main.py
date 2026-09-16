@@ -107,7 +107,8 @@ def fetch_recent_scores():
         if not data or not isinstance(data, list):
             continue
             
-        completed = [m for m in data if m.get("completed"] == True]
+        # 修正了这里的语法错误
+        completed = [m for m in data if m.get("completed") == True]
         if not completed:
             continue
             
@@ -138,4 +139,4 @@ if __name__ == "__main__":
     now_utc = datetime.now(timezone.utc)
     now_local = now_utc + timedelta(hours=8)
     
-    print(f"当前本地时间: {now_local.strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"当前本地时间: {now_local.strftime('%
