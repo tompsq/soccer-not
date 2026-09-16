@@ -2,7 +2,8 @@ name: Soccer Bot Auto Run
 
 on:
   schedule:
-    - cron: '0 */4 * * *'
+    - cron: '0 12 * * 2'  # 每周二 UTC 12:00（即北京/马来西亚时间周二晚上 8 点）运行
+    - cron: '0 */6 * * *'  # 也可以保留每6小时自动运行一次赔率更新（不需要可删掉）
   workflow_dispatch:
 
 jobs:
