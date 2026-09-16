@@ -5,7 +5,6 @@ K = os.environ.get("ODDS_API_KEY")
 T = os.environ.get("TG_BOT_TOKEN")
 C = os.environ.get("TG_CHAT_ID")
 
-# 11个主流联赛
 L = {
     "英超":"soccer_epl", "英冠":"soccer_efl_champ",
     "西甲":"soccer_spain_la_liga", "意甲":"soccer_italy_serie_a",
@@ -15,7 +14,6 @@ L = {
     "希超":"soccer_greece_super_league"
 }
 
-# 球队简写映射
 M = {
     "Manchester City":"曼城", "Manchester United":"曼联", "Arsenal":"阿森纳",
     "Liverpool":"利物浦", "Chelsea":"切尔西", "Tottenham Hotspur":"热刺",
@@ -46,7 +44,7 @@ def send(msg):
         requests.post(u, json={"chat_id":C, "text":msg, "parse_mode":"Markdown"})
 
 def get_odds():
-    res = ["赔率"]
+    res = ["赔率与亚盘"]
     for name, key in L.items():
         url = f"https://api.the-odds-api.com/v4/sports/{key}/odds/?apiKey={K}&regions=eu&markets=h2h,spreads"
         r = requests.get(url)
@@ -54,26 +52,29 @@ def get_odds():
         data = r.json()
         if not isinstance(data, list): continue
         blk = []
-        for m in data[:6]: # 每个联赛取前6场
+        for m in data[:10]:  # 每个联赛提升到10场
             h, a = sn(m.get("home_team","")), sn(m.get("away_team",""))
             bm = m.get("bookmakers", [])
-            h2h, sp = "", ""
+            h2h_str, sp_str = "", ""
             if bm:
                 mk = bm[0].get("markets", [])
                 for x in mk:
                     ots = x.get("outcomes", [])
                     if x.get("key") == "h2h" and len(ots) == 3:
-                        h2h = f"{ots[0].get('price')} {ots[1].get('price')} {ots[2].get('price')}"
+                        h2h_str = f"欧: {ots[0].get('price')} {ots[1].get('price')} {ots[2].get('price')}"
                     elif x.get("key") == "spreads" and len(ots) == 2:
                         p = ots[0].get("point")
-                        p_str = f"{p:+g}" if p is not None else ""
-                        sp = f"{p_str} {ots[0].get('price')} {ots[1].get('price')}"
-            if h and a and h2h:
-                ml = [f"{h} vs {a}", h2h]
-                if sp: ml.append(sp)
+                        if p is not None:
+                            # 亚盘格式调整：让球方和盘口
+                            sp_str = f"亚: 主{p:+g} ({ots[0].get('price')}) | 客 ({ots[1].get('priceखुद') if 'ots[1]' in locals() else ots[1].get('price')})"
+                            sp_str = f"亚: 主{p:+g} ({ots[0].get('price')}) / 客 ({ots[1].get('price')})"
+            if h and (h2h_str or sp_str):
+                ml = [f"{h} vs {a}"]
+                if h2h_str: ml.append(h2h_str)
+                if sp_str: ml.append(sp_str)
                 blk.append("\n".join(ml))
         if blk:
-            res.append(f"\n{name}")
+            res.append(f"\n[{name}]")
             res.extend(blk)
     return "\n".join(res)
 
@@ -88,7 +89,7 @@ def get_scores():
         comp = [m for m in data if m.get("completed") == True]
         if not comp: continue
         sc_list = []
-        for m in comp[:6]:
+        for m in comp[:10]:  # 完场比分也提升到10场
             h, a = sn(m.get("home_team","")), sn(m.get("away_team",""))
             scs = m.get("scores", [])
             hs, as_ = "0", "0"
@@ -97,7 +98,7 @@ def get_scores():
                 elif sn(s.get("name","")) == a: as_ = s.get("score","0")
             sc_list.append(f"{h} {hs}-{as_} {a}")
         if sc_list:
-            res.append(f"\n{name}")
+            res.append(f"\n[{name}]")
             res.extend(sc_list)
     return "\n".join(res)
 
@@ -106,7 +107,7 @@ if __name__ == "__main__":
     sc = get_scores()
     parts = []
     if sc != "完场比分": parts.append(sc)
-    if oc != "赔率": parts.append(oc)
+    if oc != "赔率与亚盘": parts.append(oc)
     final = "\n\n--------------------\n\n".join(parts)
     send(final)
     print("推送完成")
