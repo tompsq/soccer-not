@@ -44,9 +44,9 @@ def send(msg):
         requests.post(u, json={"chat_id":C, "text":msg, "parse_mode":"Markdown"})
 
 def get_odds():
-    res = ["赔率与亚盘"]
+    res = ["【赛前赔率、亚盘与大小球】"]
     for name, key in L.items():
-        url = f"https://api.the-odds-api.com/v4/sports/{key}/odds/?apiKey={K}&regions=eu&markets=h2h,spreads"
+        url = f"https://api.the-odds-api.com/v4/sports/{key}/odds/?apiKey={K}&regions=eu&markets=h2h,spreads,totals"
         r = requests.get(url)
         if r.status_code != 200: continue
         data = r.json()
@@ -55,9 +55,8 @@ def get_odds():
         for m in data[:10]:
             h, a = sn(m.get("home_team","")), sn(m.get("away_team",""))
             bm = m.get("bookmakers", [])
-            h2h_str, sp_str = "", ""
+            h2h_str, sp_str, tot_str = "", "", ""
             
-            # 遍历所有博彩公司，寻找可用的欧赔和亚盘
             for b in bm:
                 mk = b.get("markets", [])
                 for x in mk:
@@ -68,13 +67,18 @@ def get_odds():
                         p = ots[0].get("point")
                         if p is not None:
                             sp_str = f"亚: 主{p:+g} ({ots[0].get('price')}) / 客 ({ots[1].get('price')})"
-                if h2h_str and sp_str:
-                    break # 找齐了就跳出
+                    elif not tot_str and x.get("key") == "totals" and len(ots) == 2:
+                        p = ots[0].get("point")
+                        if p is not None:
+                            tot_str = f"球: {p} (大{ots[0].get('price')} / 小{ots[1].get('price')})"
+                if h2h_str and sp_str and tot_str:
+                    break
                     
-            if h and (h2h_str or sp_str):
+            if h and (h2h_str or sp_str or tot_str):
                 ml = [f"{h} vs {a}"]
                 if h2h_str: ml.append(h2h_str)
                 if sp_str: ml.append(sp_str)
+                if tot_str: ml.append(tot_str)
                 blk.append("\n".join(ml))
         if blk:
             res.append(f"\n[{name}]")
@@ -82,7 +86,7 @@ def get_odds():
     return "\n".join(res)
 
 def get_scores():
-    res = ["完场比分"]
+    res = ["【近期完场比分】"]
     for name, key in L.items():
         url = f"https://api.the-odds-api.com/v4/sports/{key}/scores/?apiKey={K}&daysFrom=3"
         r = requests.get(url)
@@ -109,8 +113,8 @@ if __name__ == "__main__":
     oc = get_odds()
     sc = get_scores()
     parts = []
-    if sc != "完场比分": parts.append(sc)
-    if oc != "赔率与亚盘": parts.append(oc)
+    if sc != "【近期完场比分】": parts.append(sc)
+    if oc != "【【赛前赔率、亚盘与大小球】".replace("【【","【"): parts.append(oc)
     final = "\n\n--------------------\n\n".join(parts)
     send(final)
     print("推送完成")
