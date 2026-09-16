@@ -52,22 +52,25 @@ def get_odds():
         data = r.json()
         if not isinstance(data, list): continue
         blk = []
-        for m in data[:10]:  # 每个联赛提升到10场
+        for m in data[:10]:
             h, a = sn(m.get("home_team","")), sn(m.get("away_team",""))
             bm = m.get("bookmakers", [])
             h2h_str, sp_str = "", ""
-            if bm:
-                mk = bm[0].get("markets", [])
+            
+            # 遍历所有博彩公司，寻找可用的欧赔和亚盘
+            for b in bm:
+                mk = b.get("markets", [])
                 for x in mk:
                     ots = x.get("outcomes", [])
-                    if x.get("key") == "h2h" and len(ots) == 3:
+                    if not h2h_str and x.get("key") == "h2h" and len(ots) == 3:
                         h2h_str = f"欧: {ots[0].get('price')} {ots[1].get('price')} {ots[2].get('price')}"
-                    elif x.get("key") == "spreads" and len(ots) == 2:
+                    elif not sp_str and x.get("key") == "spreads" and len(ots) == 2:
                         p = ots[0].get("point")
                         if p is not None:
-                            # 亚盘格式调整：让球方和盘口
-                            sp_str = f"亚: 主{p:+g} ({ots[0].get('price')}) | 客 ({ots[1].get('priceखुद') if 'ots[1]' in locals() else ots[1].get('price')})"
                             sp_str = f"亚: 主{p:+g} ({ots[0].get('price')}) / 客 ({ots[1].get('price')})"
+                if h2h_str and sp_str:
+                    break # 找齐了就跳出
+                    
             if h and (h2h_str or sp_str):
                 ml = [f"{h} vs {a}"]
                 if h2h_str: ml.append(h2h_str)
@@ -89,7 +92,7 @@ def get_scores():
         comp = [m for m in data if m.get("completed") == True]
         if not comp: continue
         sc_list = []
-        for m in comp[:10]:  # 完场比分也提升到10场
+        for m in comp[:10]:
             h, a = sn(m.get("home_team","")), sn(m.get("away_team",""))
             scs = m.get("scores", [])
             hs, as_ = "0", "0"
