@@ -22,7 +22,7 @@ LEAGUES = {
     "希超": "soccer_greece_super_league"
 }
 
-# 常见球队名称精简映射（可根据需要自行补充）
+# 常见球队名称精简映射
 TEAM_MAP = {
     "Manchester City": "曼城", "Manchester United": "曼联", "Arsenal": "阿森纳",
     "Liverpool": "利物浦", "Chelsea": "切尔西", "Tottenham Hotspur": "热刺",
@@ -38,14 +38,35 @@ def short_name(name):
 
 def send_telegram_message(message):
     url = f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage"
-    if len(message) > 4000:
-        message = message[:4000] + "\n...(内容过长已截断)"
-    payload = {
-        "chat_id": TG_CHAT_ID,
-        "text": message,
-        "parse_mode": "Markdown"
-    }
-    requests.post(url, json=payload)
+    
+    # 如果单条消息超过 3800 字符，自动按行切分成多条发送，防止超限报错
+    if len(message) > 3800:
+        lines = message.split("\n")
+        chunks = []
+        current_chunk = ""
+        for line in lines:
+            if len(current_chunk) + len(line) + 1 > 3800:
+                chunks.append(current_chunk)
+                current_chunk = line
+            else:
+                current_chunk = (current_chunk + "\n" + line) if current_chunk else line
+        if current_chunk:
+            chunks.append(current_chunk)
+            
+        for chunk in chunks:
+            payload = {
+                "chat_id": TG_CHAT_ID,
+                "text": chunk,
+                "parse_mode": "Markdown"
+            }
+            requests.post(url, json=payload)
+    else:
+        payload = {
+            "chat_id": TG_CHAT_ID,
+            "text": message,
+            "parse_mode": "Markdown"
+        }
+        requests.post(url, json=payload)
 
 def fetch_all_leagues_odds():
     lines = ["赔率"]
@@ -61,7 +82,6 @@ def fetch_all_leagues_odds():
             continue
             
         league_blocks = []
-        # 每个联赛最多取前 10 场赛事
         for match in data[:10]:
             home = short_name(match.get("home_team", ""))
             away = short_name(match.get("away_team", ""))
@@ -107,13 +127,11 @@ def fetch_recent_scores():
         if not data or not isinstance(data, list):
             continue
             
-        # 修正了这里的语法错误
         completed = [m for m in data if m.get("completed") == True]
         if not completed:
             continue
             
         league_scores = []
-        # 每个联赛最多取前 10 场完场比分
         for match in completed[:10]:
             home = short_name(match.get("home_team", ""))
             away = short_name(match.get("away_team", ""))
@@ -122,21 +140,4 @@ def fetch_recent_scores():
             h_score, a_score = "0", "0"
             if scores:
                 for s in scores:
-                    if short_name(s.get("name")) == home:
-                        h_score = s.get("score", "0")
-                    elif short_name(s.get("name")) == away:
-                        a_score = s.get("score", "0")
-            
-            league_scores.append(f"{home} {h_score}-{a_score} {away}")
-        
-        if league_scores:
-            lines.append(f"\n{name}")
-            lines.extend(league_scores)
-        
-    return "\n".join(lines)
-
-if __name__ == "__main__":
-    now_utc = datetime.now(timezone.utc)
-    now_local = now_utc + timedelta(hours=8)
-    
-    print(f"当前本地时间: {now_local.strftime('%
+                  
