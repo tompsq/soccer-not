@@ -5,6 +5,7 @@ K = os.environ.get("ODDS_API_KEY")
 T = os.environ.get("TG_BOT_TOKEN")
 C = os.environ.get("TG_CHAT_ID")
 
+# 11个主流及热门联赛
 L = {
     "英超":"soccer_epl", "英冠":"soccer_efl_champ",
     "西甲":"soccer_spain_la_liga", "意甲":"soccer_italy_serie_a",
@@ -14,6 +15,7 @@ L = {
     "希超":"soccer_greece_super_league"
 }
 
+# 常见球队中文映射表
 M = {
     "Manchester City":"曼城", "Manchester United":"曼联", "Arsenal":"阿森纳",
     "Liverpool":"利物浦", "Chelsea":"切尔西", "Tottenham Hotspur":"热刺",
@@ -53,8 +55,11 @@ def get_odds():
         if not isinstance(data, list): continue
         blk = []
         for m in data[:10]:
-            h, a = sn(m.get("home_team","")), sn(m.get("away_team",""))
+            raw_h = m.get("home_team", "")
+            raw_a = m.get("away_team", "")
+            h, a = sn(raw_h), sn(raw_a)
             bm = m.get("bookmakers", [])
+            
             h2h_str, sp_str, tot_str = "", "", ""
             all_spreads, all_totals = [], []
 
@@ -62,15 +67,37 @@ def get_odds():
                 mk = b.get("markets", [])
                 for x in mk:
                     ots = x.get("outcomes", [])
-                    if not h2h_str and x.get("key") == "h2h" and len(ots) == 3:
-                        h2h_str = f"欧: {ots[0].get('price')} {ots[1].get('price')} {ots[2].get('price')}"
+                    
+                    # 1. 欧赔：用队伍名称精准绑定 (主胜 平局 客胜)
+                    if not h2h_str and x.get("key") == "h2h":
+                        hp, ap, dp = None, None, None
+                        for o in ots:
+                            oname = o.get("name")
+                            if oname == raw_h: hp = o.get("price")
+                            elif oname == raw_a: ap = o.get("price")
+                            elif oname.lower() == "draw": dp = o.get("price")
+                        if hp and dp and ap:
+                            h2h_str = f"欧: {hp} {dp} {ap}"
+
+                    # 2. 亚盘：用主客队名称精准区分，防止盘口与水位倒置
                     elif x.get("key") == "spreads" and len(ots) == 2:
-                        p0, p1 = ots[0].get("price", 0), ots[1].get("price", 0)
-                        all_spreads.append((abs(p0 - p1), ots[0].get("point"), p0, p1))
+                        h_opt = next((o for o in ots if o.get("name") == raw_h), None)
+                        a_opt = next((o for o in ots if o.get("name") == raw_a), None)
+                        if h_opt and a_opt:
+                            hp, ap = h_opt.get("price", 0), a_opt.get("price", 0)
+                            point = h_opt.get("point", 0)
+                            all_spreads.append((abs(hp - ap), point, hp, ap))
+
+                    # 3. 大小球：严格对齐 Over 与 Under
                     elif x.get("key") == "totals" and len(ots) == 2:
-                        p0, p1 = ots[0].get("price", 0), ots[1].get("price", 0)
-                        all_totals.append((abs(p0 - p1), ots[0].get("point"), p0, p1))
+                        o_opt = next((o for o in ots if o.get("name") == "Over"), None)
+                        u_opt = next((o for o in ots if o.get("name") == "Under"), None)
+                        if o_opt and u_opt:
+                            op, up = o_opt.get("price", 0), u_opt.get("price", 0)
+                            point = o_opt.get("point", 0)
+                            all_totals.append((abs(op - up), point, op, up))
             
+            # 筛选两边水位最接近（最具参考价值）的主力盘
             if all_spreads:
                 all_spreads.sort(key=lambda x: x[0])
                 b_sp = all_spreads[0]
@@ -90,8 +117,8 @@ def get_odds():
         if blk:
             res.append(f"\n[{name}]")
             res.extend(blk)
-    return "\n".join(res)
-def get_scores():
+    return "\n".join(rest)
+    def get_scores():
     res = ["【近期完场比分】"]
     for name, key in L.items():
         url = f"https://api.the-odds-api.com/v4/sports/{key}/scores/?apiKey={K}&daysFrom=3"
@@ -103,14 +130,15 @@ def get_scores():
         if not comp: continue
         sc_list = []
         for m in comp[:10]:
-            h, a = sn(m.get("home_team","")), sn(m.get("away_team",""))
+            raw_h = m.get("home_team","")
+            raw_a = m.get("away_team","")
+            h, a = sn(raw_h), sn(raw_a)
             scs = m.get("scores", [])
             hs, as_ = "0", "0"
             for s in scs:
-                if sn(s.get("name","")) == h:
-                    hs = s.get("score","0")
-                elif sn(s.get("name","")) == a:
-                    as_ = s.get("score","0")
+                sname = s.get("name","")
+                if sname == raw_h: hs = s.get("score","0")
+                elif sname == raw_a: as_ = s.get("score","0")
             sc_list.append(f"{h} {hs}-{as_} {a}")
         if sc_list:
             res.append(f"\n[{name}]")
