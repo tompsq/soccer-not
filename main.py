@@ -39,7 +39,7 @@ def short_name(name):
 def send_telegram_message(message):
     url = f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage"
     
-    # 如果单条消息超过 3800 字符，自动按行切分成多条发送，防止超限报错
+    # 超过 3800 字符自动分段发送
     if len(message) > 3800:
         lines = message.split("\n")
         chunks = []
@@ -140,4 +140,4 @@ def fetch_recent_scores():
             h_score, a_score = "0", "0"
             if scores:
                 for s in scores:
-                  
+                    if short_name(s.g
