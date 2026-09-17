@@ -27,7 +27,11 @@ def sn(n):
     return M.get(n, n)
 
 def send(msg):
+    if not msg or not msg.strip():
+        msg = "【赛事推送】当前未抓取到符合条件的赛事数据。"
+    
     u = f"https://api.telegram.org/bot{T}/sendMessage"
+    
     if len(msg) > 3800:
         lines, chunks, cur = msg.split("\n"), [], ""
         for l in lines:
@@ -38,9 +42,11 @@ def send(msg):
                 cur = (cur + "\n" + l) if cur else l
         if cur: chunks.append(cur)
         for ch in chunks:
-            requests.post(u, json={"chat_id":C, "text":ch, "parse_mode":"Markdown"})
+            res = requests.post(u, json={"chat_id": C, "text": ch})
+            print(f"TG响应状态: {res.status_code}, 内容: {res.text}")
     else:
-        requests.post(u, json={"chat_id":C, "text":msg, "parse_mode":"Markdown"})
+        res = requests.post(u, json={"chat_id": C, "text": msg})
+        print(f"TG响应状态: {res.status_code}, 内容: {res.text}")
 def get_odds():
     res = ["【赛前赔率、亚盘与大小球】"]
     for name, key in L.items():
@@ -94,6 +100,7 @@ def get_odds():
             res.append(f"\n[{name}]")
             res.extend(blk)
     return "\n".join(res)
+
 def get_scores():
     res = ["【近期完场比分】"]
     for name, key in L.items():
