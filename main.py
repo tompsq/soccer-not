@@ -29,9 +29,7 @@ def sn(n):
 def send(msg):
     if not msg or not msg.strip():
         msg = "【赛事推送】当前未抓取到符合条件的赛事数据。"
-    
     u = f"https://api.telegram.org/bot{T}/sendMessage"
-    
     if len(msg) > 3800:
         lines, chunks, cur = msg.split("\n"), [], ""
         for l in lines:
@@ -43,20 +41,20 @@ def send(msg):
         if cur: chunks.append(cur)
         for ch in chunks:
             res = requests.post(u, json={"chat_id": C, "text": ch})
-            print(f"TG响应状态: {res.status_code}, 内容: {res.text}")
+            print(f"TG响应状态: {res.status_code}")
     else:
         res = requests.post(u, json={"chat_id": C, "text": msg})
-        print(f"TG响应状态: {res.status_code}, 内容: {res.text}")
+        print(f"TG响应状态: {res.status_code}")
 def get_odds():
     res = ["【赛前赔率、亚盘与大小球】"]
     for name, key in L.items():
-        url = f"https://api.the-odds-api.com/v4/sports/{key}/odds/?apiKey={K}&regions=eu&markets=h2h,spreads,totals"
+        url = f"https://api.the-odds-api.com/v4/sports/{key}/odds/?apiKey={K}&regions=eu,us,uk&markets=h2h,spreads,totals"
         r = requests.get(url)
         if r.status_code != 200: continue
         data = r.json()
         if not isinstance(data, list): continue
         blk = []
-        for m in data[:10]:
+        for m in data:
             raw_h, raw_a = m.get("home_team", ""), m.get("away_team", "")
             h, a = sn(raw_h), sn(raw_a)
             bm = m.get("bookmakers", [])
@@ -90,7 +88,7 @@ def get_odds():
                 all_totals.sort(key=lambda x: x[0])
                 b_tot = all_totals[0]
                 tot_str = f"球: {b_tot[1]} (大{b_tot[2]} / 小{b_tot[3]})"
-            if h and (h2h_str or sp_str or tot_str):
+            if h:
                 ml = [f"{h} vs {a}"]
                 if h2h_str: ml.append(h2h_str)
                 if sp_str: ml.append(sp_str)
@@ -98,7 +96,7 @@ def get_odds():
                 blk.append("\n".join(ml))
         if blk:
             res.append(f"\n[{name}]")
-            res.extend(blk)
+            res.extend(blk[:8])
     return "\n".join(res)
 
 def get_scores():
@@ -109,28 +107,28 @@ def get_scores():
         if r.status_code != 200: continue
         data = r.json()
         if not isinstance(data, list): continue
-        comp = [m for m in data if m.get("completed") == True]
-        if not comp: continue
         sc_list = []
-        for m in comp[:10]:
+        for m in data:
             raw_h, raw_a = m.get("home_team",""), m.get("away_team","")
             h, a = sn(raw_h), sn(raw_a)
-            hs, as_ = "0", "0"
-            for s in m.get("scores", []):
-                if s.get("name","") == raw_h: hs = s.get("score","0")
-                elif s.get("name","") == raw_a: as_ = s.get("score","0")
-            sc_list.append(f"{h} {hs}-{as_} {a}")
+            scs = m.get("scores")
+            if scs:
+                hs, as_ = "0", "0"
+                for s in scs:
+                    if s.get("name","") == raw_h: hs = s.get("score","0")
+                    elif s.get("name","") == raw_a: as_ = s.get("score","0")
+                sc_list.append(f"{h} {hs}-{as_} {a}")
         if sc_list:
             res.append(f"\n[{name}]")
-            res.extend(sc_list)
+            res.extend(sc_list[:8])
     return "\n".join(res)
 
 if __name__ == "__main__":
     oc = get_odds()
     sc = get_scores()
     parts = []
-    if sc != "【近期完场比分】": parts.append(sc)
     if oc != "【赛前赔率、亚盘与大小球】": parts.append(oc)
+    if sc != "【近期完场比分】": parts.append(sc)
     final = "\n\n--------------------\n\n".join(parts)
     send(final)
     print("推送完成")
