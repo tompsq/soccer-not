@@ -124,11 +124,19 @@ def get_scores():
     return "\n".join(res)
 
 if __name__ == "__main__":
-    oc = get_odds()
-    sc = get_scores()
-    parts = []
-    if oc != "【赛前赔率、亚盘与大小球】": parts.append(oc)
-    if sc != "【近期完场比分】": parts.append(sc)
-    final = "\n\n--------------------\n\n".join(parts)
-    send(final)
-    print("推送完成")
+    # 测试一下第一个 API 请求的状态
+    test_url = f"https://api.the-odds-api.com/v4/sports/soccer_epl/odds/?apiKey={K}&regions=eu&markets=h2h"
+    r = requests.get(test_url)
+    
+    if r.status_code != 200:
+        err_msg = f"【API 请求失败】状态码: {r.status_code}\n返回内容: {r.text}"
+        send(err_msg)
+    else:
+        oc = get_odds()
+        sc = get_scores()
+        parts = []
+        if oc != "【赛前赔率、亚盘与大小球】": parts.append(oc)
+        if sc != "【近期完场比分】": parts.append(sc)
+        final = "\n\n--------------------\n\n".join(parts)
+        send(final)
+        print("推送完成")
