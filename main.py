@@ -75,9 +75,7 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False, hours_ah
             # 过滤逻辑：指定未来 X 小时内
             if hours_ahead is not None:
                 if not dt: continue
-                # 计算距离开赛的秒数
                 diff_sec = (dt - now).total_seconds()
-                # 只保留从现在开始到未来 hours_ahead 小时以内的比赛 (0 到 hours_ahead*3600 秒)
                 if not (0 <= diff_sec <= hours_ahead * 3600):
                     continue
             elif only_today and fmt_date != t_str:
@@ -106,6 +104,7 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False, hours_ah
             date_groups.setdefault(fmt_date, []).append(f"{time_str}\n{home} vs {away}\n" + ("\n".join(lines) if lines else "暂无盘口"))
         return date_groups
     except: return {}
+
 def main():
     if not ODDS_KEY:
         send("❌ 错误：未读取到 ODDS_API_KEY！")
