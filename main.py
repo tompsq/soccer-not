@@ -9,7 +9,10 @@ HEADERS = {
     "x-rapidapi-key": K
 }
 
-# 精简为最核心的 6 大欧洲顶级联赛，确保 100% 稳定出数据且不超限
+# 当前年份/赛季
+CURRENT_SEASON = 2026
+
+# 精简核心联赛列表，确保稳定出数据
 L = {
     "英超": 39, "西甲": 140, "意甲": 135,
     "德甲": 78, "法甲": 61, "欧冠": 2
@@ -36,15 +39,15 @@ def send(msg):
 
 def get_scores():
     res = ["【近期完场比分】"]
-    today = datetime.datetime.now().strftime("%Y-%m-%d")
     for name, lid in L.items():
-        # 直接抓取近期的完场比赛
-        url = f"https://v3.football.api-sports.io/fixtures?league={lid}&last=5"
+        # 加上 season=2026 参数
+        url = f"https://v3.football.api-sports.io/fixtures?league={lid}&season={CURRENT_SEASON}&last=5"
         r = requests.get(url, headers=HEADERS)
-        if r.status_code != 200: continue
+        if r.status_code != 200:
+            print(f"[{name}] Fixtures 请求失败, 状态码: {r.status_code}")
+            continue
+            
         data = r.json().get("response", [])
-        if not data: continue
-        
         sc_list = []
         for item in data:
             status = item.get("fixture", {}).get("status", {}).get("short", "")
@@ -57,31 +60,34 @@ def get_scores():
         if sc_list:
             res.append(f"\n[{name}]")
             res.extend(sc_list)
+            
     return "\n".join(res)
 
 def get_odds():
     res = ["【赛前赔率与盘口】"]
     for name, lid in L.items():
-        # 获取接下来的 5 场比赛及赔率
-        url = f"https://v3.football.api-sports.io/fixtures?league={lid}&next=5"
+        # 获取接下来的 5 场比赛（加上 season=2026）
+        url = f"https://v3.football.api-sports.io/fixtures?league={lid}&season={CURRENT_SEASON}&next=5"
         r = requests.get(url, headers=HEADERS)
-        if r.status_code != 200: continue
+        if r.status_code != 200:
+            continue
+            
         fixtures = r.json().get("response", [])
-        if not fixtures: continue
-        
         blk = []
-        for match in fixtures:
+        for match in fixtures[:3]:  # 取前 3 场，避免请求次数过多
             fid = match["fixture"]["id"]
             h = match["teams"]["home"]["name"]
             a = match["teams"]["away"]["name"]
             
-            # 针对具体比赛请求赔率
+            # 请求具体比赛赔率
             odds_url = f"https://v3.football.api-sports.io/odds?fixture={fid}"
             or_res = requests.get(odds_url, headers=HEADERS)
-            if or_res.status_code != 200: continue
+            if or_res.status_code != 200:
+                continue
+                
             odata = or_res.json().get("response", [])
-            
             h2h_str, sp_str, tot_str = "", "", ""
+            
             if odata and odata[0].get("bookmakers"):
                 bm = odata[0]["bookmakers"][0]
                 for bet in bm.get("bets", []):
@@ -119,8 +125,8 @@ if __name__ == "__main__":
     sc = get_scores()
     oc = get_odds()
     parts = []
-    if sc != "【近期完场比分】": parts.append(sc)
-    if oc != "【赛前赔率与盘口】": parts.append(oc)
+    if len(sc.split("\n")) > 1: parts.append(sc)
+    if len(oc.split("\n")) > 1: parts.append(oc)
     
     final = "\n\n--------------------\n\n".join(parts) if parts else "【赛事推送】当前未抓取到符合条件的赛事数据。"
     send(final)
