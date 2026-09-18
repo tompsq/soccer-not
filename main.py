@@ -52,7 +52,9 @@ def get_past_results(sport_key, league_name):
             date_groups.setdefault(fmt_date, []).append(f"{time_str}\n{home} vs {away}\n{score_str}")
         return date_groups
     except: return {}
-def get_league_odds_formatted(sport_key, league_name, only_today=False):
+    send("\n".join(res))
+
+def get_league_odds_formatted(sport_key, league_name, only_today=False, hours_ahead=None):
     url = f"https://api.the-odds-api.com/v4/sports/{sport_key}/odds/"
     params = {"apiKey": ODDS_KEY, "regions": "eu,uk,us", "markets": "h2h,spreads,totals", "oddsFormat": "decimal"}
     try:
@@ -67,9 +69,20 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False):
             if len(raw_time) >= 19:
                 dt = datetime.strptime(raw_time[:19], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc).astimezone(tz)
                 fmt_date, time_str = f"{dt.day}/{dt.month}/{dt.year}", dt.strftime("%H:%M")
-            else: fmt_date, time_str = "近期赛程", "00:00"
+            else: 
+                dt, fmt_date, time_str = None, "近期赛程", "00:00"
             
-            if only_today and fmt_date != t_str: continue
+            # 过滤逻辑：指定未来 X 小时内
+            if hours_ahead is not None:
+                if not dt: continue
+                # 计算距离开赛的秒数
+                diff_sec = (dt - now).total_seconds()
+                # 只保留从现在开始到未来 hours_ahead 小时以内的比赛 (0 到 hours_ahead*3600 秒)
+                if not (0 <= diff_sec <= hours_ahead * 3600):
+                    continue
+            elif only_today and fmt_date != t_str:
+                continue
+
             bms = match.get("bookmakers", [])
             if not bms: continue
                 
@@ -98,7 +111,19 @@ def main():
         send("❌ 错误：未读取到 ODDS_API_KEY！")
         return
     res = []
-    if RUN_MODE == "manual":
+    
+    # 模式 1：即将开赛模式（未来 2 小时）
+    if RUN_MODE == "upcoming":
+        res.append("====================\n⏳ 未来 2 小时即将开赛\n====================")
+        has_odds = False
+        for sk, ln in SPORT_KEYS.items():
+            for ds, ml in get_league_odds_formatted(sk, ln, hours_ahead=2).items():
+                has_odds = True
+                res.append(f"{ln} {ds}\n\n" + "\n\n".join(ml) + "\n" + "-"*15 + "\n")
+        if not has_odds: res.append("未来 2 小时内暂无即将在以上联赛开赛的比赛。\n")
+        
+    # 模式 2：手动推送全天赛程
+    elif RUN_MODE == "manual":
         res.append("====================\n⚡ 当日赛事盘口 (手动即时推送)\n====================")
         has_odds = False
         for sk, ln in SPORT_KEYS.items():
@@ -106,6 +131,8 @@ def main():
                 has_odds = True
                 res.append(f"{ln} {ds}\n\n" + "\n\n".join(ml) + "\n" + "-"*15 + "\n")
         if not has_odds: res.append("今日暂无开盘赛程。\n")
+        
+    # 模式 3：定时自动完整推送
     else:
         res.append("====================\n🏆 过去 6 天完场比分\n====================")
         has_results = False
