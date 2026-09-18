@@ -156,34 +156,60 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False, hours_ah
         return date_groups
     except: 
         return {}
-def get_past_results(sport_key, league_name):
-    url = f"https://api.the-odds-api.com/v4/sports/{sport_key}/scores/"
+def main():
     try:
-        r = requests.get(url, params={"apiKey": ODDS_KEY, "daysFrom": 6}, timeout=10)
-        if r.status_code != 200: 
-            return {}
-        data = r.json()
-        date_groups = {}
-        tz = timezone(timedelta(hours=8))
-        for match in data:
-            if not match.get("completed"): 
-                continue
-            home = match.get("home_team")
-            away = match.get("away_team")
-            scores = match.get("scores")
-            score_str = "完场 比分未知"
-            if scores and len(scores) >= 2:
-                h = next((s["score"] for s in scores if s["name"] == home), "-")
-                a = next((s["score"] for s in scores if s["name"] == away), "-")
-                score_str = f"完场 {h} : {a}"
-            raw_time = match.get("commence_time", "")
-            if len(raw_time) >= 19:
-                dt = datetime.strptime(raw_time[:19], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc).astimezone(tz)
-                fmt_date = f"{dt.day}/{dt.month}/{dt.year}"
-                time_str = dt.strftime("%H:%M")
-            else: 
-                fmt_date, time_str = "近期完场", "00:00"
-            date_groups.setdefault(fmt_date, []).append(f"{time_str}\n{home} vs {away}\n{score_str}")
-        return date_groups
-    except: 
-        return {}
+        if not ODDS_KEY:
+            send("❌ 错误：未读取到 ODDS_API_KEY！")
+            return
+        
+        # 调试提示：确认当前运行模式
+        print(f"当前运行模式 RUN_MODE = {RUN_MODE}")
+        
+        res = []
+        
+        if RUN_MODE == "upcoming":
+            res.append("====================\n⏳ 未来 3 小时即将开赛\n====================")
+            has_odds = False
+            for sk, ln in SPORT_KEYS.items():
+                for ds, ml in get_league_odds_formatted(sk, ln, hours_ahead=3).items():
+                    has_odds = True
+                    res.append(f"📌 **{ln}** ({ds})\n\n" + "\n\n".join(ml) + "\n" + "-"*15 + "\n")
+            if not has_odds: 
+                res.append("未来 3 小时内暂无即将在以上联赛开赛的比赛。\n")
+            
+        elif RUN_MODE == "manual":
+            res.append("====================\n⚡ 当日赛事盘口 (手动即时推送)\n====================")
+            has_odds = False
+            for sk, ln in SPORT_KEYS.items():
+                for ds, ml in get_league_odds_formatted(sk, ln, only_today=True).items():
+                    has_odds = True
+                    res.append(f"📌 **{ln}** ({ds})\n\n" + "\n\n".join(ml) + "\n" + "-"*15 + "\n")
+            if not has_odds: 
+                res.append("今日各联赛暂无开盘赛程。\n")
+            
+        else:
+            res.append("====================\n🏆 过去 6 天完场比分\n====================")
+            has_results = False
+            for sk, ln in SPORT_KEYS.items():
+                for ds, ml in get_past_results(sk, ln).items():
+                    has_results = True
+                    res.append(f"📌 **{ln}** {ds} (完场)\n\n" + "\n\n".join(ml) + "\n" + "-"*15 + "\n")
+            if not has_results: 
+                res.append("近期无已结算完场比分。\n")
+            
+            res.append("====================\n⚽ 全联赛早盘赛程与盘口\n====================")
+            has_odds = False
+            for sk, ln in SPORT_KEYS.items():
+                for ds, ml in get_league_odds_formatted(sk, ln, only_today=False).items():
+                    has_odds = True
+                    res.append(f"📌 **{ln}** ({ds})\n\n" + "\n\n".join(ml) + "\n" + "-"*15 + "\n")
+            if not has_odds: 
+                res.append("近期暂无开盘赛程。\n")
+            
+        send("\n".join(res))
+    except Exception as e:
+        # 如果脚本任何地方崩溃，直接把报错发到 Telegram，方便定位
+        send(f"❌ 脚本运行发生严重错误:\n{str(e)}")
+
+if __name__ == "__main__":
+    main()
