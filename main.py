@@ -119,3 +119,5 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False):
     except Exception as e:
         print(f"抓取 {league_name} 盘口失败: {e}")
         return {}
+if __name__ == "__main__":
+    main()
