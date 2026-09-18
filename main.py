@@ -53,6 +53,7 @@ def get_past_results(sport_key, league_name):
         return date_groups
     except: return {}
 def get_league_odds_formatted(sport_key, league_name, only_today=False):
+def get_league_odds_formatted(sport_key, league_name, only_today=False):
     url = f"https://api.the-odds-api.com/v4/sports/{sport_key}/odds/"
     params = {"apiKey": ODDS_KEY, "regions": "eu,uk,us", "markets": "h2h,spreads,totals", "oddsFormat": "decimal"}
     try:
@@ -60,24 +61,15 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False):
         if r.status_code != 200 or not r.json(): return {}
         data, date_groups, tz = r.json(), {}, timezone(timedelta(hours=8))
         
-        # 获取今天本地日期的年、月、日对象，用于精准判断同一天
-        now_local = datetime.now(tz)
-        today_date = now_local.date()
-
         for match in data:
             home, away, raw_time = match.get("home_team"), match.get("away_team"), match.get("commence_time", "")
             if len(raw_time) >= 19:
                 dt = datetime.strptime(raw_time[:19], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc).astimezone(tz)
-                match_date = dt.date()
                 fmt_date, time_str = f"{dt.day}/{dt.month}/{dt.year}", dt.strftime("%H:%M")
             else: 
-                match_date = today_date
                 fmt_date, time_str = "近期赛程", "00:00"
             
-            # 核心修正：如果是 manual 模式（only_today=True），精准比对是否为“今天”的比赛
-            if only_today and match_date != today_date: 
-                continue
-                
+            # 【调试模式】：不管什么 only_today，直接全部放行！把所有能拿到的比赛全盘接收
             bms = match.get("bookmakers", [])
             if not bms: continue
                 
@@ -98,9 +90,11 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False):
                         if oo and uo: tot_s = f"{oo.get('point', '-')} (大){oo.get('price')} (小){uo.get('price')}"
             
             lines = [s for s in [h2h_s, ah_s, tot_s] if s]
-            date_groups.setdefault(fmt_date, []).append(f"{time_str}\n{home} vs {away}\n" + ("\n".join(lines) if lines else "暂无盘口"))
+            match_info = f"{time_str} (原始:{raw_time[:16]})\n{home} vs {away}\n" + ("\n".join(lines) if lines else "暂无盘口")
+            date_groups.setdefault(fmt_date, []).append(match_info)
         return date_groups
     except: return {}
+
 
 def main():
     if not ODDS_KEY:
