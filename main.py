@@ -6,7 +6,7 @@ ODDS_KEY = os.environ.get("ODDS_API_KEY")
 T = os.environ.get("TG_BOT_TOKEN")
 C = os.environ.get("TG_CHAT_ID")
 
-# 11 个目标联赛配置
+# 11 个指定联赛 (The Odds API 官方 API Key 映射)
 SPORT_KEYS = {
     "soccer_epl": "英超",
     "soccer_spain_la_liga": "西甲",
@@ -26,7 +26,7 @@ def send(msg):
         return
     url = f"https://api.telegram.org/bot{T}/sendMessage"
     
-    # 按照 Telegram 限制拆分长消息
+    # 按照 3800 字符限制自动拆分多条发送，防止超长报错
     if len(msg) > 3800:
         lines, cur = msg.split("\n"), ""
         for line in lines:
@@ -41,7 +41,7 @@ def send(msg):
         requests.post(url, json={"chat_id": C, "text": msg})
 
 def format_handicap_label(point):
-    """格式化让球盘描述"""
+    """把浮点数让球盘口格式化为易读标签"""
     try:
         val = float(point)
         if val == 0:
@@ -54,7 +54,7 @@ def format_handicap_label(point):
         return str(point)
 
 def get_league_odds_formatted(sport_key, league_name):
-    """调用 The Odds API 抓取指定联赛的欧赔、亚盘、大小球，并进行排版"""
+    """调用 The Odds API 抓取指定联赛的欧赔、亚盘让球与大小球，并按格式排版"""
     url = f"https://api.the-odds-api.com/v4/sports/{sport_key}/odds/"
     params = {
         "apiKey": ODDS_KEY,
@@ -75,7 +75,7 @@ def get_league_odds_formatted(sport_key, league_name):
             home = match.get("home_team")
             away = match.get("away_team")
             
-            # 解析时间 -> 日期 (D/M/YYYY) 与 时间 (HH:MM)
+            # 解析时间为 D/M/YYYY 与 HH:MM
             raw_time = match.get("commence_time", "")
             if len(raw_time) >= 16:
                 dt = datetime.strptime(raw_time[:16], "%Y-%m-%dT%H:%M")
@@ -119,7 +119,6 @@ def get_league_odds_formatted(sport_key, league_name):
                     if o_opt and u_opt:
                         point = o_opt.get("point", "-")
                         totals_str = f"{point} (大){o_opt.get('price')} (小){u_opt.get('price')}"
-            
             lines = []
             if h2h_str: lines.append(h2h_str)
             if ah_str: lines.append(ah_str)
@@ -136,7 +135,8 @@ def get_league_odds_formatted(sport_key, league_name):
     except Exception as e:
         print(f"获取 {league_name} 出错: {e}")
         return {}
-main():
+
+def main():
     if not ODDS_KEY:
         send("❌ 错误：未读取到 ODDS_API_KEY，请检查 GitHub Secrets 配置！")
         return
@@ -158,4 +158,4 @@ main():
 
 if __name__ == "__main__":
     main()
-    print("推送完成！")        
+    print("推送完成！")
