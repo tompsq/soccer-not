@@ -56,51 +56,36 @@ def get_past_results(sport_key, league_name):
 
 def get_league_odds_formatted(sport_key, league_name, only_today=False, hours_ahead=None):
     url = f"https://api.the-odds-api.com/v4/sports/{sport_key}/odds/"
-    tz = timezone(timedelta(hours=8))
-    now_utc = datetime.now(timezone.utc)
-    
-    params = {
-        "apiKey": ODDS_KEY,
-        "regions": "eu,uk,us",
-        "markets": "h2h,spreads,totals",
-        "oddsFormat": "decimal"
-    }
-
-    # 格式化标准 UTC 时间戳 (格式: 2026-09-19T00:00:00Z)
-    if hours_ahead is not None:
-        params["commenceTimeFrom"] = now_utc.strftime("%Y-%m-%dT%H:%M:%SZ")
-        params["commenceTimeTo"] = (now_utc + timedelta(hours=hours_ahead)).strftime("%Y-%m-%dT%H:%M:%SZ")
-
+    params = {"apiKey": ODDS_KEY, "regions": "eu,uk,us", "markets": "h2h,spreads,totals", "oddsFormat": "decimal"}
     try:
         r = requests.get(url, params=params, timeout=12)
-        # 如果带了时间参数请求报错 400，降级去除时间参数重新请求
-        if r.status_code != 200 and hours_ahead is not None:
-            params.pop("commenceTimeFrom", None)
-            params.pop("commenceTimeTo", None)
-            r = requests.get(url, params=params, timeout=12)
-
-        if r.status_code != 200 or not r.json(): 
-            return {}
-            
-        data, date_groups = r.json(), {}
-        now_local = datetime.now(tz)
+        if r.status_code != 200 or not r.json(): return {}
+        data, date_groups, tz = r.json(), {}, timezone(timedelta(hours=8))
+        
+        # 获取当前系统时间的 UTC 时间戳（秒）
+        now_dt = datetime.now(timezone.utc)
+        now_ts = now_dt.timestamp()
+        now_local = now_dt.astimezone(tz)
         t_str = f"{now_local.day}/{now_local.month}/{now_local.year}"
 
         for match in data:
             home, away, raw_time = match.get("home_team"), match.get("away_team"), match.get("commence_time", "")
-            if raw_time:
-                dt = datetime.fromisoformat(raw_time.replace("Z", "+00:00")).astimezone(tz)
-                fmt_date, time_str = f"{dt.day}/{dt.month}/{dt.year}", dt.strftime("%H:%M")
-            else: 
-                dt, fmt_date, time_str = None, "近期赛程", "00:00"
+            if not raw_time: continue
             
-            # 双重本地兜底过滤
+            # 精准解析 ISO 时间并计算时间戳
+            dt = datetime.fromisoformat(raw_time.replace("Z", "+00:00"))
+            match_ts = dt.timestamp()
+            
+            # 转换至 UTC+8 供显示使用
+            dt_local = dt.astimezone(tz)
+            fmt_date, time_str = f"{dt_local.day}/{dt_local.month}/{dt_local.year}", dt_local.strftime("%H:%M")
+
+            # 1. 临场模式：基于纯秒数差值筛选 (允许过去 15 分钟缓冲 ~ 未来 X 小时)
             if hours_ahead is not None:
-                if not dt: continue
-                diff_sec = (dt - now_local).total_seconds()
-                # 过滤出 0 到 X 小时内的比赛（允许 5 分钟缓冲误差）
-                if not (-300 <= diff_sec <= hours_ahead * 3600):
+                diff_seconds = match_ts - now_ts
+                if not (-900 <= diff_seconds <= hours_ahead * 3600):
                     continue
+            # 2. 当日模式：按本地日期对比
             elif only_today and fmt_date != t_str:
                 continue
 
@@ -126,8 +111,8 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False, hours_ah
             lines = [s for s in [h2h_s, ah_s, tot_s] if s]
             date_groups.setdefault(fmt_date, []).append(f"{time_str}\n{home} vs {away}\n" + ("\n".join(lines) if lines else "暂无盘口"))
         return date_groups
-    except Exception as e:
-        return {}
+    except: return {}
+
 
 def main():
     if not ODDS_KEY:
