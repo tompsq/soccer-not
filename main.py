@@ -62,8 +62,6 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False, hours_ah
         
         now_dt = datetime.now(timezone.utc)
         now_ts = now_dt.timestamp()
-        now_local = now_dt.astimezone(tz)
-        t_str = now_local.strftime("%Y-%m-%d")
 
         for match in data:
             home, away, raw_time = match.get("home_team"), match.get("away_team"), match.get("commence_time", "")
@@ -73,15 +71,19 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False, hours_ah
             match_ts = dt.timestamp()
             dt_local = dt.astimezone(tz)
             
-            match_date_str = dt_local.strftime("%Y-%m-%d")
             fmt_date, time_str = f"{dt_local.day}/{dt_local.month}/{dt_local.year}", dt_local.strftime("%H:%M")
 
+            # 1. 临场模式：未来 4 小时内
             if hours_ahead is not None:
                 diff_seconds = match_ts - now_ts
                 if not (-1800 <= diff_seconds <= hours_ahead * 3600):
                     continue
-            elif only_today and match_date_str != t_str:
-                continue
+            # 2. 手动模式 (manual)：不再做严格的日期拦截，直接展示 API 返回的所有可用盘口赛程
+            elif only_today:
+                diff_seconds = match_ts - now_ts
+                # 过滤掉已经开赛超过 3 小时或太久远的比赛（只看从现在开始往后 3 天内的盘口）
+                if not (-10800 <= diff_seconds <= 259200):
+                    continue
 
             bms = match.get("bookmakers", [])
             if not bms: continue
@@ -106,6 +108,7 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False, hours_ah
             date_groups.setdefault(fmt_date, []).append(f"{time_str}\n{home} vs {away}\n" + ("\n".join(lines) if lines else "暂无盘口"))
         return date_groups
     except: return {}
+
 def main():
     if not ODDS_KEY:
         send("❌ 错误：未读取到 ODDS_API_KEY！")
