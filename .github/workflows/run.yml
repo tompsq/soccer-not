@@ -1,23 +1,31 @@
-name: Football Odds & Results Bot
+name: Football Odds Bot
 
 on:
+  workflow_dispatch:
+    inputs:
+      RUN_MODE:
+        description: '选择运行模式 (manual: 当日所有赛事 / upcoming: 未来2小时内赛事 / auto: 全部历史+早盘)'
+        required: true
+        default: 'manual'
+        type: choice
+        options:
+          - manual
+          - upcoming
+          - auto
   schedule:
-    # UTC 时间每周二 12:00 (相当于 UTC+8 北京/马来西亚时间每周二 20:00)
-    - cron: '0 12 * * 2'
-  workflow_dispatch: # 支持手动触发
+    - cron: '0 0 * * *' # 每天定时自动运行 (默认走 auto 模式)
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: '3.10'
 
       - name: Install dependencies
         run: |
@@ -29,6 +37,5 @@ jobs:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
-          # 判断触发来源：如果是手动点击触发，github.event_name 就是 'workflow_dispatch'
-          RUN_MODE: ${{ github.event_name == 'workflow_dispatch' && 'manual' || 'auto' }}
+          RUN_MODE: ${{ github.event.inputs.RUN_MODE || 'auto' }}
         run: python main.py
