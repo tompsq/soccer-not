@@ -50,6 +50,7 @@ def format_handicap_label(point):
             date_groups.setdefault(fmt_date, []).append(f"{time_str}\n{home} vs {away}\n" + ("\n".join(lines) if lines else "暂无盘口"))
         return date_groups
     except: return {}
+                
 def get_league_odds_formatted(sport_key, league_name, only_today=False, hours_ahead=None):
     url = f"https://api.the-odds-api.com/v4/sports/{sport_key}/odds/"
     params = {"apiKey": ODDS_KEY, "regions": "eu,uk,us", "markets": "h2h,spreads,totals", "oddsFormat": "decimal"}
@@ -63,19 +64,23 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False, hours_ah
         print(f"[{league_name}] 获取到原始比赛场数: {len(data)}")
         if not data: return {}
         
-        date_groups, tz = {}, timezone(timedelta(hours=8))
+        date_groups = {}
+        tz = timezone(timedelta(hours=8))
         now_dt = datetime.now(timezone.utc)
         now_ts = now_dt.timestamp()
 
         for match in data:
-            home, away, raw_time = match.get("home_team"), match.get("away_team"), match.get("commence_time", "")
+            home = match.get("home_team")
+            away = match.get("away_team")
+            raw_time = match.get("commence_time", "")
             if not raw_time: continue
             
             dt = datetime.fromisoformat(raw_time.replace("Z", "+00:00"))
             match_ts = dt.timestamp()
             dt_local = dt.astimezone(tz)
             
-            fmt_date, time_str = f"{dt_local.day}/{dt_local.month}/{dt_local.year}", dt_local.strftime("%H:%M")
+            fmt_date = f"{dt_local.day}/{dt_local.month}/{dt_local.year}"
+            time_str = dt_local.strftime("%H:%M")
 
             if hours_ahead is not None:
                 diff_seconds = match_ts - now_ts
@@ -83,35 +88,46 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False, hours_ah
                     continue
             elif only_today:
                 diff_seconds = match_ts - now_ts
-                # 临时放宽：允许前后 7 天内的盘口（确保非周末也能看到测试数据）
                 if not (-86400 <= diff_seconds <= 604800):
                     continue
 
             bms = match.get("bookmakers", [])
             if not bms: continue
                 
-            h2h_s, ah_s, tot_s = "", "", ""
+            h2h_s = ""
+            ah_s = ""
+            tot_s = ""
+            
             for bm in bms:
                 for market in bm.get("markets", []):
-                    mk, outcomes = market.get("key"), market.get("outcomes", [])
+                    mk = market.get("key")
+                    outcomes = market.get("outcomes", [])
                     if mk == "h2h" and not h2h_s:
                         hp = next((o["price"] for o in outcomes if o["name"] == home), "-")
                         dp = next((o["price"] for o in outcomes if o["name"] == "Draw"), "-")
                         ap = next((o["price"] for o in outcomes if o["name"] == away), "-")
                         h2h_s = f"{hp} {dp} {ap}"
                     elif mk == "spreads" and not ah_s:
-                        ho, ao = next((o for o in outcomes if o["name"] == home), None), next((o for o in outcomes if o["name"] == away), None)
-                        if ho and ao: ah_s = f"{format_handicap_label(ho.get('point', 0))} (主){ho.get('price')} (客){ao.get('price')}"
+                        ho = next((o for o in outcomes if o["name"] == home), None)
+                        ao = next((o for o in outcomes if o["name"] == away), None)
+                        if ho and ao: 
+                            ah_s = f"{format_handicap_label(ho.get('point', 0))} (主){ho.get('price')} (客){ao.get('price')}"
                     elif mk == "totals" and not tot_s:
-                        oo, uo = next((o for o in outcomes if o["name"] == "Over"), None), next((o for o in outcomes if o["name"] == "Under"), None)
-                        if oo and uo: tot_s = f"{oo.get('point', '-')} (大){oo.get('price')} (小){uo.get('price')}"
+                        oo = next((o for o in outcomes if o["name"] == "Over"), None)
+                        uo = next((o for o in outcomes if o["name"] == "Under"), None)
+                        if oo and uo: 
+                            tot_s = f"{oo.get('point', '-')} (大){oo.get('price')} (小){uo.get('price')}"
             
             lines = [s for s in [h2h_s, ah_s, tot_s] if s]
-            date_groups.setdefault(fmt_date, []).append(f"{time_str}\n{home} vs {away}\n" + ("\n".join(lines) if lines else "暂无盘口"))
+            match_info = f"{time_str}\n{home} vs {away}\n" + ("\n".join(lines) if lines else "暂无盘口")
+            date_groups.setdefault(fmt_date, []).append(match_info)
+            
         return date_groups
     except Exception as e:
         print(f"[{league_name}] 异常: {e}")
         return {}
+
+
 def main():
     if not ODDS_KEY:
         send("❌ 错误：未读取到 ODDS_API_KEY！")
