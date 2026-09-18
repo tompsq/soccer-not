@@ -75,21 +75,17 @@ def get_past_results(sport_key, league_name):
         return date_groups
     except: 
         return {}
-def get_league_odds_formatted(sport_key, league_name, only_today=False):
+def get_league_odds_formatted(sport_key, league_name):
     url = f"https://api.the-odds-api.com/v4/sports/{sport_key}/odds/"
     params = {"apiKey": ODDS_KEY, "regions": "eu,uk,us", "markets": "h2h,spreads,totals", "oddsFormat": "decimal"}
     try:
         r = requests.get(url, params=params, timeout=12)
-        print(f"[{league_name}] 状态码: {r.status_code}")
         if r.status_code != 200 or not r.json(): 
             return {}
         data = r.json()
-        print(f"[{league_name}] 获取到原始比赛数: {len(data)}")
         
         date_groups = {}
         tz = timezone(timedelta(hours=8))
-        now_dt = datetime.now(timezone.utc)
-        now_ts = now_dt.timestamp()
 
         for match in data:
             home = match.get("home_team")
@@ -99,17 +95,10 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False):
                 continue
             
             dt = datetime.fromisoformat(raw_time.replace("Z", "+00:00"))
-            match_ts = dt.timestamp()
             dt_local = dt.astimezone(tz)
             
             fmt_date = f"{dt_local.day}/{dt_local.month}/{dt_local.year}"
             time_str = dt_local.strftime("%H:%M")
-
-            # 如果是 manual 模式，我们只过滤掉过去超过 12 小时以上的比赛，保留今天及未来所有的盘口
-            if only_today:
-                diff_seconds = match_ts - now_ts
-                if diff_seconds < -43200: 
-                    continue
 
             bms = match.get("bookmakers", [])
             if not bms: 
@@ -144,8 +133,7 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False):
             date_groups.setdefault(fmt_date, []).append(match_info)
             
         return date_groups
-    except Exception as e:
-        print(f"[{league_name}] 异常: {e}")
+    except: 
         return {}
 def main():
     try:
@@ -159,8 +147,7 @@ def main():
             res.append("====================\n⚡ 当日赛事盘口 (手动即时推送)\n====================")
             has_odds = False
             for sk, ln in SPORT_KEYS.items():
-                league_data = get_league_odds_formatted(sk, ln, only_today=True)
-                for ds, ml in league_data.items():
+                for ds, ml in get_league_odds_formatted(sk, ln).items():
                     if ml:
                         has_odds = True
                         res.append(f"📌 **{ln}** ({ds})\n\n" + "\n\n".join(ml) + "\n" + "-"*15 + "\n")
@@ -180,8 +167,7 @@ def main():
             res.append("====================\n⚽ 全联赛早盘赛程与盘口\n====================")
             has_odds = False
             for sk, ln in SPORT_KEYS.items():
-                league_data = get_league_odds_formatted(sk, ln, only_today=False)
-                for ds, ml in league_data.items():
+                for ds, ml in get_league_odds_formatted(sk, ln).items():
                     if ml:
                         has_odds = True
                         res.append(f"📌 **{ln}** ({ds})\n\n" + "\n\n".join(ml) + "\n" + "-"*15 + "\n")
