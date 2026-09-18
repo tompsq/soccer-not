@@ -1,6 +1,6 @@
 import os
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 
 K = os.environ.get("API_FOOTBALL_KEY")
 T = os.environ.get("TG_BOT_TOKEN")
@@ -10,7 +10,7 @@ HEADERS = {
     "x-apisports-key": K
 }
 
-# 五大联赛 + 欧冠的 League ID
+# 关注的联赛 ID
 LEAGUES = {
     "英超": 39,
     "西甲": 140,
@@ -38,18 +38,17 @@ def send(msg):
     else:
         requests.post(url, json={"chat_id": C, "text": msg})
 
-def get_current_season():
-    # 欧洲联赛跨年（如 2026-2027 赛季），8月前属于前一年的赛季
-    now = datetime.now()
-    return now.year if now.month >= 8 else now.year - 1
-
 def get_league_fixtures():
-    season = get_current_season()
-    res = ["⚽【各大联赛最新赛程与完场比分】"]
+    # 查询从今天开始未来 7 天内的比赛
+    today = datetime.now()
+    from_date = today.strftime("%Y-%m-%d")
+    to_date = (today + timedelta(days=7)).strftime("%Y-%m-%d")
+    
+    res = [f"⚽【各大联赛赛程推送 ({from_date} ~ {to_date})】"]
     
     for name, lid in LEAGUES.items():
-        # 必须同时带上 season 参数
-        url = f"https://v3.football.api-sports.io/fixtures?league={lid}&season={season}&next=5"
+        # 通过日期范围查询，兼容性最好
+        url = f"https://v3.football.api-sports.io/fixtures?league={lid}&from={from_date}&to={to_date}"
         r = requests.get(url, headers=HEADERS)
         if r.status_code != 200:
             continue
@@ -59,23 +58,24 @@ def get_league_fixtures():
             continue
             
         match_list = []
-        for item in data:
+        for item in data[:5]:  # 只取前 5 场
             home = item["teams"]["home"]["name"]
             away = item["teams"]["away"]["name"]
             status = item["fixture"]["status"]["short"]
+            match_date = item["fixture"]["date"][:10]
             
             gh = item["goals"]["home"]
             ga = item["goals"]["away"]
             score = f"{gh}-{ga}" if gh is not None else "未开赛"
             
-            match_list.append(f"• {home} {score} {away} ({status})")
+            match_list.append(f"• [{match_date}] {home} {score} {away} ({status})")
             
         if match_list:
             res.append(f"\n🏆 {name}")
             res.extend(match_list)
             
     if len(res) == 1:
-        return "⚽【赛事推送】暂未获取到近期赛事，请检查 API 额度或赛季设置。"
+        return f"⚽【赛事推送】未来 7 天内无相关联赛比赛，或今日 API 请求次数已耗尽。"
         
     return "\n".join(res)
 
