@@ -52,7 +52,7 @@ def get_past_results(sport_key, league_name):
             date_groups.setdefault(fmt_date, []).append(f"{time_str}\n{home} vs {away}\n{score_str}")
         return date_groups
     except: return {}
-def def get_league_odds_formatted(sport_key, league_name, only_today=False):
+def get_league_odds_formatted(sport_key, league_name, only_today=False):
     url = f"https://api.the-odds-api.com/v4/sports/{sport_key}/odds/"
     params = {"apiKey": ODDS_KEY, "regions": "eu,uk,us", "markets": "h2h,spreads,totals", "oddsFormat": "decimal"}
     try:
@@ -69,7 +69,6 @@ def def get_league_odds_formatted(sport_key, league_name, only_today=False):
                 fmt_date, time_str = f"{dt.day}/{dt.month}/{dt.year}", dt.strftime("%H:%M")
             else: fmt_date, time_str = "近期赛程", "00:00"
             
-            # 严格仅保留今天 (如 19 日) 当天的赛事
             if only_today and fmt_date != t_str: continue
             bms = match.get("bookmakers", [])
             if not bms: continue
