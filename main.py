@@ -88,10 +88,6 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False, hours_ah
         tz = timezone(timedelta(hours=8))
         now_dt = datetime.now(timezone.utc)
         now_ts = now_dt.timestamp()
-        
-        # 获取今天的本地日期字符串 (格式: YYYY-MM-DD)
-        now_local = now_dt.astimezone(tz)
-        t_str = now_local.strftime("%Y-%m-%d")
 
         for match in data:
             home = match.get("home_team")
@@ -104,7 +100,6 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False, hours_ah
             match_ts = dt.timestamp()
             dt_local = dt.astimezone(tz)
             
-            match_date_str = dt_local.strftime("%Y-%m-%d")
             fmt_date = f"{dt_local.day}/{dt_local.month}/{dt_local.year}"
             time_str = dt_local.strftime("%H:%M")
 
@@ -113,13 +108,11 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False, hours_ah
                 diff_seconds = match_ts - now_ts
                 if not (-1800 <= diff_seconds <= hours_ahead * 3600):
                     continue
-            # 2. 手动当日模式 (manual)：严格匹配今天 (UTC+8) 的所有赛事
+            # 2. 手动当日模式 (manual)：放宽为“过去 6 小时直到未来 48 小时”内的所有盘口，确保周六凌晨的比赛不会被漏掉
             elif only_today:
-                if match_date_str != t_str:
+                diff_seconds = match_ts - now_ts
+                if not (-21600 <= diff_seconds <= 172800):
                     continue
-            # 3. AUTO 模式：展示近期所有早盘
-            else:
-                pass
 
             bms = match.get("bookmakers", [])
             if not bms: 
@@ -156,6 +149,7 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False, hours_ah
         return date_groups
     except: 
         return {}
+
 def main():
     try:
         if not ODDS_KEY:
