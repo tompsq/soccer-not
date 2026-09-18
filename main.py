@@ -1,80 +1,77 @@
 import os
 import requests
 
-# 1. 读取环境变量
 K = os.environ.get("API_FOOTBALL_KEY")
 T = os.environ.get("TG_BOT_TOKEN")
 C = os.environ.get("TG_CHAT_ID")
 
-# 2. 官方 API-Sports 严格要求的 Header 请求头格式
 HEADERS = {
     "x-apisports-key": K
 }
 
+# 五大联赛 + 欧冠的 League ID
+LEAGUES = {
+    "英超": 39,
+    "西甲": 140,
+    "意甲": 135,
+    "德甲": 78,
+    "法甲": 61,
+    "欧冠": 2
+}
+
 def send(msg):
     if not T or not C:
-        print("【错误】未配置 TG_BOT_TOKEN 或 TG_CHAT_ID！")
         return
     url = f"https://api.telegram.org/bot{T}/sendMessage"
-    res = requests.post(url, json={"chat_id": C, "text": msg})
-    print(f"TG 发送响应状态: {res.status_code}")
+    
+    # 消息太长时自动分段发送
+    if len(msg) > 3800:
+        lines, cur = msg.split("\n"), ""
+        for line in lines:
+            if len(cur) + len(line) + 1 > 3800:
+                requests.post(url, json={"chat_id": C, "text": cur})
+                cur = line
+            else:
+                cur = (cur + "\n" + line) if cur else line
+        if cur:
+            requests.post(url, json={"chat_id": C, "text": cur})
+    else:
+        requests.post(url, json={"chat_id": C, "text": msg})
 
-def test_api():
-    if not K:
-        return "【错误】未读取到 API_FOOTBALL_KEY 变量，请检查 GitHub Secrets 配置！"
+def get_league_fixtures():
+    res = ["⚽【各大联赛最新赛程与完场比分】"]
     
-    # 使用官方 Header 请求头测试状态
-    url = "https://v3.football.api-sports.io/status"
-    r = requests.get(url, headers=HEADERS)
-    
-    if r.status_code != 200:
-        return f"【API 报错】状态码: {r.status_code}\n{r.text}"
-    
-    data = r.json()
-    errors = data.get("errors", {})
-    if errors:
-        return f"【API 验证失败】\n{errors}"
-
-    account = data.get("response", {}).get("account", {})
-    reqs = data.get("response", {}).get("requests", {})
-    
-    return (
-        f"🎉【API 鉴权完全成功！】\n"
-        f"用户: {account.get('firstname')} {account.get('lastname')}\n"
-        f"今日已用请求数: {reqs.get('current')}/{reqs.get('limit_day')}"
-    )
-
-def get_fixtures():
-    # 抓取接下来 10 场赛事
-    url = "https://v3.football.api-sports.io/fixtures?next=10"
-    r = requests.get(url, headers=HEADERS)
-    if r.status_code != 200:
-        return f"【赛事抓取失败】状态码: {r.status_code}\n{r.text}"
-    
-    data = r.json().get("response", [])
-    if not data:
-        return "【赛事推送】近期暂无最新赛事数据。"
-
-    res = ["⚽【API-Football 热门赛事推送】"]
-    for item in data:
-        league_name = item.get("league", {}).get("name", "未知联赛")
-        home = item.get("teams", {}).get("home", {}).get("name", "主队")
-        away = item.get("teams", {}).get("away", {}).get("name", "客队")
-        
-        gh = item.get("goals", {}).get("home")
-        ga = item.get("goals", {}).get("away")
-        score_str = f"{gh} - {ga}" if gh is not None else "未开赛"
-        
-        res.append(f"• [{league_name}] {home} {score_str} {away}")
-    
+    for name, lid in LEAGUES.items():
+        # 获取该联赛接下来的 5 场比赛（包含未开赛和近期完场）
+        url = f"https://v3.football.api-sports.io/fixtures?league={lid}&next=5"
+        r = requests.get(url, headers=HEADERS)
+        if r.status_code != 200:
+            continue
+            
+        data = r.json().get("response", [])
+        if not data:
+            continue
+            
+        match_list = []
+        for item in data:
+            home = item["teams"]["home"]["name"]
+            away = item["teams"]["away"]["name"]
+            status = item["fixture"]["status"]["short"]
+            
+            # 比分处理
+            gh = item["goals"]["home"]
+            ga = item["goals"]["away"]
+            score = f"{gh}-{ga}" if gh is not None else "未开赛"
+            
+            match_list.append(f"• {home} {score} {away} ({status})")
+            
+        if match_list:
+            res.append(f"\n🏆 **{name}**")
+            res.extend(match_list)
+            
     return "\n".join(res)
 
 if __name__ == "__main__":
-    status_msg = test_api()
-    send(status_msg)
-    
-    if "🎉" in status_msg:
-        fixtures_msg = get_fixtures()
-        send(fixtures_msg)
-        
-    print("程序运行结束。")
+    msg = get_league_fixtures()
+    send(msg)
+    print("推送完成！")
