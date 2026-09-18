@@ -4,10 +4,13 @@ from datetime import datetime, timezone, timedelta
 ODDS_KEY, T, C = os.environ.get("ODDS_API_KEY"), os.environ.get("TG_BOT_TOKEN"), os.environ.get("TG_CHAT_ID")
 RUN_MODE = os.environ.get("RUN_MODE", "auto")
 
+# 11 个主流联赛完整列表
 SPORT_KEYS = {
     "soccer_epl": "英超", "soccer_spain_la_liga": "西甲", "soccer_italy_serie_a": "意甲",
     "soccer_germany_bundesliga": "德甲", "soccer_france_ligue_one": "法甲",
-    "soccer_uefa_champs_league": "欧冠", "soccer_portugal_primeira_liga": "葡超"
+    "soccer_uefa_champs_league": "欧冠", "soccer_uefa_europa_conference_league": "欧联/欧协联",
+    "soccer_portugal_primeira_liga": "葡超", "soccer_spl": "苏超",
+    "soccer_belgium_first_div": "比甲", "soccer_greece_super_league": "希超"
 }
 
 def send(msg):
@@ -60,11 +63,12 @@ def get_league_odds_formatted(sport_key, league_name):
             date_groups.setdefault(fd, []).append(info)
         return date_groups
     except: return {}
+
 def main():
     if not ODDS_KEY:
         send("❌ 错误：未读取到 ODDS_API_KEY！")
         return
-    res = ["====================\n⚡ 极简调试版赛事盘口\n===================="]
+    res = ["====================\n⚡ 全联赛 11 个赛事盘口\n===================="]
     has_odds = False
     for sk, ln in SPORT_KEYS.items():
         for ds, ml in get_league_odds_formatted(sk, ln).items():
