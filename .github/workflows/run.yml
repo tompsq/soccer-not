@@ -2,9 +2,9 @@ name: Football Odds & Results Bot
 
 on:
   schedule:
-    # 保持每周二 20:00 (北京/马来西亚时间) 自动保底运行
+    # UTC 时间每周二 12:00 (相当于 UTC+8 北京/马来西亚时间每周二 20:00)
     - cron: '0 12 * * 2'
-  workflow_dispatch: # 允许在 GitHub Actions 手动点击 Run workflow 运行
+  workflow_dispatch: # 支持手动触发
 
 jobs:
   run-bot:
@@ -29,4 +29,6 @@ jobs:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          # 判断触发来源：如果是手动点击触发，github.event_name 就是 'workflow_dispatch'
+          RUN_MODE: ${{ github.event_name == 'workflow_dispatch' && 'manual' || 'auto' }}
         run: python main.py
