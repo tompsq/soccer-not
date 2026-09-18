@@ -66,8 +66,9 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False, hours_ah
 
         for match in data:
             home, away, raw_time = match.get("home_team"), match.get("away_team"), match.get("commence_time", "")
-            if len(raw_time) >= 19:
-                dt = datetime.strptime(raw_time[:19], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc).astimezone(tz)
+            if raw_time:
+                # 使用 ISO 格式精准解析 UTC 时间并转换为 UTC+8
+                dt = datetime.fromisoformat(raw_time.replace("Z", "+00:00")).astimezone(tz)
                 fmt_date, time_str = f"{dt.day}/{dt.month}/{dt.year}", dt.strftime("%H:%M")
             else: 
                 dt, fmt_date, time_str = None, "近期赛程", "00:00"
