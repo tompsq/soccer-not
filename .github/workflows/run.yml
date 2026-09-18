@@ -1,22 +1,23 @@
-name: Football Bot Automation
+name: Football Odds Bot
 
 on:
-  workflow_dispatch: # 支持在 GitHub 页面手动点击运行
   schedule:
-    - cron: '0 8 * * *' # 每天 UTC 08:00 (北京时间 16:00) 自动运行
+    # 每天 UTC 0:00 (北京时间 8:00) 自动运行
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 支持手动点击运行
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository code
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.x'
 
       - name: Install dependencies
         run: |
@@ -25,7 +26,7 @@ jobs:
 
       - name: Run script
         env:
-          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
         run: python main.py
