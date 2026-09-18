@@ -1,22 +1,24 @@
 import os
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime
 
-K = os.environ.get("API_FOOTBALL_KEY")
+ODDS_KEY = os.environ.get("ODDS_API_KEY")
 T = os.environ.get("TG_BOT_TOKEN")
 C = os.environ.get("TG_CHAT_ID")
 
-HEADERS = {
-    "x-apisports-key": K
-}
-
-LEAGUES = {
-    39: "英超",
-    140: "西甲",
-    135: "意甲",
-    78: "德甲",
-    61: "法甲",
-    2: "欧冠"
+# 11 个目标联赛配置
+SPORT_KEYS = {
+    "soccer_epl": "英超",
+    "soccer_spain_la_liga": "西甲",
+    "soccer_italy_serie_a": "意甲",
+    "soccer_germany_bundesliga": "德甲",
+    "soccer_france_ligue_one": "法甲",
+    "soccer_uefa_champs_league": "欧冠",
+    "soccer_uefa_europa_conference_league": "欧联/欧协联",
+    "soccer_portugal_primeira_liga": "葡超",
+    "soccer_spl": "苏超",
+    "soccer_belgium_first_div": "比甲",
+    "soccer_greece_super_league": "希超"
 }
 
 def send(msg):
@@ -24,6 +26,7 @@ def send(msg):
         return
     url = f"https://api.telegram.org/bot{T}/sendMessage"
     
+    # 按照 Telegram 限制拆分长消息
     if len(msg) > 3800:
         lines, cur = msg.split("\n"), ""
         for line in lines:
@@ -37,116 +40,122 @@ def send(msg):
     else:
         requests.post(url, json={"chat_id": C, "text": msg})
 
-def get_all_odds_map_for_date(date_str):
-    """一次性拉取当天所有比赛的赔率，解决频控问题"""
-    url = f"https://v3.football.api-sports.io/odds?date={date_str}"
-    r = requests.get(url, headers=HEADERS)
-    if r.status_code != 200:
-        return {}
+def format_handicap_label(point):
+    """格式化让球盘描述"""
+    try:
+        val = float(point)
+        if val == 0:
+            return "平盘"
+        elif val < 0:
+            return f"主{val}"
+        else:
+            return f"客-{val}"
+    except:
+        return str(point)
+
+def get_league_odds_formatted(sport_key, league_name):
+    """调用 The Odds API 抓取指定联赛的欧赔、亚盘、大小球，并进行排版"""
+    url = f"https://api.the-odds-api.com/v4/sports/{sport_key}/odds/"
+    params = {
+        "apiKey": ODDS_KEY,
+        "regions": "eu,uk",
+        "markets": "h2h,spreads,totals",
+        "oddsFormat": "decimal"
+    }
     
-    data = r.json().get("response", [])
-    odds_map = {}
-    
-    for entry in data:
-        fid = entry.get("fixture", {}).get("id")
-        if not fid:
-            continue
-            
-        bookmakers = entry.get("bookmakers", [])
-        h2h, ah, over_under = "", "", ""
-        
-        # 遍历所有博彩公司，尽可能补充齐 欧赔、亚盘、大小球
-        for bm in bookmakers:
-            for bet in bm.get("bets", []):
-                bet_id = bet.get("id")
-                values = bet.get("values", [])
-                
-                # 1. 欧赔 ( Match Winner / 1X2 )
-                if bet_id == 1 and not h2h:
-                    hp = next((v["odd"] for v in values if v["value"] == "Home"), "-")
-                    dp = next((v["odd"] for v in values if v["value"] == "Draw"), "-")
-                    ap = next((v["odd"] for v in values if v["value"] == "Away"), "-")
-                    h2h = f"胜{hp} 平{dp} 负{ap}"
-                    
-                # 2. 亚盘 ( Asian Handicap )
-                elif (bet_id == 8 or bet_id == 15) and not ah:
-                    h_opt = next((v for v in values if "Home" in str(v.get("value"))), None)
-                    a_opt = next((v for v in values if "Away" in str(v.get("value"))), None)
-                    if h_opt and a_opt:
-                        ah = f"主{h_opt.get('value')}({h_opt.get('odd')}) / 客({a_opt.get('odd')})"
-                        
-                # 3. 大小球 ( Goals Over/Under )
-                elif (bet_id == 5 or bet_id == 6) and not over_under:
-                    o_opt = next((v for v in values if "Over" in str(v.get("value"))), None)
-                    u_opt = next((v for v in values if "Under" in str(v.get("value"))), None)
-                    if o_opt and u_opt:
-                        over_under = f"{o_opt.get('value')}球 (大{o_opt.get('odd')}/小{u_opt.get('odd')})"
-        
-        parts = []
-        if h2h: parts.append(f"欧: {h2h}")
-        if ah: parts.append(f"亚: {ah}")
-        if over_under: parts.append(f"大小: {over_under}")
-        
-        if parts:
-            odds_map[fid] = "  └ " + " | ".join(parts)
-            
-    return odds_map
-def main():
-    today = datetime.now()
-    dates_to_check = [
-        today.strftime("%Y-%m-%d"),
-        (today + timedelta(days=1)).strftime("%Y-%m-%d")
-    ]
-    
-    res = ["⚽【各大联赛赛程与完整盘口赔率】"]
-    has_match = False
-    
-    for d in dates_to_check:
-        # 1. 获取当天所有比赛
-        f_url = f"https://v3.football.api-sports.io/fixtures?date={d}"
-        r = requests.get(f_url, headers=HEADERS)
+    try:
+        r = requests.get(url, params=params, timeout=10)
         if r.status_code != 200:
-            continue
+            return {}
             
-        fixtures = r.json().get("response", [])
+        data = r.json()
+        date_groups = {}
         
-        # 2. 获取当天批量赔率
-        odds_map = get_all_odds_map_for_date(d)
+        for match in data:
+            home = match.get("home_team")
+            away = match.get("away_team")
+            
+            # 解析时间 -> 日期 (D/M/YYYY) 与 时间 (HH:MM)
+            raw_time = match.get("commence_time", "")
+            if len(raw_time) >= 16:
+                dt = datetime.strptime(raw_time[:16], "%Y-%m-%dT%H:%M")
+                formatted_date = f"{dt.day}/{dt.month}/{dt.year}"
+                time_str = dt.strftime("%H:%M")
+            else:
+                formatted_date = "近期"
+                time_str = "00:00"
+            
+            bookmakers = match.get("bookmakers", [])
+            if not bookmakers:
+                continue
+                
+            bm = bookmakers[0]
+            h2h_str, ah_str, totals_str = "", "", ""
+            
+            for market in bm.get("markets", []):
+                m_key = market.get("key")
+                outcomes = market.get("outcomes", [])
+                
+                # 1. 欧赔 (h2h)
+                if m_key == "h2h":
+                    hp = next((o["price"] for o in outcomes if o["name"] == home), "-")
+                    dp = next((o["price"] for o in outcomes if o["name"] == "Draw"), "-")
+                    ap = next((o["price"] for o in outcomes if o["name"] == away), "-")
+                    h2h_str = f"{hp} {dp} {ap}"
+                    
+                # 2. 亚盘让球 (spreads)
+                elif m_key == "spreads":
+                    h_opt = next((o for o in outcomes if o["name"] == home), None)
+                    a_opt = next((o for o in outcomes if o["name"] == away), None)
+                    if h_opt and a_opt:
+                        point = h_opt.get("point", 0)
+                        label = format_handicap_label(point)
+                        ah_str = f"{label} (主){h_opt.get('price')} (客){a_opt.get('price')}"
+                        
+                # 3. 大小球 (totals)
+                elif m_key == "totals":
+                    o_opt = next((o for o in outcomes if o["name"] == "Over"), None)
+                    u_opt = next((o for o in outcomes if o["name"] == "Under"), None)
+                    if o_opt and u_opt:
+                        point = o_opt.get("point", "-")
+                        totals_str = f"{point} (大){o_opt.get('price')} (小){u_opt.get('price')}"
+            
+            lines = []
+            if h2h_str: lines.append(h2h_str)
+            if ah_str: lines.append(ah_str)
+            if totals_str: lines.append(totals_str)
+            
+            odds_block = "\n".join(lines) if lines else "暂无盘口"
+            match_text = f"{time_str}\n{home} vs {away}\n{odds_block}"
+            
+            if formatted_date not in date_groups:
+                date_groups[formatted_date] = []
+            date_groups[formatted_date].append(match_text)
+            
+        return date_groups
+    except Exception as e:
+        print(f"获取 {league_name} 出错: {e}")
+        return {}
+main():
+    if not ODDS_KEY:
+        send("❌ 错误：未读取到 ODDS_API_KEY，请检查 GitHub Secrets 配置！")
+        return
+
+    res = []
+    
+    for sport_key, league_name in SPORT_KEYS.items():
+        date_groups = get_league_odds_formatted(sport_key, league_name)
         
-        day_matches = {}
-        for item in fixtures:
-            lid = item.get("league", {}).get("id")
-            if lid in LEAGUES:
-                fid = item["fixture"]["id"]
-                league_name = LEAGUES[lid]
-                home = item["teams"]["home"]["name"]
-                away = item["teams"]["away"]["name"]
-                status = item["fixture"]["status"]["short"]
-                
-                gh = item["goals"]["home"]
-                ga = item["goals"]["away"]
-                score = f"{gh}-{ga}" if gh is not None else "未开赛"
-                
-                # 匹配赔率，若没有则显示未开盘
-                odds_info = odds_map.get(fid, "  └ 赔率: 暂未开盘或数据缺失")
-                match_block = f"• {home} {score} {away} ({status})\n{odds_info}"
-                
-                if league_name not in day_matches:
-                    day_matches[league_name] = []
-                day_matches[league_name].append(match_block)
-                has_match = True
-                
-        if day_matches:
-            res.append(f"\n📅 **日期: {d}**")
-            for lname, m_list in day_matches.items():
-                res.append(f"\n🏆 **{lname}**")
-                res.extend(m_list)
-                
-    if not has_match:
-        res.append("\n今明两天暂无关注联赛的比赛安排。")
-        
-    send("\n".join(res))
+        for date_str, match_list in date_groups.items():
+            res.append(f"{league_name} {date_str}\n")
+            res.append("\n\n".join(match_list))
+            res.append("\n" + "="*20 + "\n")
+            
+    if not res:
+        send("近期 11 个指定联赛暂无开盘数据。")
+    else:
+        send("\n".join(res))
 
 if __name__ == "__main__":
     main()
-    print("推送完成！")
+    print("推送完成！")        
