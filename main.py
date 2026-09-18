@@ -1,5 +1,6 @@
 import os
 import requests
+from datetime import datetime
 
 K = os.environ.get("API_FOOTBALL_KEY")
 T = os.environ.get("TG_BOT_TOKEN")
@@ -24,7 +25,6 @@ def send(msg):
         return
     url = f"https://api.telegram.org/bot{T}/sendMessage"
     
-    # 消息太长时自动分段发送
     if len(msg) > 3800:
         lines, cur = msg.split("\n"), ""
         for line in lines:
@@ -38,12 +38,18 @@ def send(msg):
     else:
         requests.post(url, json={"chat_id": C, "text": msg})
 
+def get_current_season():
+    # 欧洲联赛跨年（如 2026-2027 赛季），8月前属于前一年的赛季
+    now = datetime.now()
+    return now.year if now.month >= 8 else now.year - 1
+
 def get_league_fixtures():
+    season = get_current_season()
     res = ["⚽【各大联赛最新赛程与完场比分】"]
     
     for name, lid in LEAGUES.items():
-        # 获取该联赛接下来的 5 场比赛（包含未开赛和近期完场）
-        url = f"https://v3.football.api-sports.io/fixtures?league={lid}&next=5"
+        # 必须同时带上 season 参数
+        url = f"https://v3.football.api-sports.io/fixtures?league={lid}&season={season}&next=5"
         r = requests.get(url, headers=HEADERS)
         if r.status_code != 200:
             continue
@@ -58,7 +64,6 @@ def get_league_fixtures():
             away = item["teams"]["away"]["name"]
             status = item["fixture"]["status"]["short"]
             
-            # 比分处理
             gh = item["goals"]["home"]
             ga = item["goals"]["away"]
             score = f"{gh}-{ga}" if gh is not None else "未开赛"
@@ -66,9 +71,12 @@ def get_league_fixtures():
             match_list.append(f"• {home} {score} {away} ({status})")
             
         if match_list:
-            res.append(f"\n🏆 **{name}**")
+            res.append(f"\n🏆 {name}")
             res.extend(match_list)
             
+    if len(res) == 1:
+        return "⚽【赛事推送】暂未获取到近期赛事，请检查 API 额度或赛季设置。"
+        
     return "\n".join(res)
 
 if __name__ == "__main__":
