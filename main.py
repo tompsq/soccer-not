@@ -30,26 +30,24 @@ def format_handicap_label(point):
         val = float(point)
         return "平盘" if val == 0 else (f"主{val}" if val < 0 else f"客-{val}")
     except: return str(point)
-def get_past_results(sport_key, league_name):
-    url = f"https://api.the-odds-api.com/v4/sports/{sport_key}/scores/"
-    try:
-        r = requests.get(url, params={"apiKey": ODDS_KEY, "daysFrom": 6}, timeout=10)
-        if r.status_code != 200: return {}
-        data, date_groups, tz = r.json(), {}, timezone(timedelta(hours=8))
-        for match in data:
-            if not match.get("completed"): continue
-            home, away, scores = match.get("home_team"), match.get("away_team"), match.get("scores")
-            score_str = "完场 比分未知"
-            if scores and len(scores) >= 2:
-                h = next((s["score"] for s in scores if s["name"] == home), "-")
-                a = next((s["score"] for s in scores if s["name"] == away), "-")
-                score_str = f"完场 {h} : {a}"
-            raw_time = match.get("commence_time", "")
-            if len(raw_time) >= 19:
-                dt = datetime.strptime(raw_time[:19], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc).astimezone(tz)
-                fmt_date, time_str = f"{dt.day}/{dt.month}/{dt.year}", dt.strftime("%H:%M")
-            else: fmt_date, time_str = "近期完场", "00:00"
-            date_groups.setdefault(fmt_date, []).append(f"{time_str}\n{home} vs {away}\n{score_str}")
+            h2h_s, ah_s, tot_s = "", "", ""
+            for bm in bms:
+                for market in bm.get("markets", []):
+                    mk, outcomes = market.get("key"), market.get("outcomes", [])
+                    if mk == "h2h" and not h2h_s:
+                        hp = next((o["price"] for o in outcomes if o["name"] == home), "-")
+                        dp = next((o["price"] for o in outcomes if o["name"] == "Draw"), "-")
+                        ap = next((o["price"] for o in outcomes if o["name"] == away), "-")
+                        h2h_s = f"{hp} {dp} {ap}"
+                    elif mk == "spreads" and not ah_s:
+                        ho, ao = next((o for o in outcomes if o["name"] == home), None), next((o for o in outcomes if o["name"] == away), None)
+                        if ho and ao: ah_s = f"{format_handicap_label(ho.get('point', 0))} (主){ho.get('price')} (客){ao.get('price')}"
+                    elif mk == "totals" and not tot_s:
+                        oo, uo = next((o for o in outcomes if o["name"] == "Over"), None), next((o for o in outcomes if o["name"] == "Under"), None)
+                        if oo and uo: tot_s = f"{oo.get('point', '-')} (大){oo.get('price')} (小){uo.get('price')}"
+            
+            lines = [s for s in [h2h_s, ah_s, tot_s] if s]
+            date_groups.setdefault(fmt_date, []).append(f"{time_str}\n{home} vs {away}\n" + ("\n".join(lines) if lines else "暂无盘口"))
         return date_groups
     except: return {}
 def get_league_odds_formatted(sport_key, league_name, only_today=False, hours_ahead=None):
@@ -57,9 +55,15 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False, hours_ah
     params = {"apiKey": ODDS_KEY, "regions": "eu,uk,us", "markets": "h2h,spreads,totals", "oddsFormat": "decimal"}
     try:
         r = requests.get(url, params=params, timeout=12)
-        if r.status_code != 200 or not r.json(): return {}
-        data, date_groups, tz = r.json(), {}, timezone(timedelta(hours=8))
+        print(f"[{league_name}] HTTP状态码: {r.status_code}")
+        if r.status_code != 200: 
+            print(f"[{league_name}] 错误信息: {r.text}")
+            return {}
+        data = r.json()
+        print(f"[{league_name}] 获取到原始比赛场数: {len(data)}")
+        if not data: return {}
         
+        date_groups, tz = {}, timezone(timedelta(hours=8))
         now_dt = datetime.now(timezone.utc)
         now_ts = now_dt.timestamp()
 
@@ -73,16 +77,14 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False, hours_ah
             
             fmt_date, time_str = f"{dt_local.day}/{dt_local.month}/{dt_local.year}", dt_local.strftime("%H:%M")
 
-            # 1. 临场模式：未来 4 小时内
             if hours_ahead is not None:
                 diff_seconds = match_ts - now_ts
                 if not (-1800 <= diff_seconds <= hours_ahead * 3600):
                     continue
-            # 2. 手动模式 (manual)：不再做严格的日期拦截，直接展示 API 返回的所有可用盘口赛程
             elif only_today:
                 diff_seconds = match_ts - now_ts
-                # 过滤掉已经开赛超过 3 小时或太久远的比赛（只看从现在开始往后 3 天内的盘口）
-                if not (-10800 <= diff_seconds <= 259200):
+                # 临时放宽：允许前后 7 天内的盘口（确保非周末也能看到测试数据）
+                if not (-86400 <= diff_seconds <= 604800):
                     continue
 
             bms = match.get("bookmakers", [])
@@ -107,8 +109,9 @@ def get_league_odds_formatted(sport_key, league_name, only_today=False, hours_ah
             lines = [s for s in [h2h_s, ah_s, tot_s] if s]
             date_groups.setdefault(fmt_date, []).append(f"{time_str}\n{home} vs {away}\n" + ("\n".join(lines) if lines else "暂无盘口"))
         return date_groups
-    except: return {}
-
+    except Exception as e:
+        print(f"[{league_name}] 异常: {e}")
+        return {}
 def main():
     if not ODDS_KEY:
         send("❌ 错误：未读取到 ODDS_API_KEY！")
@@ -131,7 +134,7 @@ def main():
             for ds, ml in get_league_odds_formatted(sk, ln, only_today=True).items():
                 has_odds = True
                 res.append(f"📌 **{ln}** ({ds})\n\n" + "\n\n".join(ml) + "\n" + "-"*15 + "\n")
-        if not has_odds: res.append("今日暂无开盘赛程。\n")
+        if not has_odds: res.append("当前 API 返回的 11 个联赛中暂无开盘数据（可能处于周中无赛程期）。\n")
         
     else:
         res.append("====================\n🏆 过去 6 天完场比分\n====================")
