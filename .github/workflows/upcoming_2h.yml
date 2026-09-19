@@ -1,9 +1,7 @@
 name: 2 Hours Upcoming Notifier
 
 on:
-  schedule:
-    - cron: '0 * * * *'  # 每小时的整点自动运行一次，精准捕捉 2 小时内的比赛
-  workflow_dispatch:
+  workflow_dispatch:  # 这样就只保留手动点击按钮触发，再也不会自动跑了
 
 jobs:
   run-2h:
