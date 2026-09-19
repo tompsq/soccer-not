@@ -1,0 +1,31 @@
+name: 2 Hours Upcoming Notifier
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # 每小时的整点自动运行一次，精准捕捉 2 小时内的比赛
+  workflow_dispatch:
+
+jobs:
+  run-2h:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Run 2H script
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+        run: |
+          python upcoming_2h.py
