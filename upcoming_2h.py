@@ -38,12 +38,14 @@ def get_near_future_odds(sport_key, league_name):
         for m in data:
             home, away, raw = m.get("home_team"), m.get("away_team"), m.get("commence_time", "")
             if len(raw) >= 19:
+                # 转换成带时区的本地时间
                 dt = datetime.strptime(raw[:19], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc).astimezone(tz)
                 fd, ts = f"{dt.day}/{dt.month}/{dt.year}", dt.strftime("%H:%M")
             else: 
                 continue
             
-            # 核心过滤：比赛时间必须在【当前时间】到【两小时后】之间
+            # 🛡️ 核心严苛过滤：比赛时间必须严格大于当前时间，且小于等于 2 小时后！
+            # 这样就能彻底挡住过去或几个月后的比赛
             if not (now_local <= dt <= two_hours_later):
                 continue
 
