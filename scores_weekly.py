@@ -3,20 +3,19 @@ from datetime import datetime, timezone, timedelta
 
 T, C = os.environ.get("TG_BOT_TOKEN"), os.environ.get("TG_CHAT_ID")
 
-# 11 个核心联赛的目标关键字
-TARGET_LEAGUES = {
-    "Premier League": "英超",
-    "La Liga": "西甲",
-    "Serie A": "意甲",
-    "Bundesliga": "德甲",
-    "Ligue 1": "法甲",
-    "Champions League": "欧冠",
-    "Europa League": "欧联/欧协联",
-    "Conference League": "欧联/欧协联",
-    "Primeira Liga": "葡超",
-    "Premiership": "苏超",
-    "Pro League": "比甲",
-    "Super League": "希超"
+# 11大核心联赛在 ESPN 上的公开代号
+LEAGUES_ESPN = {
+    "eng.1": "英超",
+    "esp.1": "西甲",
+    "ita.1": "意甲",
+    "ger.1": "德甲",
+    "fra.1": "法甲",
+    "uefa.champions": "欧冠",
+    "uefa.europa": "欧联/欧协联",
+    "por.1": "葡超",
+    "sco.1": "苏超",
+    "bel.1": "比甲",
+    "gre.1": "希超"
 }
 
 def send(msg):
@@ -29,59 +28,65 @@ def send(msg):
         requests.post(url, json={"chat_id": C, "text": msg})
 
 def get_free_scores():
-    try:
-        tz = timezone(timedelta(hours=8))
-        today = datetime.now(tz)
+    res = ["====================\n⚽ 11大核心联赛完场比分 (白嫖版)\n===================="]
+    tz = timezone(timedelta(hours=8))
+    today = datetime.now(tz)
+    
+    # 构造过去 3 天的日期字符串列表（格式：YYYYMMDD），用于精准匹配
+    target_dates = [(today - timedelta(days=i)).strftime("%Y%m%d") for i in range(3)]
+    
+    league_results = {}
+    
+    for league_code, league_name in LEAGUES_ESPN.items():
+        league_matches = set()
+        for d_str in target_dates:
+            try:
+                # 显式请求对应日期的 scoreboard
+                url = f"https://site.api.espn.com/apis/site/v2/sports/soccer/{league_code}/scoreboard?dates={d_str}"
+                r = requests.get(url, timeout=5)
+                if r.status_code != 200:
+                    continue
+                
+                data = r.json()
+                events = data.get("events", [])
+
+                for ev in events:
+                    status_type = ev.get("status", {}).get("type", {})
+                    is_completed = status_type.get("completed", False)
+                    state = status_type.get("state", "")
+                    
+                    # 只要比赛已完场 (completed 为 True 或 state 为 post)
+                    if is_completed or state == "post":
+                        competitions = ev.get("competitions", [{}])[0]
+                        competitors = competitions.get("competitors", [])
+                        
+                        home_team, home_score = "", "-"
+                        away_team, away_score = "", "-"
+                        
+                        for comp in competitors:
+                            if comp.get("homeAway") == "home":
+                                home_team = comp.get("team", {}).get("displayName", "")
+                                home_score = comp.get("score", "0")
+                            elif comp.get("homeAway") == "away":
+                                away_team = comp.get("team", {}).get("displayName", "")
+                                away_score = comp.get("score", "0")
+                        
+                        if home_team and away_team:
+                            match_str = f"{home_team} {home_score} - {away_score} {away_team}"
+                            league_matches.add(match_str)
+            except Exception as e:
+                continue
+                
+        if league_matches:
+            league_results[league_name] = list(league_matches)
+
+    if not league_results:
+        return "⚽ 暂无已完场比赛记录。"
+
+    for l_name, matches in league_results.items():
+        res.append(f"【{l_name}】\n" + "\n".join(matches) + "\n" + "-"*15)
         
-        league_results = {}
-        found_leagues = set() # 用来记录接口返回了哪些联赛名字，方便排查
-        
-        # 连查最近 3 天（今天、昨天、前天），确保周末的比赛绝对能抓到
-        for i in range(3):
-            target_date = (today - timedelta(days=i)).strftime("%Y-%m-%d")
-            url = f"https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d={target_date}&s=Soccer"
-            r = requests.get(url, timeout=10)
-            data = r.json()
-            events = data.get("events")
-            
-            if not events: continue
-            
-            for ev in events:
-                league_raw = ev.get("strLeague", "")
-                found_leagues.add(league_raw)
-                
-                matched_name = None
-                for key, val in TARGET_LEAGUES.items():
-                    if key.lower() in league_raw.lower():
-                        matched_name = val
-                        break
-                
-                if not matched_name: continue
-
-                home = ev.get("strHomeTeam", "")
-                away = ev.get("strAwayTeam", "")
-                h_score = ev.get("intHomeScore", "-")
-                a_score = ev.get("intAwayScore", "-")
-                status = ev.get("strStatus", "")
-                
-                # 筛选已完场
-                if status in ["FT", "AET", "Pen", "Finished"] or (h_score is not None and h_score != "None" and h_score != ""):
-                    match_str = f"{home} {h_score} - {a_score} {away}"
-                    if match_str not in league_results.get(matched_name, []):
-                        league_results.setdefault(matched_name, []).append(match_str)
-
-        if not league_results:
-            # 如果还是空的，把接口里读到的所有联赛名字打印出来排查
-            debug_str = "\n".join(list(found_leagues)[:10]) if found_leagues else "无数据"
-            return f"⚽ 暂无这 11 个联赛的完场记录。\n[调试] 接口返回的联赛有：\n{debug_str}"
-
-        res = ["====================\n⚽ 11大核心联赛完场比分 (白嫖版)\n===================="]
-        for l_name, matches in league_results.items():
-            res.append(f"【{l_name}】\n" + "\n".join(matches) + "\n" + "-"*15)
-            
-        return "\n".join(res)
-    except Exception as e:
-        return f"❌ 获取比分异常：{str(e)}"
+    return "\n".join(res)
 
 def main():
     msg = get_free_scores()
