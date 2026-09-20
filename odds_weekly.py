@@ -26,11 +26,10 @@ def test_weekly_fixtures_and_odds():
     from_date = today.strftime("%Y-%m-%d")
     to_date = (today + timedelta(days=7)).strftime("%Y-%m-%d")
     
-    # 1. 先获取未来一周的英超赛程 (ID: 39)
+    # 1. 移除可能导致空的 season 参数，直接靠 from 和 to 抓取英超 (ID: 39)
     fixtures_url = "https://v3.football.api-sports.io/fixtures"
     params = {
         "league": 39,
-        "season": 2026,
         "from": from_date,
         "to": to_date
     }
@@ -48,7 +47,6 @@ def test_weekly_fixtures_and_odds():
         
         res = [f"====================\n📅 英超未来一周赛程与赔率\n({from_date} ~ {to_date})\n===================="]
         
-        # 遍历赛程，并顺便拉取对应比赛的赔率
         for fix in fixtures[:3]: # 限制前3场测试
             fixture_id = fix.get("fixture", {}).get("id")
             match_date = fix.get("fixture", {}).get("date")
@@ -57,11 +55,10 @@ def test_weekly_fixtures_and_odds():
             
             match_block = [f"🏟️ {home} vs {away}\n⏰ 开赛: {match_date}"]
             
-            # 2. 根据 fixture_id 请求该场比赛的赔率
+            # 2. 根据 fixture_id 请求赔率
             odds_url = "https://v3.football.api-sports.io/odds"
             odds_params = {
-                "fixture": fixture_id,
-                "bookmaker": 6 # 以 Bet365 为例 (ID 6) 或主流机构
+                "fixture": fixture_id
             }
             
             o_res = requests.get(odds_url, headers=headers, params=odds_params, timeout=5)
