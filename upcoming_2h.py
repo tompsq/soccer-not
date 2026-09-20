@@ -3,7 +3,7 @@ from datetime import datetime, timezone, timedelta
 
 T, C = os.environ.get("TG_BOT_TOKEN"), os.environ.get("TG_CHAT_ID")
 
-# 11大联赛在 ESPN 上的免费公开代号映射
+# 11大联赛在 ESPN 上的公开代码
 LEAGUES_ESPN = {
     "eng.1": "英超",
     "esp.1": "西甲",
@@ -11,7 +11,6 @@ LEAGUES_ESPN = {
     "ger.1": "德甲",
     "fra.1": "法甲",
     "uefa.champions": "欧冠",
-    "uefa.europa": "欧联/欧协联",
     "por.1": "葡超",
     "sco.1": "苏超",
     "bel.1": "比甲",
@@ -30,10 +29,17 @@ def send(msg):
 def get_free_scores():
     res = ["====================\n⚽ 11大核心联赛完场比分 (白嫖版)\n===================="]
     has_data = False
+    
+    tz = timezone(timedelta(hours=8))
+    # 我们可以通过 dates 参数指定查最近几天（例如格式为 20260918-20260920 的过去周末）
+    today = datetime.now(tz)
+    d_start = (today - timedelta(days=3)).strftime("%Y%m%d")
+    d_end = today.strftime("%Y%m%d")
 
     for league_code, league_name in LEAGUES_ESPN.items():
         try:
-            url = f"https://site.api.espn.com/apis/site/v2/sports/soccer/{league_code}/scoreboard"
+            # 加上 dates 参数强制拉取过去几天的比赛
+            url = f"https://site.api.espn.com/apis/site/v2/sports/soccer/{league_code}/scoreboard?dates={d_start}-{d_end}"
             r = requests.get(url, timeout=5)
             if r.status_code != 200:
                 continue
@@ -46,7 +52,6 @@ def get_free_scores():
                 status_type = ev.get("status", {}).get("type", {})
                 is_completed = status_type.get("completed", False)
                 
-                # 如果比赛已经完场
                 if is_completed:
                     competitions = ev.get("competitions", [{}])[0]
                     competitors = competitions.get("competitors", [])
@@ -70,11 +75,11 @@ def get_free_scores():
                 res.append(f"【{league_name}】\n" + "\n".join(league_matches) + "\n" + "-"*15)
                 
         except Exception as e:
-            print(f"Error fetching {league_code}: {e}")
+            print(f"Error {league_code}: {e}")
             continue
 
     if not has_data:
-        return "⚽ 近期（周末/近期赛程）这 11 个联赛暂无已完场比赛记录。"
+        return f"⚽ 检索区间 ({d_start}至{d_end}) 内这 11 个联赛暂无已完场比赛记录。"
         
     return "\n".join(res)
 
