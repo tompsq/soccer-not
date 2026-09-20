@@ -1,11 +1,11 @@
 name: Football Odds and Results Notifier
 
 on:
-  # 1. 自动定时运行（例如每天北京时间中午 12:00 和晚上 22:00 自动跑 auto 模式）
+  # 1. 自动定时运行（例如每天北京时间中午 12:00 和晚上 22:00 自动跑）
   schedule:
     - cron: '0 4,14 * * *'  # UTC 4:00 (北京时间 12:00) 和 UTC 14:00 (北京时间 22:00)
   
-  # 2. 支持手动触发（Manual Dispatch），带有运行模式选择框：auto 或 manual
+  # 2. 支持手动触发，带有运行模式选择框
   workflow_dispatch:
     inputs:
       run_mode:
@@ -37,10 +37,9 @@ jobs:
 
       - name: Run Python script
         env:
-          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
-          # 核心：如果是手动触发，优先读取用户在下拉菜单选中的模式；如果是定时触发，则默认为 auto
           RUN_MODE: ${{ github.event.inputs.run_mode || 'auto' }}
         run: |
-          python main.py
+          python odds_weekly.py
