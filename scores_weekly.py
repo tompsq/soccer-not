@@ -3,21 +3,6 @@ from datetime import datetime, timezone, timedelta
 
 T, C = os.environ.get("TG_BOT_TOKEN"), os.environ.get("TG_CHAT_ID")
 
-# 11个核心联赛配置
-LEAGUES = {
-    "soccer_epl": "英超",
-    "soccer_spain_la_liga": "西甲",
-    "soccer_italy_serie_a": "意甲",
-    "soccer_germany_bundesliga": "德甲",
-    "soccer_france_ligue_one": "法甲",
-    "soccer_uefa_champs_league": "欧冠",
-    "soccer_uefa_europa_conference_league": "欧联/欧协联",
-    "soccer_portugal_primeira_liga": "葡超",
-    "soccer_spl": "苏超",
-    "soccer_belgium_first_div": "比甲",
-    "soccer_greece_super_league": "希超"
-}
-
 def send(msg):
     if not T or not C: return
     url = f"https://api.telegram.org/bot{T}/sendMessage"
@@ -27,27 +12,38 @@ def send(msg):
     else:
         requests.post(url, json={"chat_id": C, "text": msg})
 
-def get_completed_scores():
-    tz = timezone(timedelta(hours=8))
-    today = datetime.now(tz)
-    
-    res = ["====================\n⚽ 上轮完场比分汇总 (免费获取)\n===================="]
-    
-    # 提示：这里我们可以通过公开稳定的免费体育数据源拉取上一轮赛事
-    # 为了保证零成本、不卡顿，脚本会遍历这 11 个联赛并抓取最近已结束的比赛结果
-    has_scores = False
-    
-    for sport_key, league_name in LEAGUES.items():
-        # 实际数据拉取逻辑（对接公开免费赛果接口）
-        # 示例结构展示：
-        matches_text = f"【{league_name}】\n暂无完场数据或等待新一轮开打\n" + "-"*15
+def get_free_scores():
+    # 使用无需Key的免费足球赛事/比分公开数据源 (例如 free-football-data 或类似公开接口)
+    # 这里以 football-data.org 的免费公开档位 或 聚合公开比分接口为例
+    try:
+        # 示例：获取近期完场比赛
+        url = "https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=" + (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+        r = requests.get(url, timeout=10)
+        data = r.json()
         
-        res.append(matches_text)
-    
-    return "\n".join(res)
+        events = data.get("events")
+        if not events:
+            return "⚽ 昨夜今晨暂无完场比赛记录。"
+        
+        res = ["====================\n⚽ 免费完场比分汇总 (白嫖版)\n===================="]
+        for ev in events:
+            league = ev.get("strLeague", "")
+            home = ev.get("strHomeTeam", "")
+            away = ev.get("strAwayTeam", "")
+            h_score = ev.get("intHomeScore", "-")
+            a_score = ev.get("intAwayScore", "-")
+            status = ev.get("strStatus", "")
+            
+            # 只看已完场的比赛
+            if status in ["FT", "AET", "Pen", "Finished"] or (h_score and h_score != "None"):
+                res.append(f"【{league}】\n{home} {h_score} - {a_score} {away}\n" + "-"*15)
+                
+        return "\n".join(res) if len(res) > 1 else "近期暂无已完场比赛。"
+    except Exception as e:
+        return f"❌ 获取比分异常：{str(e)}"
 
 def main():
-    msg = get_completed_scores()
+    msg = get_free_scores()
     send(msg)
 
 if __name__ == "__main__":
