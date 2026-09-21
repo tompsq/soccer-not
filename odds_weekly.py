@@ -33,7 +33,8 @@ def main():
             for l in lines:
                 if "England - Premier League" in l or "1X2" in l: start = True
                 if start:
-                    if "About Pinnacle" in l or "Responsible Gaming" in l: break
+                    # 碰到网站底部说明直接截断，防止带出一大堆字
+                    if "About Pinnacle" in l or "Responsible Gaming" in l or "Choose Pinnacle" in l: break
                     blocks.append(l)
         except Exception as e: print(e)
         finally: b.close()
@@ -53,7 +54,8 @@ def main():
                     i += 1
                 ml = [f"⚽ *{home} vs {away}* 🕒 `{m_time}`"]
                 if odds:
-                    to = [o for o in odds if o not in ["1", "X", "2", "HANDICAP", "OVER", "UNDER"]]
+                    # 去掉 1, X, 2 以及带有 + 号的杂质（如 +10）
+                    to = [o for o in odds if o not in ["1", "X", "2", "HANDICAP", "OVER", "UNDER"] and not o.startswith("+")]
                     if len(to) >= 3: ml.append(f"   🔹 `1X2` : " + " | ".join(to[:3]))
                     if len(to) >= 7: ml.append(f"   🔹 `亚盘` : " + " | ".join(to[3:7]))
                     if len(to) >= 9: ml.append(f"   🔹 `大小` : " + " | ".join(to[7:]))
