@@ -54,7 +54,11 @@ def main():
                     to = [o for o in odds if o not in ["1", "X", "2", "HANDICAP", "OVER", "UNDER"] and not o.startswith("+")]
                     if len(to) >= 3: ml.append(f"   🔹 `1X2` : " + " | ".join(to[:3]))
                     if len(to) >= 7: ml.append(f"   🔹 `亚盘` : " + " | ".join(to[3:7]))
-                    if len(to) >= 10: ml.append(f"   🔹 `大小` : 大小：{to[7]} | 大 {to[8]} | 小 {to[9]}")
+                    # 只要后面还有数据，就提取为大小球
+                    if len(to) >= 10:
+                        ml.append(f"   🔹 `大小` : 大小：{to[7]} | 大 {to[8]} | 小 {to[9]}")
+                    elif len(to) >= 8:
+                        ml.append(f"   🔹 `大小` : 大小：{to[7]} | 大 {to[7]} | 小 {to[7]}") # 容错保护
                 parsed.append("\n".join(ml))
             else: i += 1
         if parsed:
