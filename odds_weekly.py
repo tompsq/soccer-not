@@ -51,7 +51,9 @@ def main():
                     else: pool.append(nxt)
                     i += 1
                 
-                to = [o for o in pool if o not in ["1", "X", "2", "HANDICAP", "OVER", "UNDER", "1X2"] and not o.startswith("+") and "LEAGUE" not in o.upper()]
+                # 过滤掉 1, X, 2, 盘口名称，以及允许带+号的展开按钮（如 +10）但把它们从有效赔率/盘口中剔除
+                to = [o for o in pool if o not in ["1", "X", "2", "HANDICAP", "OVER", "UNDER", "1X2"] and not o.startswith("+") and "LEAGUE" not in o.upper() and not re.match(r'^\+\d+$', o)]
+                
                 ml = [f"⚽ *{home} vs {away}* 🕒 `{m_time}`"]
                 if len(to) >= 3:
                     ml.append(f"   🔹 `1X2` : " + " | ".join([fmt(x) for x in to[:3]]))
