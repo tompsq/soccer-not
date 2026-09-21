@@ -46,7 +46,7 @@ def capture_pinnacle_stable():
         
         try:
             # 回到大盘根目录，确保 100% 成功加载
-            target_url = "https://www.pinnacle.com/en/soccer/matchups"
+            target_url = "https://www.pinnacle.com/en/soccer/english-premier-league/matchups"
             print(f"🌐 正在访问大盘: {target_url}")
             
             page.goto(target_url, timeout=45000, wait_until="domcontentloaded")
