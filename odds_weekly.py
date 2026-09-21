@@ -4,16 +4,18 @@ from playwright.sync_api import sync_playwright
 
 T, C = os.environ.get("TG_BOT_TOKEN"), os.environ.get("TG_CHAT_ID")
 def send(txt):
-    if T and C:
-        try: requests.post(f"https://api.telegram.org/bot{T}/sendMessage", json={"chat_id": C, "text": txt[:4000], "parse_mode": "Markdown"}, timeout=30); time.sleep(1)
-        except Exception as e: print(e)
+    if not T or not C: return
+    try:
+        requests.post(f"https://api.telegram.org/bot{T}/sendMessage", json={"chat_id": C, "text": txt[:4000], "parse_mode": "Markdown"}, timeout=30)
+        time.sleep(1)
+    except Exception as e: print(e)
 
 def main():
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    bks = []
+    blocks = []
     with sync_playwright() as p:
-        br = p.chromium.launch(headless=True, args=["--disable-blink-features=AutomationControlled", "--no-sandbox"])
-        pg = br.new_context(viewport={"width": 1440, "height": 900}, user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64)").new_page()
+        b = p.chromium.launch(headless=True, args=["--disable-blink-features=AutomationControlled", "--no-sandbox"])
+        pg = b.new_context(viewport={"width": 1440, "height": 900}, device_scale_factor=2, user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64)").new_page()
         try:
             pg.goto("https://www.pinnacle.com/en/soccer/matchups", timeout=45000, wait_until="domcontentloaded")
             time.sleep(6)
@@ -27,39 +29,36 @@ def main():
                 time.sleep(1.5)
             time.sleep(3)
             lines = [l.strip() for l in pg.evaluate("() => document.body.innerText").split('\n') if l.strip()]
-            st = False
+            start = False
             for l in lines:
-                if "England - Premier League" in l or "1X2" in l: st = True
-                if st:
+                if "England - Premier League" in l or "1X2" in l: start = True
+                if start:
                     if "About Pinnacle" in l or "Responsible Gaming" in l: break
-                    bks.append(l)
+                    blocks.append(l)
         except Exception as e: print(e)
-        finally: br.close()
+        finally: b.close()
             
-    if bks:
+    if blocks:
         parsed, i = [], 0
-        while i < len(bks):
-            if i + 1 < len(bks) and "(Match)" in bks[i] and "(Match)" in bks[i+1]:
-                h, a = bks[i].replace(" (Match)", ""), bks[i+1].replace(" (Match)", "")
+        while i < len(blocks):
+            if i + 1 < len(blocks) and "(Match)" in blocks[i] and "(Match)" in blocks[i+1]:
+                home, away = blocks[i].replace(" (Match)", ""), blocks[i+1].replace(" (Match)", "")
                 i += 2
-                mt, odds = "未定时", []
-                while i < len(bks):
-                    nxt = bks[i]
+                m_time, odds = "未定时", []
+                while i < len(blocks):
+                    nxt = blocks[i]
                     if "(Match)" in nxt or "SAT, " in nxt or "SUN, " in nxt or "MON, " in nxt: break
-                    if ":" in nxt and len(nxt) <= 5: mt = nxt
+                    if ":" in nxt and len(nxt) <= 5: m_time = nxt
                     else: odds.append(nxt)
                     i += 1
-                ml = [f"⚽ *{h} vs {a}* 🕒 `{mt}`"]
+                ml = [f"⚽ *{home} vs {away}* 🕒 `{m_time}`"]
                 if odds:
+                    # 过滤掉 1, X, 2, 提示词以及带 + 号的按钮（如 +10）
                     to = [o for o in odds if o not in ["1", "X", "2", "HANDICAP", "OVER", "UNDER"] and not o.startswith("+")]
                     if len(to) >= 3: ml.append(f"   🔹 `1X2` : " + " | ".join(to[:3]))
-                    # 严格锁死亚盘只取 4 个数
                     if len(to) >= 7: ml.append(f"   🔹 `亚盘` : " + " | ".join(to[3:7]))
-                    # 严格分离大小球：第8个是盘口，第9个是大赔率，第11个（或第10个）是小赔率
-                    if len(to) >= 11:
-                        ml.append(f"   🔹 `大小` : 大小 {to[7]} | 大 {to[8]} | 小 {to[10]}")
-                    elif len(to) >= 10:
-                        ml.append(f"   🔹 `大小` : 大小 {to[7]} | 大 {to[8]} | 小 {to[9]}")
+                    if len(to) >= 9: ml.append(f"   🔹 `大小` : " + " | ".join(to[7:]))
+                    elif len(to) > 3: ml.append(f"   🔹 `盘口`: " + " | ".join(to[3:]))
                 parsed.append("\n".join(ml))
             else: i += 1
         if parsed:
@@ -67,6 +66,6 @@ def main():
             send(f"🎯 *【Pinnacle 英超盘口 (上)】*\n🕒 `{ts}`\n\n" + "\n\n".join(parsed[:mid]))
             send(f"🎯 *【Pinnacle 英超盘口 (下)】*\n🕒 `{ts}`\n\n" + "\n\n".join(parsed[mid:]))
         else: send(f"⚠️ `{ts}` 未解析到赛事。")
-    else: send(f"⚠️ `{ts}` 未抓取到文字。")
+    else: send(f"⚠️ `{ts}` 未抓取到网页文字。")
 
 if __name__ == "__main__": main()
