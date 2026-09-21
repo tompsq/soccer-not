@@ -7,103 +7,68 @@ from playwright.sync_api import sync_playwright
 TG_TOKEN = os.environ.get("TG_BOT_TOKEN")
 TG_CHAT_ID = os.environ.get("TG_CHAT_ID")
 
-def send_telegram_photo(photo_path, caption):
-    if not TG_TOKEN or not TG_CHAT_ID:
-        return
-    url = f"https://api.telegram.org/bot{TG_TOKEN}/sendPhoto"
+def send_tg(text):
+    if not TG_TOKEN or not TG_CHAT_ID: return
     try:
-        with open(photo_path, "rb") as photo:
-            payload = {
-                "chat_id": TG_CHAT_ID,
-                "caption": caption,
-                "parse_mode": "Markdown"
-            }
-            files = {"photo": photo}
-            requests.post(url, data=payload, files=files, timeout=30)
+        requests.post(f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage", json={
+            "chat_id": TG_CHAT_ID, "text": text, "parse_mode": "Markdown"
+        }, timeout=30)
     except Exception as e:
         print(f"发送异常: {e}")
 
-def capture_pinnacle_full_page():
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    screenshot_path = "pinnacle_epl_full.png"
+def main():
+    t_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    lines_out = []
     
     with sync_playwright() as p:
-        browser = p.chromium.launch(
-            headless=True,
-            args=["--disable-blink-features=AutomationControlled", "--no-sandbox"]
-        )
-        
-        context = browser.new_context(
-            viewport={"width": 1440, "height": 900},
-            device_scale_factor=2,
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            locale="en-US"
-        )
-        
-        page = context.new_page()
+        browser = p.chromium.launch(headless=True, args=["--disable-blink-features=AutomationControlled", "--no-sandbox"])
+        page = browser.new_context(viewport={"width": 1440, "height": 900}, device_scale_factor=2, user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36").new_page()
         
         try:
-            target_url = "https://www.pinnacle.com/en/soccer/matchups"
-            print(f"🌐 正在进入Pinnacle主页: {target_url}")
-            page.goto(target_url, timeout=45000, wait_until="domcontentloaded")
+            page.goto("https://www.pinnacle.com/en/soccer/matchups", timeout=45000, wait_until="domcontentloaded")
             time.sleep(6)
             
-            # 1. 点击 "LEAGUES" 标签
-            print("📋 正在点击 LEAGUES...")
-            page.evaluate("""() => {
-                const tabs = Array.from(document.querySelectorAll('button, div, span, a'));
-                const tab = tabs.find(el => el.textContent.trim().toUpperCase() === 'LEAGUES');
-                if (tab) tab.click();
-            }""")
+            # 1. 点击 LEAGUES
+            page.evaluate("() => { const t = Array.from(document.querySelectorAll('button, div, span, a')).find(el => el.textContent.trim().toUpperCase() === 'LEAGUES'); if (t) t.click(); }")
             time.sleep(4)
             
-            # 2. 强力点击英超
-            print("🎯 正在强制触发英超链接点击...")
-            success = page.evaluate("""() => {
-                const links = Array.from(document.querySelectorAll('a'));
-                let target = links.find(el => el.textContent.includes('Premier League'));
-                
-                if (!target) {
-                    const allEls = Array.from(document.querySelectorAll('div, span, li'));
-                    target = allEls.find(el => el.textContent.trim() === 'England - Premier League');
-                }
-                
-                if (target) {
-                    target.scrollIntoView();
-                    const clickEvent = new MouseEvent('click', {
-                        view: window,
-                        bubbles: true,
-                        cancelable: true,
-                        buttons: 1
-                    });
-                    target.dispatchEvent(clickEvent);
-                    return true;
-                }
-                return false;
-            }""")
-            
+            # 2. 点击英超
+            success = page.evaluate("() => { const l = Array.from(document.querySelectorAll('a')); let t = l.find(el => el.textContent.includes('Premier League')); if (!t) t = Array.from(document.querySelectorAll('div, span, li')).find(el => el.textContent.trim() === 'England - Premier League'); if (t) { t.scrollIntoView(); t.dispatchEvent(new MouseEvent('click', {view: window, bubbles: true, cancelable: true, buttons: 1})); return true; } return false; }")
             if not success:
                 page.locator("text=England - Premier League").first.click(force=True)
                 
-            print("⏳ 等待英超盘口数据渲染...")
             time.sleep(8)
             
-            # 3. 关键点：开启长截屏 (full_page=True)，把下面全部赛程一次性截完
-            page.screenshot(path=screenshot_path, full_page=True)
-            print("📸 英超全量长截图完成")
+            # 3. 截个图留存（在后台保存，不发给TG）
+            page.screenshot(path="pinnacle_epl_full.png", full_page=True)
             
+            # 4. 抓取页面文字
+            body_text = page.evaluate("() => document.body.innerText")
+            raw_lines = [l.strip() for l in body_text.split('\n') if l.strip()]
+            
+            # 简单清洗提取盘口核心部分
+            start = False
+            for l in raw_lines:
+                if "England - Premier League" in l or "1X2" in l or "Spread" in l:
+                    start = True
+                if start:
+                    if "About Pinnacle" in l or "Responsible Gaming" in l: break
+                    lines_out.append(l)
+                    
+            if len(lines_out) < 5:
+                lines_out = [l for l in raw_lines if not any(b in l for b in ["LOG IN", "JOIN", "SPORTS BETTING", "CASINO"])]
+                
+            lines_out = lines_out[:35]
         except Exception as e:
             print(f"异常: {e}")
-            page.screenshot(path=screenshot_path)
         finally:
             browser.close()
             
-    caption = f"🎯 *【Pinnacle 英超盘口·长图监控】*\n🕒 时间: `{current_time}`\n🚀 状态: 全量赛程长截图"
-    if os.path.exists(screenshot_path):
-        send_telegram_photo(screenshot_path, caption)
-
-def main():
-    capture_pinnacle_full_page()
+    if lines_out:
+        msg = f"🎯 *【Pinnacle 英超盘口】*\n🕒 `{t_str}`\n\n```text\n" + "\n".join(lines_out) + "\n```"
+        send_tg(msg)
+    else:
+        send_tg(f"⚠️ *【监控提醒】* `{t_str}` 未能抓取到文字。")
 
 if __name__ == "__main__":
     main()
