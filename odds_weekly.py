@@ -4,7 +4,6 @@ import requests
 from datetime import datetime
 from playwright.sync_api import sync_playwright
 
-# === 第一部分：获取与清洗盘口 ===
 def fetch_odds():
     print("🌐 启动浏览器抓取 Pinnacle 英超盘口...")
     with sync_playwright() as p:
@@ -34,81 +33,63 @@ def fetch_odds():
                     btn.click();
                 }
             }""")
-            time.sleep(8)
+            
+            # 增加更长的等待时间，确保盘口赔率表格完全加载
+            print("⏳ 等待盘口赔率表格渲染...")
+            time.sleep(10)
             
             # 提取文本
             body_text = page.evaluate("() => document.body.innerText")
             browser.close()
             
-            # 清洗文本
+            # 清洗文本：过滤掉导航栏、Cookie、登录等杂项，只留赛程和赔率
             lines = [l.strip() for l in body_text.split('\n') if l.strip()]
-            print(f"📊 网页总共提取到 {len(lines)} 行文本")
             
-            start, clean_lines = False, []
+            clean_lines = []
+            start_collect = False
+            
             for l in lines:
-                if "England - Premier League Odds" in l: 
-                    start = True
-                if start:
-                    if "About Pinnacle" in l: 
+                # 寻找英超盘口核心区域的标志性文字
+                if "England - Premier League Odds" in l or "SAT, OCT" in l or "SUN, OCT" in l:
+                    start_collect = True
+                
+                if start_collect:
+                    # 碰到底部版权信息就停止收集
+                    if "About Pinnacle" in l or "Responsible Gaming" in l:
                         break
                     clean_lines.append(l)
             
-            if clean_lines:
-                print(f"✅ 成功精准截取到 {len(clean_lines)} 行盘口数据")
-                return clean_lines[:35]
+            # 如果成功精准截取到赛程区域
+            if len(clean_lines) > 10:
+                print(f"✅ 成功提取到 {len(clean_lines)} 行核心盘口数据")
+                return clean_lines[:40]
             else:
-                print("⚠️ 未能精准匹配到英超关键词，改用兜底策略（前 30 行）")
-                return lines[:30]
+                print("⚠️ 未能精准过滤，采用智能后段切片...")
+                # 过滤掉常见的导航关键词
+                filtered = [l for l in lines if not any(kw in l for kw in ["LOG IN", "JOIN", "SPORTS BETTING", "LIVE CENTRE", "CASINO", "Cookie", "ACCEPT"])]
+                return filtered[:35]
                 
         except Exception as e:
             print(f"❌ 抓取异常: {e}")
             browser.close()
             return None
 
-# === 第二部分：推送至 Telegram ===
 def send_tg(lines):
     token = os.environ.get("TG_BOT_TOKEN")
     chat_id = os.environ.get("TG_CHAT_ID")
-    
-    # 打印环境变量检查状态（不会泄露完整密钥，只看有没有值）
-    print(f"🔍 检查环境变量 -> TG_BOT_TOKEN: {'已配置' if token else '未配置！'}, TG_CHAT_ID: {'已配置' if chat_id else '未配置！'}")
-    
-    if not token or not chat_id:
-        print("❌ 错误：缺少 Telegram 环境变量，无法发送！请检查 GitHub Secrets 配置。")
-        return
+    if not token or not chat_id: return
     
     t = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     msg = f"🎯 *【Pinnacle 英超盘口】*\n🕒 `{t}`\n\n```text\n" + "\n".join(lines) + "\n```"
     
-    url = f"https://api.telegram.org/bot{token}/sendMessage"
-    payload = {
-        "chat_id": chat_id, 
-        "text": msg, 
-        "parse_mode": "Markdown"
-    }
-    
-    try:
-        res = requests.post(url, json=payload, timeout=30)
-        print(f"📨 Telegram API 响应状态码: {res.status_code}")
-        print(f"📨 Telegram API 响应内容: {res.text}")
-        if res.status_code == 200:
-            print("✅ Telegram 消息推送成功！")
-        else:
-            print("⚠️ Telegram 消息推送失败，请检查 Chat ID 或 Token 是否正确。")
-    except Exception as e:
-        print(f"❌ 发送请求异常: {e}")
+    requests.post(f"https://api.telegram.org/bot{token}/sendMessage", json={
+        "chat_id": chat_id, "text": msg, "parse_mode": "Markdown"
+    })
+    print("✅ 精简盘口数据推送完成")
 
 if __name__ == "__main__":
     data = fetch_odds()
     if data: 
         send_tg(data)
     else:
-        print("❌ 没有获取到任何有效数据，跳过推送。")
-        # 即使没抓到也发个提示到 TG 方便排查
-        token = os.environ.get("TG_BOT_TOKEN")
-        chat_id = os.environ.get("TG_CHAT_ID")
-        if token and chat_id:
-            requests.post(f"https://api.telegram.org/bot{token}/sendMessage", json={
-                "chat_id": chat_id, 
-                "text": "⚠️ 监控脚本运行完成，但未抓取到有效盘口数据。"
-            })
+        print("❌ 没有获取到有效数据")
