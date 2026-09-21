@@ -55,7 +55,9 @@ def main():
                 if odds:
                     to = [o for o in odds if o not in ["1", "X", "2", "HANDICAP", "OVER", "UNDER"] and not o.startswith("+")]
                     if len(to) >= 3: ml.append(f"   🔹 `1X2` : " + " | ".join(to[:3]))
-                    if len(to) >= 7: ml.append(f"   🔹 `亚盘` : " + " | ".join(to[3:7]))
+                    if len(to) >= 7: 
+                        asia = to[3:6] if len(to[6]) <= 4 and '.' in to[6] and float(to[6]) < 6 else to[3:7]
+                        ml.append(f"   🔹 `亚盘` : " + " | ".join(asia[:4] if len(asia)==4 else to[3:7]))
                     if len(to) >= 9: ml.append(f"   🔹 `大小` : " + " | ".join(to[7:]))
                     elif len(to) > 3: ml.append(f"   🔹 `盘口`: " + " | ".join(to[3:]))
                 parsed.append("\n".join(ml))
