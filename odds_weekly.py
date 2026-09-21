@@ -54,24 +54,12 @@ def main():
                 ml = [f"⚽ *{home} vs {away}* 🕒 `{m_time}`"]
                 if odds:
                     to = [o for o in odds if o not in ["1", "X", "2", "HANDICAP", "OVER", "UNDER"] and not o.startswith("+")]
-                    if len(to) >= 3: 
-                        ml.append(f"   🔹 `1X2` : " + " | ".join(to[:3]))
-                    
-                    # 动态分离亚盘与大小球：
-                    # 亚盘通常是前 4 个数，但如果第 4 个数是大小球盘口（即它是独立整数或常见盘口，且后面跟着两个赔率），我们把亚盘截断在前 3 个或特定位置
-                    rem = to[3:]
-                    if len(rem) >= 6:
-                        # 亚盘安全取前 3 或前 4（如果第 4 个数小于 3 且像赔率，就归亚盘；如果是盘口数字则剥离）
-                        asia_part = rem[:3]
-                        # 剩下的给大小球
-                        total_part = rem[3:]
-                        ml.append(f"   🔹 `亚盘` : " + " | ".join(asia_part))
-                        ml.append(f"   🔹 `大小` : " + " | ".join(total_part))
-                    elif len(rem) >= 4:
-                        ml.append(f"   🔹 `亚盘` : " + " | ".join(rem[:2]))
-                        ml.append(f"   🔹 `大小` : " + " | ".join(rem[2:]))
-                    elif len(to) > 3: 
-                        ml.append(f"   🔹 `盘口`: " + " | ".join(to[3:]))
+                    if len(to) >= 3: ml.append(f"   🔹 `1X2` : " + " | ".join(to[:3]))
+                    # 亚盘严格锁死 4 个数
+                    if len(to) >= 7: ml.append(f"   🔹 `亚盘` : " + " | ".join(to[3:7]))
+                    # 大小球从第 7 个开始拿剩下的全部
+                    if len(to) >= 9: ml.append(f"   🔹 `大小` : " + " | ".join(to[7:]))
+                    elif len(to) > 3: ml.append(f"   🔹 `盘口`: " + " | ".join(to[3:]))
                 parsed.append("\n".join(ml))
             else: i += 1
         if parsed:
