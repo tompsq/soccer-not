@@ -39,17 +39,22 @@ def main():
                 
             time.sleep(8)
             
-            # 3. 强力滚动内部容器：把页面上所有可能滚动的区块全部往下滚到底
-            print("📜 正在强制滚动所有内部盘口容器...")
-            page.evaluate("""() => {
-                const scrollers = document.querySelectorAll('div');
-                scrollers.forEach(el => {
-                    if (el.scrollHeight > el.clientHeight) {
-                        el.scrollTop = el.scrollHeight;
-                    }
-                });
-                window.scrollTo(0, document.body.scrollHeight);
-            }""")
+            # 3. 稳健分段滚动：多次向下滚动并留出足够的动态加载时间
+            print("📜 正在分段向下滚动以彻底加载所有比赛...")
+            for i in range(4):
+                page.evaluate("""() => {
+                    const scrollers = document.querySelectorAll('div');
+                    scrollers.forEach(el => {
+                        if (el.scrollHeight > el.clientHeight) {
+                            el.scrollTop += 600;
+                        }
+                    });
+                    window.scrollBy(0, 800);
+                }""")
+                time.sleep(1.5)  # 每次滚动留出 1.5 秒给异步加载
+            
+            # 关键：滚动到底后再额外等待 3 秒，确保最后一场比赛的赔率完全渲染出来
+            print("⏳ 等待最后一场比赛数据完全渲染...")
             time.sleep(3)
             
             # 4. 提取纯文本并清洗
@@ -67,15 +72,15 @@ def main():
             if len(lines_out) < 5:
                 lines_out = [l for l in raw_lines if not any(b in l for b in ["LOG IN", "JOIN", "SPORTS BETTING", "CASINO"])]
                 
-            # 放宽到 150 行，把后面的所有场次全部囊括进来
-            lines_out = lines_out[:150]
+            # 放宽行数限制到 180 行，确保第九场及其后面的所有盘口数据全额带走
+            lines_out = lines_out[:180]
         except Exception as e:
             print(f"异常: {e}")
         finally:
             browser.close()
             
     if lines_out:
-        msg = f"🎯 *【Pinnacle 英超全量盘口】*\n🕒 `{t_str}`\n\n```text\n" + "\n".join(lines_out) + "\n```"
+        msg = f"🎯 *【Pinnacle 英超全量完美盘口】*\n🕒 `{t_str}`\n\n```text\n" + "\n".join(lines_out) + "\n```"
         send_tg(msg)
     else:
         send_tg(f"⚠️ *【监控提醒】* `{t_str}` 未能抓取到文字。")
