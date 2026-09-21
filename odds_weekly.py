@@ -10,7 +10,6 @@ TG_CHAT_ID = os.environ.get("TG_CHAT_ID")
 def send_tg(text):
     if not TG_TOKEN or not TG_CHAT_ID: return
     try:
-        # 如果文本太长，Telegram有限制，我们分段或者控制在4000字符内
         requests.post(f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage", json={
             "chat_id": TG_CHAT_ID, "text": text[:4000], "parse_mode": "Markdown"
         }, timeout=30)
@@ -38,19 +37,25 @@ def main():
             if not success:
                 page.locator("text=England - Premier League").first.click(force=True)
                 
-            time.sleep(6)
+            time.sleep(8)
             
-            # 3. 关键：向下滚动几次，触发懒加载把所有比赛滚出来
-            print("📜 正在向下滚动页面以加载完整赛程...")
-            for _ in range(3):
-                page.evaluate("window.scrollBy(0, 1000)")
-                time.sleep(1.5)
+            # 3. 强力滚动内部容器：把页面上所有可能滚动的区块全部往下滚到底
+            print("📜 正在强制滚动所有内部盘口容器...")
+            page.evaluate("""() => {
+                const scrollers = document.querySelectorAll('div');
+                scrollers.forEach(el => {
+                    if (el.scrollHeight > el.clientHeight) {
+                        el.scrollTop = el.scrollHeight;
+                    }
+                });
+                window.scrollTo(0, document.body.scrollHeight);
+            }""")
+            time.sleep(3)
             
-            # 4. 抓取完整的页面文字
+            # 4. 提取纯文本并清洗
             body_text = page.evaluate("() => document.body.innerText")
             raw_lines = [l.strip() for l in body_text.split('\n') if l.strip()]
             
-            # 清洗并放宽行数限制（取前 80 行或更多）
             start = False
             for l in raw_lines:
                 if "England - Premier League" in l or "1X2" in l or "Spread" in l:
@@ -62,15 +67,15 @@ def main():
             if len(lines_out) < 5:
                 lines_out = [l for l in raw_lines if not any(b in l for b in ["LOG IN", "JOIN", "SPORTS BETTING", "CASINO"])]
                 
-            # 适当放宽到 80 行，确保比赛和赔率更完整
-            lines_out = lines_out[:80]
+            # 放宽到 150 行，把后面的所有场次全部囊括进来
+            lines_out = lines_out[:150]
         except Exception as e:
             print(f"异常: {e}")
         finally:
             browser.close()
             
     if lines_out:
-        msg = f"🎯 *【Pinnacle 英超完整盘口】*\n🕒 `{t_str}`\n\n```text\n" + "\n".join(lines_out) + "\n```"
+        msg = f"🎯 *【Pinnacle 英超全量盘口】*\n🕒 `{t_str}`\n\n```text\n" + "\n".join(lines_out) + "\n```"
         send_tg(msg)
     else:
         send_tg(f"⚠️ *【监控提醒】* `{t_str}` 未能抓取到文字。")
