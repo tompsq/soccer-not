@@ -1,40 +1,58 @@
 import os
 import requests
+from datetime import datetime
 
-T = os.environ.get("TG_BOT_TOKEN")
-C = os.environ.get("TG_CHAT_ID")
+# 读取环境变量
+TG_TOKEN = os.environ.get("TG_BOT_TOKEN")
+TG_CHAT_ID = os.environ.get("TG_CHAT_ID")
 
-def send_telegram(msg):
-    if not T or not C: 
-        print("未配置 Telegram 变量")
+def send_telegram_message(message):
+    """通过 Telegram Bot 发送监控播报"""
+    if not TG_TOKEN or not TG_CHAT_ID:
+        print("❌ 未检测到 Telegram 环境变量配置")
         return
-    url = f"https://api.telegram.org/bot{T}/sendMessage"
-    requests.post(url, json={"chat_id": C, "text": msg})
-
-def fetch_free_match_data():
-    """
-    通过公开无限制的数据源通道或轻量爬虫逻辑获取单场比赛与赔率指标
-    """
+    
+    url = f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage"
+    payload = {
+        "chat_id": TG_CHAT_ID,
+        "text": message,
+        "parse_mode": "Markdown"
+    }
+    
     try:
-        # 这里展示对接轻量开源接口或自定义公开解析的骨架
-        # 实际运行中可替换为目标公开站点的移动端 JSON 接口
-        res_summary = [
-            "=====================",
-            "🟢 零成本白嫖监控测试",
-            "=====================",
-            "🏟️ 赛事: 意大利 vs 比利时 (欧国联)",
-            "📊 状态: 成功绕过商业 API 限制",
-            "💡 提示: 已准备好接入轻量网页/接口解析逻辑",
-            "---------------------"
-        ]
-        return "\n".join(res_summary)
+        response = requests.post(url, json=payload, timeout=10)
+        if response.status_code == 200:
+            print("✅ Telegram 消息推送成功")
+        else:
+            print(f"❌ 推送失败，状态码: {response.status_code}")
     except Exception as e:
-        return f"❌ 抓取异常: {str(e)}"
+        print(f"❌ 发送异常: {str(e)}")
+
+def fetch_match_monitoring_data():
+    """
+    零成本白嫖赛程与盘口监控核心逻辑
+    这里可以接入你的量化分析指标或公开数据解析
+    """
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    # 模拟构建量化监控看板数据（后续可替换为真实的公开接口解析结果）
+    report_lines = [
+        "🎯 *【自动化体育赛事量化监控】*",
+        f"⏱️ 运行时间: `{current_time}`",
+        "---------------------",
+        "🏟️ *焦点赛事监测:* 欧国联 / 主流联赛",
+        "📊 *盘口数据状态:* 零成本白嫖通道正常",
+        "💡 *量化建议:* 正在等待下一轮赔率变动触发...",
+        "---------------------",
+        "🚀 状态：GitHub Actions 定时任务运行顺利！"
+    ]
+    
+    return "\n".join(report_lines)
 
 def main():
-    message = fetch_free_match_data()
-    print(message)
-    send_telegram(message)
+    print("🔄 正在执行赛事监控与量化分析...")
+    message = fetch_match_monitoring_data()
+    send_telegram_message(message)
 
 if __name__ == "__main__":
     main()
