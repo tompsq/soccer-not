@@ -53,12 +53,13 @@ def main():
                 if odds:
                     to = [o for o in odds if o not in ["1", "X", "2", "HANDICAP", "OVER", "UNDER"] and not o.startswith("+")]
                     if len(to) >= 3: ml.append(f"   🔹 `1X2` : " + " | ".join(to[:3]))
+                    # 严格锁死亚盘只取 4 个数
                     if len(to) >= 7: ml.append(f"   🔹 `亚盘` : " + " | ".join(to[3:7]))
-                    # 只要后面还有数据，就提取为大小球
-                    if len(to) >= 10:
-                        ml.append(f"   🔹 `大小` : 大小：{to[7]} | 大 {to[8]} | 小 {to[9]}")
-                    elif len(to) >= 8:
-                        ml.append(f"   🔹 `大小` : 大小：{to[7]} | 大 {to[7]} | 小 {to[7]}") # 容错保护
+                    # 严格分离大小球：第8个是盘口，第9个是大赔率，第11个（或第10个）是小赔率
+                    if len(to) >= 11:
+                        ml.append(f"   🔹 `大小` : 大小 {to[7]} | 大 {to[8]} | 小 {to[10]}")
+                    elif len(to) >= 10:
+                        ml.append(f"   🔹 `大小` : 大小 {to[7]} | 大 {to[8]} | 小 {to[9]}")
                 parsed.append("\n".join(ml))
             else: i += 1
         if parsed:
