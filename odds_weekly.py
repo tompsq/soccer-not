@@ -16,7 +16,7 @@ def fmt(v):
 
 def main():
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    blocks = []
+    txt = ""
     with sync_playwright() as p:
         b = p.chromium.launch(headless=True, args=["--disable-blink-features=AutomationControlled", "--no-sandbox"])
         pg = b.new_context(viewport={"width": 1440, "height": 900}, device_scale_factor=2, user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64)").new_page()
@@ -32,45 +32,36 @@ def main():
                 pg.evaluate("() => { document.querySelectorAll('div').forEach(el => { if (el.scrollHeight > el.clientHeight) el.scrollTop += 600; }); window.scrollBy(0, 800); }")
                 time.sleep(1.5)
             time.sleep(3)
-            lines = [l.strip() for l in pg.evaluate("() => document.body.innerText").split('\n') if l.strip()]
-            start = False
-            for l in lines:
-                if "England - Premier League" in l or "1X2" in l: start = True
-                if start:
-                    if "About Pinnacle" in l or "Responsible Gaming" in l: break
-                    blocks.append(l)
+            txt = pg.evaluate("() => document.body.innerText")
         except Exception as e: print(e)
         finally: b.close()
             
-    if blocks:
+    if txt:
+        lines = [l.strip() for l in txt.split('\n') if l.strip()]
         parsed, i = [], 0
-        while i < len(blocks):
-            if i + 1 < len(blocks) and "(Match)" in blocks[i] and "(Match)" in blocks[i+1]:
-                home, away = blocks[i].replace(" (Match)", ""), blocks[i+1].replace(" (Match)", "")
+        while i < len(lines):
+            if i + 1 < len(lines) and "(Match)" in lines[i] and "(Match)" in lines[i+1]:
+                home, away = lines[i].replace(" (Match)", "").strip(), lines[i+1].replace(" (Match)", "").strip()
                 i += 2
-                m_time, odds = "未定时", []
-                while i < len(blocks):
-                    nxt = blocks[i]
-                    if "(Match)" in nxt or "SAT, " in nxt or "SUN, " in nxt or "MON, " in nxt: break
-                    if ":" in nxt and len(nxt) <= 5: m_time = nxt
-                    else: odds.append(nxt)
+                pool, m_time = [], "未定时"
+                while i < len(lines):
+                    nxt = lines[i]
+                    if "(Match)" in nxt or "About Pinnacle" in nxt: break
+                    if ":" in nxt and len(nxt) <= 5 and not any(c.isalpha() for c in nxt): m_time = nxt
+                    else: pool.append(nxt)
                     i += 1
                 
+                to = [o for o in pool if o not in ["1", "X", "2", "HANDICAP", "OVER", "UNDER", "1X2"] and not o.startswith("+") and "LEAGUE" not in o.upper()]
                 ml = [f"⚽ *{home} vs {away}* 🕒 `{m_time}`"]
-                if odds:
-                    to = [o for o in odds if o not in ["1", "X", "2", "HANDICAP", "OVER", "UNDER"] and not o.startswith("+")]
-                    
-                    if len(to) >= 3:
-                        ml.append(f"   🔹 `1X2` : " + " | ".join([fmt(x) for x in to[:3]]))
-                    
-                    sub = to[3:]
-                    if len(sub) >= 6:
-                        hp, ho, ap, ao = sub[0].ljust(4), fmt(sub[1]), (sub[2] if len(sub)>2 else "").ljust(4), fmt(sub[3] if len(sub)>3 else "0")
-                        ml.append(f"   🔹 `亚盘` : {hp} | {ho} | {ap} | {ao}")
-                        
-                        if len(sub) >= 8:
-                            op, oo, up, uo = sub[4].ljust(4), fmt(sub[5]), (sub[6] if len(sub)>6 else sub[4]).ljust(4), fmt(sub[7] if len(sub)>7 else "0")
-                            ml.append(f"   🔹 `大小` : {op} | {oo} | {up} | {uo}")
+                if len(to) >= 3:
+                    ml.append(f"   🔹 `1X2` : " + " | ".join([fmt(x) for x in to[:3]]))
+                    rem = [fmt(x) for x in to[3:]]
+                    if len(rem) >= 4:
+                        ml.append(f"   🔹 `亚盘` : {rem[0].ljust(4)} | {rem[1]} | {rem[2].ljust(4)} | {rem[3]}")
+                        if len(rem) >= 8:
+                            ml.append(f"   🔹 `大小` : {rem[4].ljust(4)} | {rem[5]} | {rem[6].ljust(4)} | {rem[7]}")
+                        elif len(rem) >= 6:
+                            ml.append(f"   🔹 `大小` : {rem[4].ljust(4)} | {rem[5]} | {rem[4].ljust(4)} | {rem[5]}")
                 parsed.append("\n".join(ml))
             else: i += 1
             
@@ -79,6 +70,6 @@ def main():
             send(f"🎯 *【Pinnacle 英超盘口 (上)】*\n🕒 `{ts}`\n\n" + "\n\n".join(parsed[:mid]))
             send(f"🎯 *【Pinnacle 英超盘口 (下)】*\n🕒 `{ts}`\n\n" + "\n\n".join(parsed[mid:]))
         else: send(f"⚠️ `{ts}` 未解析到赛事。")
-    else: send(f"⚠️ `{ts}` 未抓取到网页文字。")
+    else: send(f"⚠️ `{ts}` 未抓取到网页文本。")
 
 if __name__ == "__main__": main()
