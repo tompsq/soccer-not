@@ -23,9 +23,9 @@ def send_telegram_photo(photo_path, caption):
     except Exception as e:
         print(f"发送异常: {e}")
 
-def capture_pinnacle_epl():
+def capture_pinnacle_epl_exact():
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    screenshot_path = "pinnacle_epl.png"
+    screenshot_path = "pinnacle_epl_exact.png"
     
     with sync_playwright() as p:
         browser = p.chromium.launch(
@@ -43,34 +43,42 @@ def capture_pinnacle_epl():
         page = context.new_page()
         
         try:
-            # 1. 访问 100% 成功的总大厅页面
             target_url = "https://www.pinnacle.com/en/soccer/matchups"
             print(f"🌐 正在连接大盘: {target_url}")
             page.goto(target_url, timeout=45000, wait_until="domcontentloaded")
-            time.sleep(8) # 等待数据全部渲染
+            time.sleep(8) # 等待数据完全加载
             
-            # 2. 通过页面内嵌 JS 自动查找包含 "English Premier League" 或 "Premier League" 的元素并滚动到可视区域
-            scrolled = page.evaluate("""() => {
-                const elements = Array.from(document.querySelectorAll('*'));
-                const eplElement = elements.find(el => el.textContent && el.textContent.includes('English Premier League') || el.textContent.includes('PREMIER LEAGUE'));
-                if (eplElement) {
-                    eplElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    return true;
+            # 使用更严谨的 JS 查找英超联赛标题，并把整个联赛区块滚动到屏幕正中心
+            epl_found = page.evaluate("""() => {
+                const headers = Array.from(document.querySelectorAll('div, span, h2, h3'));
+                // 寻找包含 PREMIER LEAGUE 且带有英文前缀的专区标题
+                const target = headers.find(el => {
+                    const text = el.textContent.trim().toUpperCase();
+                    return text.includes('ENGLISH PREMIER LEAGUE') || (text.includes('PREMIER LEAGUE') && !text.includes('U21') && !text.includes('WOMEN'));
+                });
+                
+                if (target) {
+                    // 向上追溯到包含该联赛所有比赛赔率的父容器卡片
+                    let container = target.closest('div[class*="style__Container"]') || target.parentElement.parentElement.parentElement;
+                    if (container) {
+                        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        return true;
+                    }
                 }
                 return false;
             }""")
             
-            if scrolled:
-                print("🎯 已自动定位到英超板块")
-                time.sleep(3) # 等待滚动后画面稳定
+            if epl_found:
+                print("🎯 成功精准定位到英超板块并滚动")
+                time.sleep(3)
             else:
-                print("⚠️ 未直接抓取到英超锚点，执行默认滚动")
-                page.evaluate("window.scrollBy(0, 400)")
+                print("⚠️ 未能精准匹配英超容器，执行备用滚动方案")
+                page.evaluate("window.scrollBy(0, 600)")
                 time.sleep(2)
             
-            # 3. 截取高清视口
+            # 截取当前高质量视口
             page.screenshot(path=screenshot_path, full_page=False)
-            print("📸 英超局部高清截图成功")
+            print("📸 英超板块高清截图成功")
             
         except Exception as e:
             print(f"异常: {e}")
@@ -78,12 +86,12 @@ def capture_pinnacle_epl():
         finally:
             browser.close()
             
-    caption = f"🎯 *【Pinnacle 英超盘口·自动定位监控】*\n🕒 时间: `{current_time}`\n🚀 状态: 智能滚动与高清渲染"
+    caption = f"🎯 *【Pinnacle 英超盘口·精准锁定监控】*\n🕒 时间: `{current_time}`\n🚀 状态: 容器级精准对焦"
     if os.path.exists(screenshot_path):
         send_telegram_photo(screenshot_path, caption)
 
 def main():
-    capture_pinnacle_epl()
+    capture_pinnacle_epl_exact()
 
 if __name__ == "__main__":
     main()
