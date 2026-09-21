@@ -95,7 +95,7 @@ def capture_pinnacle_force_click():
             time.sleep(8)
             
             # 4. 截图保存
-            page.screenshot(path=screenshot_path, full_page=False)
+            page.screenshot(path=screenshot_path, full_page=True)
             print("📸 截图完成")
             
         except Exception as e:
