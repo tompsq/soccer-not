@@ -23,9 +23,9 @@ def send_telegram_photo(photo_path, caption):
     except Exception as e:
         print(f"发送异常: {e}")
 
-def capture_pinnacle_epl_by_search():
+def capture_pinnacle_click_red_circle():
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    screenshot_path = "pinnacle_epl_search.png"
+    screenshot_path = "pinnacle_epl_clicked.png"
     
     with sync_playwright() as p:
         browser = p.chromium.launch(
@@ -43,48 +43,44 @@ def capture_pinnacle_epl_by_search():
         page = context.new_page()
         
         try:
-            # 1. 访问总大厅
             target_url = "https://www.pinnacle.com/en/soccer/matchups"
             print(f"🌐 正在连接大盘主页: {target_url}")
             page.goto(target_url, timeout=45000, wait_until="domcontentloaded")
-            time.sleep(6)
+            time.sleep(8) # 确保高亮轮播卡片完全渲染加载
             
-            # 2. 查找并点击页面的搜索按钮或输入框（Pinnacle 通常有全局搜索或筛选）
-            print("🔍 正在尝试通过页面搜索定位英超...")
+            # 通过脚本精准寻找红圈内的文字并点击
+            clicked = page.evaluate("""() => {
+                const elements = Array.from(document.querySelectorAll('div, span, a, h3, h4'));
+                // 寻找红圈中的英超标识文字
+                const target = elements.find(el => {
+                    const text = el.textContent.trim().toUpperCase();
+                    return text.includes('ENGLAND - PREMIER LEAGUE') || text.includes('SOCCER - ENGLAND - PREMIER');
+                });
+                
+                if (target) {
+                    // 如果找到文字，直接点击它或它的可点击父级
+                    let clickable = target.closest('a') || target.closest('div[role="button"]') || target;
+                    clickable.click();
+                    return true;
+                }
+                return false;
+            }""")
             
-            # 尝试点击搜索图标或直接在页面中寻找搜索输入框
-            search_input = page.locator("input[placeholder*='Search'], input[type='text']").first
-            if search_input.is_visible():
-                search_input.fill("Premier League")
-                time.sleep(2)
-                page.keyboard.press("Enter")
-                time.sleep(5)
-                print("✅ 搜索指令已发送")
+            if clicked:
+                print("🎯 成功点击红圈处的英超赛事入口！")
+                time.sleep(6) # 等待页面跳转并渲染英超专区
             else:
-                # 备用方案：如果找不到搜索框，直接用 JS 遍历并点击包含 Premier League 的侧边栏或链接
-                clicked = page.evaluate("""() => {
-                    const links = Array.from(document.querySelectorAll('a, div, span'));
-                    const eplLink = links.find(el => {
-                        const text = el.textContent.trim();
-                        return text === 'Premier League' || text === 'English Premier League';
-                    });
-                    if (eplLink) {
-                        eplLink.click();
-                        return true;
-                    }
-                    return false;
-                }""")
-                if clicked:
-                    print("✅ 通过菜单栏成功点击英超链接")
+                print("⚠️ 未能直接触发点击，尝试使用 Playwright 文本定位点击...")
+                try:
+                    page.get_by_text("England - Premier League", exact=False).first.click()
                     time.sleep(6)
-                else:
-                    print("⚠️ 未能触发搜索或点击，执行页面强行向下滚动方案")
-                    page.evaluate("window.scrollBy(0, 1200)")
-                    time.sleep(3)
+                    print("✅ Playwright 文本点击成功")
+                except Exception as sub_e:
+                    print(f"备用点击失败: {sub_e}")
             
-            # 3. 截取当前高质量视口
+            # 截取跳转后的英超专区页面
             page.screenshot(path=screenshot_path, full_page=False)
-            print("📸 英超页面高清截图成功")
+            print("📸 英超专区高清截图成功")
             
         except Exception as e:
             print(f"异常: {e}")
@@ -92,12 +88,12 @@ def capture_pinnacle_epl_by_search():
         finally:
             browser.close()
             
-    caption = f"🎯 *【Pinnacle 英超盘口·搜索直达监控】*\n🕒 时间: `{current_time}`\n🚀 状态: 模拟搜索与高清渲染"
+    caption = f"🎯 *【Pinnacle 英超盘口·红圈直达监控】*\n🕒 时间: `{current_time}`\n🚀 状态: 焦点卡片精准点击"
     if os.path.exists(screenshot_path):
         send_telegram_photo(screenshot_path, caption)
 
 def main():
-    capture_pinnacle_epl_by_search()
+    capture_pinnacle_click_red_circle()
 
 if __name__ == "__main__":
     main()
