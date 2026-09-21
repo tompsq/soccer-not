@@ -53,11 +53,14 @@ def main():
                     i += 1
                 ml = [f"⚽ *{home} vs {away}* 🕒 `{m_time}`"]
                 if odds:
-                    to = [o for o in odds if o not in ["1", "X", "2", "HANDICAP", "OVER", "UNDER"]]
+                    # 过滤掉 +10 等多余按钮文字和固定标签
+                    to = [o for o in odds if o not in ["1", "X", "2", "HANDICAP", "OVER", "UNDER"] and not o.startswith("+")]
                     if len(to) >= 3: ml.append(f"   🔹 `1X2` : " + " | ".join(to[:3]))
                     if len(to) >= 7: ml.append(f"   🔹 `亚盘` : " + " | ".join(to[3:7]))
-                    if len(to) >= 9: ml.append(f"   🔹 `大小` : " + " | ".join(to[7:]))
-                    elif len(to) > 3: ml.append(f"   🔹 `盘口`: " + " | ".join(to[3:]))
+                    if len(to) >= 9:
+                        # 优化大小球格式：大小 X | 大 X | 小 X
+                        line_val, over_val, under_val = to[7], to[8], (to[10] if len(to) > 10 else to[9])
+                        ml.append(f"   🔹 `大小` : 大小 {line_val} | 大 {over_val} | 小 {under_val}")
                 parsed.append("\n".join(ml))
             else: i += 1
         if parsed:
