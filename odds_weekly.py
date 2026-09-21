@@ -23,9 +23,9 @@ def send_telegram_photo(photo_path, caption):
     except Exception as e:
         print(f"发送异常: {e}")
 
-def capture_pinnacle_responsive_full():
+def capture_pinnacle_mobile_h5():
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    screenshot_path = "pinnacle_epl_responsive.png"
+    screenshot_path = "pinnacle_epl_mobile.png"
     
     with sync_playwright() as p:
         browser = p.chromium.launch(
@@ -33,11 +33,10 @@ def capture_pinnacle_responsive_full():
             args=["--disable-blink-features=AutomationControlled", "--no-sandbox"]
         )
         
-        # 将视口宽度调窄至 1100，逼迫网页自动收起两边多余空白，回归紧凑布局
+        # 核心改变：直接模拟手机设备环境 (iPhone 13/14 规格，开启移动端特征和触摸支持)
+        iphone = p.devices["iPhone 13"]
         context = browser.new_context(
-            viewport={"width": 1100, "height": 900},
-            device_scale_factor=2,
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            **iphone,
             locale="en-US"
         )
         
@@ -45,53 +44,41 @@ def capture_pinnacle_responsive_full():
         
         try:
             target_url = "https://www.pinnacle.com/en/soccer/matchups"
-            print(f"🌐 正在进入Pinnacle主页: {target_url}")
+            print(f"🌐 正在以手机 H5 模式进入Pinnacle: {target_url}")
             page.goto(target_url, timeout=45000, wait_until="domcontentloaded")
             time.sleep(6)
             
-            # 1. 点击 "LEAGUES" 标签
-            print("📋 正在点击 LEAGUES...")
+            # 1. 在手机端点击菜单或 "LEAGUES" 标签
+            print("📋 正在手机端寻找并点击联赛入口...")
             page.evaluate("""() => {
-                const tabs = Array.from(document.querySelectorAll('button, div, span, a'));
-                const tab = tabs.find(el => el.textContent.trim().toUpperCase() === 'LEAGUES');
-                if (tab) tab.click();
+                const els = Array.from(document.querySelectorAll('button, div, span, a'));
+                const target = els.find(el => el.textContent.trim().toUpperCase() === 'LEAGUES' || el.textContent.trim() === 'Soccer');
+                if (target) target.click();
             }""")
             time.sleep(4)
             
-            # 2. 强力点击英超
-            print("🎯 正在强制触发英超链接点击...")
+            # 2. 点击英超联赛
+            print("🎯 正在手机端点击 England - Premier League...")
             success = page.evaluate("""() => {
-                const links = Array.from(document.querySelectorAll('a'));
-                let target = links.find(el => el.textContent.includes('Premier League'));
-                
-                if (!target) {
-                    const allEls = Array.from(document.querySelectorAll('div, span, li'));
-                    target = allEls.find(el => el.textContent.trim() === 'England - Premier League');
-                }
-                
+                const links = Array.from(document.querySelectorAll('a, div, span'));
+                const target = links.find(el => el.textContent.includes('Premier League'));
                 if (target) {
                     target.scrollIntoView();
-                    const clickEvent = new MouseEvent('click', {
-                        view: window,
-                        bubbles: true,
-                        cancelable: true,
-                        buttons: 1
-                    });
-                    target.dispatchEvent(clickEvent);
+                    target.click();
                     return true;
                 }
                 return false;
             }""")
             
             if not success:
-                page.locator("text=England - Premier League").first.click(force=True)
+                page.locator("text=Premier League").first.click(force=True)
                 
-            print("⏳ 等待英超盘口数据渲染...")
+            print("⏳ 等待手机端盘口渲染...")
             time.sleep(8)
             
-            # 3. 在 1100 窄视口下进行长截图，自动剔除宽屏大白边
+            # 3. 手机端长截图：由于是 H5 布局，两边绝不会有宽屏大白边，字会自动撑满手机宽度
             page.screenshot(path=screenshot_path, full_page=True)
-            print("📸 响应式窄版长截图完成")
+            print("📸 手机 H5 版长截图完成")
             
         except Exception as e:
             print(f"异常: {e}")
@@ -99,12 +86,12 @@ def capture_pinnacle_responsive_full():
         finally:
             browser.close()
             
-    caption = f"🎯 *【Pinnacle 英超盘口·精简版面长图】*\n🕒 时间: `{current_time}`\n🚀 状态: 视口优化，告别两边空白"
+    caption = f"📱 *【Pinnacle 英超盘口·手机端纯净长图】*\n🕒 时间: `{current_time}`\n🚀 状态: 模拟移动端 H5 布局"
     if os.path.exists(screenshot_path):
         send_telegram_photo(screenshot_path, caption)
 
 def main():
-    capture_pinnacle_responsive_full()
+    capture_pinnacle_mobile_h5()
 
 if __name__ == "__main__":
     main()
