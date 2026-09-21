@@ -54,8 +54,8 @@ def capture_pinnacle_odds():
         page = context.new_page()
         
         try:
-            # Pinnacle 足球/英超盘口的公开访问地址（或主页）
-            target_url = "https://www.pinnacle.com/en/soccer/english-premier-league/matchups/"
+                        # 修正后的 Pinnacle 足球大厅公开入口
+            target_url = "https://www.pinnacle.com/en/soccer/matchups"
             print(f"🌐 正在连接 Pinnacle: {target_url}")
             
             # 以 domcontentloaded 导航，避免被过长的子资源加载拖死
