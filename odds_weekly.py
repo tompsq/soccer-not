@@ -33,8 +33,7 @@ def main():
             for l in lines:
                 if "England - Premier League" in l or "1X2" in l: start = True
                 if start:
-                    # 碰到这几个底部杂质直接掐断，保证干净
-                    if "Choose Pinnacle" in l or "TOP SPORTS" in l or "BET SLIP" in l or "About Pinnacle" in l or "Responsible Gaming" in l: break
+                    if "About Pinnacle" in l or "Responsible Gaming" in l: break
                     blocks.append(l)
         except Exception as e: print(e)
         finally: b.close()
@@ -48,14 +47,13 @@ def main():
                 m_time, odds = "未定时", []
                 while i < len(blocks):
                     nxt = blocks[i]
-                    if "(Match)" in nxt or "SAT, " in nxt or "SUN, " in nxt or "MON, " in nxt or "Choose Pinnacle" in nxt: break
+                    if "(Match)" in nxt or "SAT, " in nxt or "SUN, " in nxt or "MON, " in nxt: break
                     if ":" in nxt and len(nxt) <= 5: m_time = nxt
                     else: odds.append(nxt)
                     i += 1
                 ml = [f"⚽ *{home} vs {away}* 🕒 `{m_time}`"]
                 if odds:
-                    # 只去掉 1, X, 2 和带有 + 号的按钮（如 +10），原汁原味保留你原本的切片逻辑
-                    to = [o for o in odds if o not in ["1", "X", "2", "HANDICAP", "OVER", "UNDER"] and not o.startswith("+")]
+                    to = [o for o in odds if o not in ["1", "X", "2", "HANDICAP", "OVER", "UNDER"]]
                     if len(to) >= 3: ml.append(f"   🔹 `1X2` : " + " | ".join(to[:3]))
                     if len(to) >= 7: ml.append(f"   🔹 `亚盘` : " + " | ".join(to[3:7]))
                     if len(to) >= 9: ml.append(f"   🔹 `大小` : " + " | ".join(to[7:]))
