@@ -1,4 +1,4 @@
-import os, time, requests
+import os, time, requests, re
 from datetime import datetime
 from playwright.sync_api import sync_playwright
 
@@ -9,6 +9,10 @@ def send(txt):
         requests.post(f"https://api.telegram.org/bot{T}/sendMessage", json={"chat_id": C, "text": txt[:4000], "parse_mode": "Markdown"}, timeout=30)
         time.sleep(1)
     except Exception as e: print(e)
+
+def fmt(v):
+    v = v.strip()
+    return v[:-1] if re.match(r'^\d+\.\d{3}$', v) else v
 
 def main():
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -51,17 +55,25 @@ def main():
                     if ":" in nxt and len(nxt) <= 5: m_time = nxt
                     else: odds.append(nxt)
                     i += 1
+                
                 ml = [f"⚽ *{home} vs {away}* 🕒 `{m_time}`"]
                 if odds:
                     to = [o for o in odds if o not in ["1", "X", "2", "HANDICAP", "OVER", "UNDER"] and not o.startswith("+")]
-                    if len(to) >= 3: ml.append(f"   🔹 `1X2` : " + " | ".join(to[:3]))
-                    # 亚盘死死锁定 4 个数
-                    if len(to) >= 7: ml.append(f"   🔹 `亚盘` : " + " | ".join(to[3:7]))
-                    # 大小球从第 7 个开始拿剩下的
-                    if len(to) >= 7: ml.append(f"   🔹 `大小` : " + " | ".join(to[7:]))
-                    elif len(to) > 3: ml.append(f"   🔹 `盘口`: " + " | ".join(to[3:]))
+                    
+                    if len(to) >= 3:
+                        ml.append(f"   🔹 `1X2` : " + " | ".join([fmt(x) for x in to[:3]]))
+                    
+                    sub = to[3:]
+                    if len(sub) >= 6:
+                        hp, ho, ap, ao = sub[0].ljust(4), fmt(sub[1]), (sub[2] if len(sub)>2 else "").ljust(4), fmt(sub[3] if len(sub)>3 else "0")
+                        ml.append(f"   🔹 `亚盘` : {hp} | {ho} | {ap} | {ao}")
+                        
+                        if len(sub) >= 8:
+                            op, oo, up, uo = sub[4].ljust(4), fmt(sub[5]), (sub[6] if len(sub)>6 else sub[4]).ljust(4), fmt(sub[7] if len(sub)>7 else "0")
+                            ml.append(f"   🔹 `大小` : {op} | {oo} | {up} | {uo}")
                 parsed.append("\n".join(ml))
             else: i += 1
+            
         if parsed:
             mid = max(1, len(parsed) // 2)
             send(f"🎯 *【Pinnacle 英超盘口 (上)】*\n🕒 `{ts}`\n\n" + "\n\n".join(parsed[:mid]))
