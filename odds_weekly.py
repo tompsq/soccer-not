@@ -23,9 +23,9 @@ def send_telegram_photo(photo_path, caption):
     except Exception as e:
         print(f"发送异常: {e}")
 
-def capture_pinnacle_english_path():
+def capture_pinnacle_english_clicks():
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    screenshot_path = "pinnacle_epl_en.png"
+    screenshot_path = "pinnacle_epl_final.png"
     
     with sync_playwright() as p:
         browser = p.chromium.launch(
@@ -33,7 +33,7 @@ def capture_pinnacle_english_path():
             args=["--disable-blink-features=AutomationControlled", "--no-sandbox"]
         )
         
-        # 强制指定英文环境，彻底解决 Linux 无头模式下的中文字体方框乱码问题
+        # 强制指定英文环境，彻底解决乱码问题
         context = browser.new_context(
             viewport={"width": 1440, "height": 900},
             device_scale_factor=2,
@@ -44,41 +44,54 @@ def capture_pinnacle_english_path():
         page = context.new_page()
         
         try:
-            # 直接通过英文专属的联赛大厅路由切入，省去中间多步点击
-            target_url = "https://www.pinnacle.com/en/soccer/matchups/leagues"
-            print(f"🌐 正在进入Pinnacle英文联赛大厅: {target_url}")
+            # 1. 访问最稳定的大门，绝不会 404
+            target_url = "https://www.pinnacle.com/en/soccer/matchups"
+            print(f"🌐 正在进入Pinnacle英文主页大门: {target_url}")
             page.goto(target_url, timeout=45000, wait_until="domcontentloaded")
             time.sleep(6)
             
-            # 在联赛列表中精准寻找 "Premier League" 并点击
-            print("🎯 正在寻找并点击 'Premier League'...")
-            clicked = page.evaluate("""() => {
-                const elements = Array.from(document.querySelectorAll('a, div, span'));
-                const target = elements.find(el => {
+            # 2. 点击 "Leagues" (联赛) 选项卡
+            print("📋 正在切换到 Leagues (联赛) 标签页...")
+            clicked_leagues = page.evaluate("""() => {
+                const tabs = Array.from(document.querySelectorAll('button, div, span, a'));
+                const tab = tabs.find(el => el.textContent.trim().toUpperCase() === 'LEAGUES');
+                if (tab) {
+                    tab.click();
+                    return true;
+                }
+                return false;
+            }""")
+            
+            if not clicked_leagues:
+                # 备用点击法
+                page.get_by_text("Leagues", exact=True).first.click()
+            
+            time.sleep(4)
+            
+            # 3. 在列表中寻找 "England - Premier League" 并点击
+            print("🎯 正在定位并点击 Premier League (英超)...")
+            clicked_epl = page.evaluate("""() => {
+                const items = Array.from(document.querySelectorAll('div, span, a'));
+                const epl = items.find(el => {
                     const text = el.textContent.trim();
-                    // 匹配英超，同时排除U21或女子联赛
-                    return (text.includes('Premier League') || text.includes('Super League')) && 
-                           !text.includes('U21') && 
-                           !text.includes('Women') &&
-                           !text.includes('Cup');
+                    return text.includes('England - Premier League') || text.includes('Premier League');
                 });
-                
-                if (target) {
-                    let clickable = target.closest('a') || target.closest('div[role="button"]') || target;
+                if (epl) {
+                    let clickable = epl.closest('a') || epl.closest('div[role="button"]') || epl;
                     clickable.click();
                     return true;
                 }
                 return false;
             }""")
             
-            if not clicked:
-                # 备用：使用 Playwright 自带的英文文本定位
+            if not clicked_epl:
+                # 备用点击法
                 page.get_by_text("Premier League", exact=False).first.click()
                 
             time.sleep(6) # 等待英超赛程列表渲染完成
             print("✅ 成功进入英超专属盘口页面！")
             
-            # 截图保存
+            # 4. 截图保存
             page.screenshot(path=screenshot_path, full_page=False)
             print("📸 英超专区高清截图成功")
             
@@ -88,12 +101,12 @@ def capture_pinnacle_english_path():
         finally:
             browser.close()
             
-    caption = f"🎯 *【Pinnacle 英超盘口·英文极速直达】*\n🕒 时间: `{current_time}`\n🚀 状态: 完美绕过乱码，精准锁定英超"
+    caption = f"🎯 *【Pinnacle 英超盘口·英文模拟点击直达】*\n🕒 时间: `{current_time}`\n🚀 状态: 主页 -> Leagues -> Premier League"
     if os.path.exists(screenshot_path):
         send_telegram_photo(screenshot_path, caption)
 
 def main():
-    capture_pinnacle_english_path()
+    capture_pinnacle_english_clicks()
 
 if __name__ == "__main__":
     main()
