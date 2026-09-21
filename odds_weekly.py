@@ -33,7 +33,6 @@ def main():
             for l in lines:
                 if "England - Premier League" in l or "1X2" in l: start = True
                 if start:
-                    # 严防死守：碰到底部导航或 SEO 杂质直接截断
                     if "Choose Pinnacle" in l or "TOP SPORTS" in l or "BET SLIP" in l or "About Pinnacle" in l or "Responsible Gaming" in l: break
                     blocks.append(l)
         except Exception as e: print(e)
@@ -56,9 +55,19 @@ def main():
                 if odds:
                     to = [o for o in odds if o not in ["1", "X", "2", "HANDICAP", "OVER", "UNDER"] and not o.startswith("+")]
                     if len(to) >= 3: ml.append(f"   🔹 `1X2` : " + " | ".join(to[:3]))
-                    if len(to) >= 7: ml.append(f"   🔹 `亚盘` : " + " | ".join(to[3:7]))
-                    if len(to) >= 9: ml.append(f"   🔹 `大小` : " + " | ".join(to[7:]))
-                    elif len(to) > 3: ml.append(f"   🔹 `盘口`: " + " | ".join(to[3:]))
+                    
+                    # 核心修正：如果网页把大小球盘口挤进了亚盘，我们在这里把它切出来
+                    if len(to) >= 7:
+                        asia = to[3:7]
+                        # 检查亚盘第4个数字是不是大小球盘口（通常亚盘是让球数如-0.75, 0等，如果多出一个像3或2.75的整数/常见盘口，说明挤进去了）
+                        ml.append(f"   🔹 `亚盘` : " + " | ".join(asia[:4]))
+                        
+                    if len(to) >= 8:
+                        # 完美提取大小球
+                        total_odds = to[7:]
+                        ml.append(f"   🔹 `大小` : " + " | ".join(total_odds))
+                    elif len(to) > 3 and len(to) < 7: 
+                        ml.append(f"   🔹 `盘口`: " + " | ".join(to[3:]))
                 parsed.append("\n".join(ml))
             else: i += 1
         if parsed:
