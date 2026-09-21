@@ -23,9 +23,9 @@ def send_telegram_photo(photo_path, caption):
     except Exception as e:
         print(f"发送异常: {e}")
 
-def capture_pinnacle_by_path():
+def capture_pinnacle_english_path():
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    screenshot_path = "pinnacle_epl_path.png"
+    screenshot_path = "pinnacle_epl_en.png"
     
     with sync_playwright() as p:
         browser = p.chromium.launch(
@@ -33,82 +33,52 @@ def capture_pinnacle_by_path():
             args=["--disable-blink-features=AutomationControlled", "--no-sandbox"]
         )
         
+        # 强制指定英文环境，彻底解决 Linux 无头模式下的中文字体方框乱码问题
         context = browser.new_context(
             viewport={"width": 1440, "height": 900},
-            device_scale_factor=2, # 双倍高清缩放
+            device_scale_factor=2,
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            locale="zh-CN" # 使用中文环境，方便直接匹配“足球”和“联赛”
+            locale="en-US"
         )
         
         page = context.new_page()
         
         try:
-            # 步骤 1：访问首页（图一）
-            target_url = "https://www.pinnacle.com/zh-cn/soccer/matchups"
-            print(f"🌐 正在进入Pinnacle主页: {target_url}")
+            # 直接通过英文专属的联赛大厅路由切入，省去中间多步点击
+            target_url = "https://www.pinnacle.com/en/soccer/matchups/leagues"
+            print(f"🌐 正在进入Pinnacle英文联赛大厅: {target_url}")
             page.goto(target_url, timeout=45000, wait_until="domcontentloaded")
-            time.sleep(5)
+            time.sleep(6)
             
-            # 步骤 2：点击“足球” (对应图一、图二中的足球分类)
-            print("⚽ 正在点击“足球”分类...")
-            clicked_soccer = page.evaluate("""() => {
-                const elements = Array.from(document.querySelectorAll('div, span, a'));
-                const soccerEl = elements.find(el => {
+            # 在联赛列表中精准寻找 "Premier League" 并点击
+            print("🎯 正在寻找并点击 'Premier League'...")
+            clicked = page.evaluate("""() => {
+                const elements = Array.from(document.querySelectorAll('a, div, span'));
+                const target = elements.find(el => {
                     const text = el.textContent.trim();
-                    return text === '足球' || text.startsWith('足球 ');
+                    // 匹配英超，同时排除U21或女子联赛
+                    return (text.includes('Premier League') || text.includes('Super League')) && 
+                           !text.includes('U21') && 
+                           !text.includes('Women') &&
+                           !text.includes('Cup');
                 });
-                if (soccerEl) {
-                    soccerEl.click();
-                    return true;
-                }
-                return false;
-            }""")
-            
-            if not clicked_soccer:
-                # 备用：直接通过文字定位
-                page.get_by_text("足球", exact=True).first.click()
-            
-            time.sleep(4)
-            
-            # 步骤 3：点击“联赛”选项卡 (对应图二到图三的“联赛”标签)
-            print("📋 正在切换到“联赛”标签页...")
-            clicked_leagues_tab = page.evaluate("""() => {
-                const tabs = Array.from(document.querySelectorAll('button, div, span, a'));
-                const tab = tabs.find(el => el.textContent.trim() === '联赛');
-                if (tab) {
-                    tab.click();
-                    return true;
-                }
-                return false;
-            }""")
-            
-            if not clicked_leagues_tab:
-                page.get_by_text("联赛", exact=True).first.click()
                 
-            time.sleep(4)
-            
-            # 步骤 4：在联赛列表中寻找并点击“英格兰 - 超级联赛” (对应图三)
-            print("🎯 正在定位并点击“英格兰 - 超级联赛”...")
-            clicked_epl = page.evaluate("""() => {
-                const items = Array.from(document.querySelectorAll('div, span, a'));
-                const epl = items.find(el => {
-                    const text = el.textContent.trim();
-                    return text.includes('英格兰 - 超级联赛') || text.includes('Super League') || text.includes('Premier League');
-                });
-                if (epl) {
-                    epl.click();
+                if (target) {
+                    let clickable = target.closest('a') || target.closest('div[role="button"]') || target;
+                    clickable.click();
                     return true;
                 }
                 return false;
             }""")
             
-            if not clicked_epl:
-                page.get_by_text("英格兰 - 超级联赛", exact=False).first.click()
+            if not clicked:
+                # 备用：使用 Playwright 自带的英文文本定位
+                page.get_by_text("Premier League", exact=False).first.click()
                 
-            time.sleep(6) # 等待英超独立盘口页面完全加载渲染
-            print("✅ 成功进入英格兰超级联赛专属盘口！")
+            time.sleep(6) # 等待英超赛程列表渲染完成
+            print("✅ 成功进入英超专属盘口页面！")
             
-            # 步骤 5：截图发送
+            # 截图保存
             page.screenshot(path=screenshot_path, full_page=False)
             print("📸 英超专区高清截图成功")
             
@@ -118,12 +88,12 @@ def capture_pinnacle_by_path():
         finally:
             browser.close()
             
-    caption = f"🎯 *【Pinnacle 英超盘口·路径导航直达】*\n🕒 时间: `{current_time}`\n🚀 状态: 体育项目 -> 足球 -> 联赛 -> 英超"
+    caption = f"🎯 *【Pinnacle 英超盘口·英文极速直达】*\n🕒 时间: `{current_time}`\n🚀 状态: 完美绕过乱码，精准锁定英超"
     if os.path.exists(screenshot_path):
         send_telegram_photo(screenshot_path, caption)
 
 def main():
-    capture_pinnacle_by_path()
+    capture_pinnacle_english_path()
 
 if __name__ == "__main__":
     main()
