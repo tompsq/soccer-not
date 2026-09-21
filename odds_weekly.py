@@ -33,7 +33,8 @@ def main():
             for l in lines:
                 if "England - Premier League" in l or "1X2" in l: start = True
                 if start:
-                    if "About Pinnacle" in l or "Responsible Gaming" in l: break
+                    # 严防死守：碰到底部导航或 SEO 杂质直接截断
+                    if "Choose Pinnacle" in l or "TOP SPORTS" in l or "BET SLIP" in l or "About Pinnacle" in l or "Responsible Gaming" in l: break
                     blocks.append(l)
         except Exception as e: print(e)
         finally: b.close()
@@ -47,13 +48,12 @@ def main():
                 m_time, odds = "未定时", []
                 while i < len(blocks):
                     nxt = blocks[i]
-                    if "(Match)" in nxt or "SAT, " in nxt or "SUN, " in nxt or "MON, " in nxt: break
+                    if "(Match)" in nxt or "SAT, " in nxt or "SUN, " in nxt or "MON, " in nxt or "Choose Pinnacle" in nxt: break
                     if ":" in nxt and len(nxt) <= 5: m_time = nxt
                     else: odds.append(nxt)
                     i += 1
                 ml = [f"⚽ *{home} vs {away}* 🕒 `{m_time}`"]
                 if odds:
-                    # 过滤掉 1, X, 2, 提示词以及带 + 号的按钮（如 +10）
                     to = [o for o in odds if o not in ["1", "X", "2", "HANDICAP", "OVER", "UNDER"] and not o.startswith("+")]
                     if len(to) >= 3: ml.append(f"   🔹 `1X2` : " + " | ".join(to[:3]))
                     if len(to) >= 7: ml.append(f"   🔹 `亚盘` : " + " | ".join(to[3:7]))
