@@ -61,42 +61,49 @@ def main():
             send(f"❌ `{ts}` 抓取异常: {str(e)[:200]}")
         finally:
             b.close()
-            # ===== 新解析逻辑：根据真实截图重写 =====
+    # ===== 解析部分：按你要求的格式加中文标签 =====
     if not lines:
         send(f"⚠️ `{ts}` 页面无文字。")
         return
 
-    # 找第一场 "(Match)" 出现的位置，前面全是导航
     start_idx = next((i for i, l in enumerate(lines) if "(Match)" in l), -1)
     if start_idx == -1:
         send(f"🔍 `{ts}` 页面无 (Match) 关键字，前30行：\n```\n" + "\n".join(lines[:30])[:1500] + "\n```")
         return
 
-    # 只处理从第一场开始的数据
     data = lines[start_idx:]
     parsed, i = [], 0
 
-    # 识别规则：一行以 (Match) 结尾 + 下一行也是 (Match) 结尾
     while i < len(data):
         if "(Match)" in data[i] and i + 1 < len(data) and "(Match)" in data[i + 1]:
             home = data[i].replace(" (Match)", "").strip()
             away = data[i + 1].replace(" (Match)", "").strip()
             i += 2
             m_time, odds = "未定时", []
+
             while i < len(data):
                 nxt = data[i]
-                # 遇到下一场对阵就跳出
                 if "(Match)" in nxt: break
                 if re.match(r'^\d{2}:\d{2}$', nxt): m_time = nxt
-                elif re.match(r'^[+-]?\d+\.\d+$', nxt): odds.append(nxt)  # 只收集带小数的赔率
+                elif re.match(r'^[+-]?\d+\.\d+$', nxt): odds.append(nxt)
                 i += 1
 
             ml = [f"⚽ *{home} vs {away}* 🕒 `{m_time}`"]
-            # 网页文本顺序: 1X2(3个) | 亚盘(4个) | 大小(4个)
-            if len(odds) >= 3: ml.append(f"   🔹 `1X2` : " + " | ".join(odds[:3]))
-            if len(odds) >= 7: ml.append(f"   🔹 `亚盘` : " + " | ".join(odds[3:7]))
-            if len(odds) >= 11: ml.append(f"   🔹 `大小` : " + " | ".join(odds[7:11]))
-            elif len(odds) > 3: ml.append(f"   🔹 `其他` : " + " | ".join(odds[3:]))
+
+            # 1X2：3 个数字，主胜 / 平 / 客胜
+            if len(odds) >= 3:
+                ml.append(f"   🔹 `1X2` : {odds[0]} | {odds[1]} | {odds[2]}")
+
+            # 亚盘：4 个数字，主让球 / 主赔 / 客让球 / 客赔
+            if len(odds) >= 7:
+                ml.append(f"   🔹 `亚盘` : 主{odds[3]} | 主{odds[4]} | 客 {odds[6]}")
+
+            # 大小：4 个数字，盘口 / 大赔 / 盘口 / 小赔
+            if len(odds) >= 11:
+                ml.append(f"   🔹 `大小` : {odds[7]} | 大{odds[8]} | 小{odds[10]}")
+            elif len(odds) > 7:
+                ml.append(f"   🔹 `大小` : " + " | ".join(odds[7:]))
+
             if len(ml) > 1:
                 parsed.append("\n".join(ml))
         else:
@@ -107,8 +114,8 @@ def main():
         send(f"🎯 *【Pinnacle 英超盘口 (上)】*\n🕒 `{ts}`\n\n" + "\n\n".join(parsed[:mid]))
         send(f"🎯 *【Pinnacle 英超盘口 (下)】*\n🕒 `{ts}`\n\n" + "\n\n".join(parsed[mid:]))
     else:
-        send(f"⚠️ `{ts}` 识别到 (Match) 但未解析出配对，前30行：\n```\n" + "\n".join(data[:30])[:1500] + "\n```")
+        send(f"⚠️ `{ts}` 未解析出配对，前30行：\n```\n" + "\n".join(data[:30])[:1500] + "\n```")
 
 
 if __name__ == "__main__":
-    main()
+    main()        
