@@ -15,7 +15,7 @@ def send(txt):
 
 def main():
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    blocks, lines = [], []
+    lines = []
 
     with sync_playwright() as p:
         b = p.chromium.launch(headless=True, args=[
@@ -29,31 +29,22 @@ def main():
         ctx.add_init_script(
             "Object.defineProperty(navigator,'webdriver',{get:()=>undefined});")
         pg = ctx.new_page()
-
         try:
             pg.goto("https://www.pinnacle.com/en/soccer/matchups",
                     timeout=60000, wait_until="domcontentloaded")
             time.sleep(8)
-
-            body = pg.evaluate("() => document.body ? document.body.innerText : ''")
-            if any(k in body for k in ["Just a moment", "Attention Required", "Checking your browser"]):
-                send(f"⚠️ `{ts}` 被 Cloudflare 拦截，需要代理。")
-                return
-
             pg.evaluate("""() => {
                 const t = Array.from(document.querySelectorAll('button,div,span,a'))
                     .find(el => el.textContent.trim().toUpperCase() === 'LEAGUES');
                 if (t) t.click();
             }""")
             time.sleep(5)
-
             pg.evaluate("""() => {
                 const t = Array.from(document.querySelectorAll('a,div,span,li'))
                     .find(el => el.textContent.trim() === 'England - Premier League');
                 if (t) { t.scrollIntoView(); t.click(); }
             }""")
             time.sleep(8)
-
             for _ in range(6):
                 pg.evaluate("""() => {
                     document.querySelectorAll('div').forEach(el => {
@@ -65,65 +56,47 @@ def main():
             time.sleep(3)
 
             text_dump = pg.evaluate("() => document.body ? document.body.innerText : ''")
-            if not text_dump.strip():
-                time.sleep(5)
-                text_dump = pg.evaluate("() => document.body ? document.body.innerText : ''")
-
             lines = [l.strip() for l in text_dump.split("\n") if l.strip()]
-
-            start = False
-            for l in lines:
-                if "England - Premier League" in l:
-                    start = True
-                    continue
-                if start:
-                    if any(k in l for k in ["About Pinnacle", "Responsible Gaming", "Choose Pinnacle"]):
-                        break
-                    if re.match(r'^\+\d+$', l):
-                        continue
-                    if not re.search(r'\d+\.\d+', l) and " vs " not in l:
-                        continue
-                    blocks.append(l)
-
         except Exception as e:
             send(f"❌ `{ts}` 抓取异常: {str(e)[:200]}")
         finally:
-            b.close()    # ===== 调试：把原始文字前 50 行发到 TG，方便排查 =====
-    if lines:
-        preview = "\n".join(lines[:50])
-        send(f"🔍 `{ts}` 原始页面前50行：\n```\n{preview[:1500]}\n```")
-    else:
-        send(f"⚠️ `{ts}` 页面无任何文字，可能被拦或渲染失败。")
+            b.close()
+            # ===== 新解析逻辑：根据真实截图重写 =====
+    if not lines:
+        send(f"⚠️ `{ts}` 页面无文字。")
         return
 
-    if not blocks:
-        send(f"⚠️ `{ts}` 有文字但过滤后为空，参考上面调试信息。")
+    # 找第一场 "(Match)" 出现的位置，前面全是导航
+    start_idx = next((i for i, l in enumerate(lines) if "(Match)" in l), -1)
+    if start_idx == -1:
+        send(f"🔍 `{ts}` 页面无 (Match) 关键字，前30行：\n```\n" + "\n".join(lines[:30])[:1500] + "\n```")
         return
 
+    # 只处理从第一场开始的数据
+    data = lines[start_idx:]
     parsed, i = [], 0
-    while i < len(blocks):
-        if " vs " in blocks[i] and len(blocks[i]) < 60 and not re.search(r'\d+\.\d+', blocks[i]):
-            title = blocks[i]
-            i += 1
+
+    # 识别规则：一行以 (Match) 结尾 + 下一行也是 (Match) 结尾
+    while i < len(data):
+        if "(Match)" in data[i] and i + 1 < len(data) and "(Match)" in data[i + 1]:
+            home = data[i].replace(" (Match)", "").strip()
+            away = data[i + 1].replace(" (Match)", "").strip()
+            i += 2
             m_time, odds = "未定时", []
-            while i < len(blocks):
-                nxt = blocks[i]
-                if " vs " in nxt and len(nxt) < 60 and not re.search(r'\d+\.\d+', nxt):
-                    break
-                if re.match(r'^\d{2}:\d{2}$', nxt):
-                    m_time = nxt
-                else:
-                    odds.append(nxt)
+            while i < len(data):
+                nxt = data[i]
+                # 遇到下一场对阵就跳出
+                if "(Match)" in nxt: break
+                if re.match(r'^\d{2}:\d{2}$', nxt): m_time = nxt
+                elif re.match(r'^[+-]?\d+\.\d+$', nxt): odds.append(nxt)  # 只收集带小数的赔率
                 i += 1
 
-            ml = [f"⚽ *{title}* 🕒 `{m_time}`"]
-            if odds:
-                to = [o for o in odds if re.search(r'\d+\.\d+', o)]
-                if len(to) >= 3: ml.append(f"   🔹 `1X2` : " + " | ".join(to[:3]))
-                if len(to) >= 7: ml.append(f"   🔹 `亚盘` : " + " | ".join(to[3:7]))
-                if len(to) >= 9: ml.append(f"   🔹 `大小` : " + " | ".join(to[7:]))
-                elif len(to) > 3: ml.append(f"   🔹 `盘口`: " + " | ".join(to[3:]))
-
+            ml = [f"⚽ *{home} vs {away}* 🕒 `{m_time}`"]
+            # 网页文本顺序: 1X2(3个) | 亚盘(4个) | 大小(4个)
+            if len(odds) >= 3: ml.append(f"   🔹 `1X2` : " + " | ".join(odds[:3]))
+            if len(odds) >= 7: ml.append(f"   🔹 `亚盘` : " + " | ".join(odds[3:7]))
+            if len(odds) >= 11: ml.append(f"   🔹 `大小` : " + " | ".join(odds[7:11]))
+            elif len(odds) > 3: ml.append(f"   🔹 `其他` : " + " | ".join(odds[3:]))
             if len(ml) > 1:
                 parsed.append("\n".join(ml))
         else:
@@ -134,9 +107,8 @@ def main():
         send(f"🎯 *【Pinnacle 英超盘口 (上)】*\n🕒 `{ts}`\n\n" + "\n\n".join(parsed[:mid]))
         send(f"🎯 *【Pinnacle 英超盘口 (下)】*\n🕒 `{ts}`\n\n" + "\n\n".join(parsed[mid:]))
     else:
-        send(f"⚠️ `{ts}` 未解析到有效的赛事与赔率。")
+        send(f"⚠️ `{ts}` 识别到 (Match) 但未解析出配对，前30行：\n```\n" + "\n".join(data[:30])[:1500] + "\n```")
 
 
 if __name__ == "__main__":
     main()
-        
