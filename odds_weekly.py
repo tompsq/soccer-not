@@ -136,8 +136,10 @@ def main():
         send(f"🎯 *【Pinnacle 英超盘口 (上)】*\n🕒 `{ts}`\n\n" + "\n\n".join(parsed[:mid]))
         send(f"🎯 *【Pinnacle 英超盘口 (下)】*\n🕒 `{ts}`\n\n" + "\n\n".join(parsed[mid:]))
     else:
-        send(f"⚠️ `{ts}` 未解析到有效的赛事与赔率。")
-
+    # 把原始页面文字前 50 行发来，用于定位
+    preview = "\n".join(blocks[:50]) if blocks 
+    else "blocks 为空"
+    send(f"🔍 `{ts}` 未解析到赔率，页面原始前50行：\n```\n{preview[:1500]}\n```")
 
 if __name__ == "__main__":
     main()
