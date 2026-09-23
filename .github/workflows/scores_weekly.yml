@@ -1,15 +1,15 @@
 name: Pinnacle Odds Report
 
 on:
-  workflow_dispatch:        # 允许手动触发，方便你测试
+  workflow_dispatch:
   schedule:
-    # UTC 时间每 6 小时跑一次（北京时间 0点/6点/12点/18点）
+    # 每天北京时间 0/6/12/18 点跑一次（UTC 0/6/12/18）
     - cron: '0 0,6,12,18 * * *'
 
 jobs:
   run-odds:
     runs-on: ubuntu-latest
-    timeout-minutes: 15      # 防止卡死一直烧 Actions 额度
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
@@ -35,3 +35,11 @@ jobs:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
         run: python scores_weekly.py
+
+      - name: Upload debug screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-screenshot
+          path: debug_page.png
+          if-no-files-found: ignore
