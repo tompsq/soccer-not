@@ -1,13 +1,16 @@
-name: Weekly Scores Report
+name: Pinnacle Odds Report
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:        # 允许手动触发，方便你测试
   schedule:
-    - cron: '0 0 * * 1'  # 对应北京时间周二早上 8:00
+    # UTC 时间每 6 小时跑一次（北京时间 0点/6点/12点/18点）
+    - cron: '0 0,6,12,18 * * *'
 
 jobs:
-  run-scores:
+  run-odds:
     runs-on: ubuntu-latest
+    timeout-minutes: 15      # 防止卡死一直烧 Actions 额度
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -20,11 +23,15 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests
+          pip install requests playwright
 
-      - name: Run Scores script
+      - name: Install Playwright browsers and system deps
+        run: |
+          playwright install chromium
+          playwright install-deps chromium
+
+      - name: Run Pinnacle odds script
         env:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
-        run: |
-          python scores_weekly.py
+        run: python scores_weekly.py
