@@ -15,7 +15,7 @@ def send(txt):
 
 def main():
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    blocks = []
+    blocks, lines = [], []
 
     with sync_playwright() as p:
         b = p.chromium.launch(headless=True, args=[
@@ -31,7 +31,6 @@ def main():
         pg = ctx.new_page()
 
         try:
-            # 先访问首页种 cookie，绕过 Cloudflare
             pg.goto("https://www.pinnacle.com/en/soccer/matchups",
                     timeout=60000, wait_until="domcontentloaded")
             time.sleep(8)
@@ -41,7 +40,6 @@ def main():
                 send(f"⚠️ `{ts}` 被 Cloudflare 拦截，需要代理。")
                 return
 
-            # 进入 Leagues → England - Premier League
             pg.evaluate("""() => {
                 const t = Array.from(document.querySelectorAll('button,div,span,a'))
                     .find(el => el.textContent.trim().toUpperCase() === 'LEAGUES');
@@ -56,7 +54,6 @@ def main():
             }""")
             time.sleep(8)
 
-            # 滚动加载
             for _ in range(6):
                 pg.evaluate("""() => {
                     document.querySelectorAll('div').forEach(el => {
@@ -88,18 +85,19 @@ def main():
                         continue
                     blocks.append(l)
 
-            # 调试兜底
-            if not blocks and lines:
-                preview = "\n".join(lines[:30])
-                send(f"🔍 `{ts}` 页面有文字但未解析出比赛，前30行：\n```\n{preview[:1500]}\n```")
-
         except Exception as e:
             send(f"❌ `{ts}` 抓取异常: {str(e)[:200]}")
         finally:
-            b.close()
+            b.close()    # ===== 调试：把原始文字前 50 行发到 TG，方便排查 =====
+    if lines:
+        preview = "\n".join(lines[:50])
+        send(f"🔍 `{ts}` 原始页面前50行：\n```\n{preview[:1500]}\n```")
+    else:
+        send(f"⚠️ `{ts}` 页面无任何文字，可能被拦或渲染失败。")
+        return
 
-    # ===== 下面的代码必须保持 4 个空格缩进，因为还在 main() 里面 =====
     if not blocks:
+        send(f"⚠️ `{ts}` 有文字但过滤后为空，参考上面调试信息。")
         return
 
     parsed, i = [], 0
@@ -136,10 +134,9 @@ def main():
         send(f"🎯 *【Pinnacle 英超盘口 (上)】*\n🕒 `{ts}`\n\n" + "\n\n".join(parsed[:mid]))
         send(f"🎯 *【Pinnacle 英超盘口 (下)】*\n🕒 `{ts}`\n\n" + "\n\n".join(parsed[mid:]))
     else:
-    # 把原始页面文字前 50 行发来，用于定位
-    preview = "\n".join(blocks[:50]) if blocks 
-    else "blocks 为空"
-    send(f"🔍 `{ts}` 未解析到赔率，页面原始前50行：\n```\n{preview[:1500]}\n```")
+        send(f"⚠️ `{ts}` 未解析到有效的赛事与赔率。")
+
 
 if __name__ == "__main__":
     main()
+        
