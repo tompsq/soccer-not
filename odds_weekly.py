@@ -82,7 +82,7 @@ def main():
                 if start:
                     if any(k in l for k in ["About Pinnacle", "Responsible Gaming", "Choose Pinnacle"]):
                         break
-                    if re.match(r'^\+\d+$', l):           # 过滤 +10
+                    if re.match(r'^\+\d+$', l):
                         continue
                     if not re.search(r'\d+\.\d+', l) and " vs " not in l:
                         continue
@@ -97,10 +97,11 @@ def main():
             send(f"❌ `{ts}` 抓取异常: {str(e)[:200]}")
         finally:
             b.close()
-          if not blocks:
+
+    # ===== 下面的代码必须保持 4 个空格缩进，因为还在 main() 里面 =====
+    if not blocks:
         return
 
-    # ===== 解析逻辑 =====
     parsed, i = [], 0
     while i < len(blocks):
         if " vs " in blocks[i] and len(blocks[i]) < 60 and not re.search(r'\d+\.\d+', blocks[i]):
@@ -139,4 +140,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()      
+    main()
