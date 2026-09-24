@@ -1,6 +1,6 @@
 import os, time, requests
 from datetime import datetime
-import pandas as pd
+from openpyxl import Workbook
 
 T, C = os.environ.get("TG_BOT_TOKEN"), os.environ.get("TG_CHAT_ID")
 LEAGUES = [("英超",1980,10),("英冠",1977,None),("西甲",2196,10),("德甲",1842,10),("意甲",2436,10),("法甲",2036,10),("葡超",2386,10),("苏超",2421,10),("希超",2081,10),("欧冠",2627,10),("欧联",2630,10)]
@@ -99,7 +99,6 @@ def main():
         rows=fetch(name,lid,maxn)
         if rows:
             all_rows.extend(rows)
-            # 简单文字摘要
             summary=[]
             for r in rows:
                 s=f"⚽ *{r['主队']} vs {r['客队']}* 🕒 `{r['时间']}`"
@@ -116,21 +115,25 @@ def main():
         send(f"⚠️ `{ts}` 无数据")
         return
 
-    # 生成 Excel
-    df=pd.DataFrame(all_rows)
-    cols=["联赛","时间","主队","客队","主胜","平局","客胜","亚盘","亚盘主","亚盘客","大小","大球","小球"]
-    df=df[cols]
-    fname=f"pinnacle_odds_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
-    df.to_excel(fname, index=False, sheet_name="盘口")
+    # 用 openpy
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "盘口"
+    headers = ["联赛","时间","主队","客队","主胜","平局","客胜","亚盘","亚盘主","亚盘客","大小","大球","小球"]
+    ws.append(headers)
+    for r in all_rows:
+        ws.append([r.get(h) for h in headers])
+    fname = f"pinnacle_odds_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
+    wb.save(fname)
 
-    # 发文字摘要
+    # 发文字
     cur=f"🎯 *Pinnacle 多联赛盘口*\n🕒 `{ts}`\n共 {len(all_rows)} 场\n\n"
     for b in msgs:
         if len(cur)+len(b)>3800: send(cur.strip()); cur=b+"\n\n"
         else: cur+=b+"\n\n"
     if cur.strip(): send(cur.strip())
 
-    # 发 Excel 文件
+    # 发 Excel
     send_file(fname, caption=f"Pinnacle 盘口数据 {ts}（共{len(all_rows)}场）")
     print("Excel 已生成并发送:", fname)
 
