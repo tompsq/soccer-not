@@ -70,7 +70,8 @@ def fetch(name, lid, maxn=10):
             ls.append(f"   🔹 `1X2` : {m['1X2'].get('home','-')} | {m['1X2'].get('draw','-')} | {m['1X2'].get('away','-')}")
         if m["ah"]:
             line,ho,ao=m["ah"]
-            ls.append(f"   🔹 `亚盘` : 主{line:+g if line!=0 else 0} {ho} | 客 {ao}")
+            line_str = f"{line:+g}" if line != 0 else "0"
+            ls.append(f"   🔹 `亚盘` : 主{line_str} {ho} | 客 {ao}")
         if m["ou"]:
             line,oo,uo=m["ou"]
             ls.append(f"   🔹 `大小` : {line} 大{oo} | 小{uo}")
