@@ -18,4 +18,4 @@ jobs:
       - env:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
-        run: python upcoming.py
+        run: python upcoming_2h.py
