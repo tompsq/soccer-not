@@ -61,7 +61,7 @@ def main():
             send(f"❌ `{ts}` 抓取异常: {str(e)[:200]}")
         finally:
             b.close()
-        # ===== 解析部分：动态判断亚盘数量，完美切分大小球 =====
+            # ===== 解析部分：最终完美版，补全大小球标签 =====
     if not lines:
         send(f"⚠️ `{ts}` 页面无文字。")
         return
@@ -90,26 +90,30 @@ def main():
 
             ml = [f"⚽ *{home} vs {away}* 🕒 `{m_time}`"]
 
-            # 1X2：固定 3 个
+            # 1X2
             if len(odds) >= 3:
                 ml.append(f"   🔹 `1X2` : {odds[0]} | {odds[1]} | {odds[2]}")
 
-            # 亚盘：先按 4 个切，如果发现大小球被挤没了，说明是 3 个
+            # 亚盘（动态判断是 4 个还是 3 个）
             if len(odds) >= 7:
-                # 尝试按 4 个亚盘切分
                 ml.append(f"   🔹 `亚盘` : 主{odds[3]} | 主{odds[4]} | 客 {odds[6]}")
-                # 大小球从第 7 位开始（正常是 7 位）
                 size_start = 7
             elif len(odds) >= 6:
-                # 亚盘只有 3 个（如 主1.943 | 主1.909 | 客 1.833）
                 ml.append(f"   🔹 `亚盘` : 主{odds[3]} | 主{odds[4]} | 客 {odds[5]}")
-                # 大小球从第 6 位开始，而不是第 7 位
                 size_start = 6
 
-            # 大小球：根据上面计算的起始位动态切
+            # 大小球：补全各种格式
             if len(odds) >= size_start + 4:
+                # 完整版：盘口 | 大赔 | 盘口 | 小赔
                 ml.append(f"   🔹 `大小` : {odds[size_start]} | 大{odds[size_start+1]} | 小{odds[size_start+3]}")
+            elif len(odds) == size_start + 3:
+                # 异常版：盘口 | 大赔 | 小赔
+                ml.append(f"   🔹 `大小` : {odds[size_start]} | 大{odds[size_start+1]} | 小{odds[size_start+2]}")
+            elif len(odds) >= size_start + 2:
+                # 简版：大赔 | 小赔
+                ml.append(f"   🔹 `大小` : 大{odds[size_start]} | 小{odds[size_start+1]}")
             elif len(odds) > size_start:
+                # 只剩1个数字兜底
                 ml.append(f"   🔹 `大小` : " + " | ".join(odds[size_start:]))
 
             if len(ml) > 1:
@@ -127,4 +131,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    main()        
