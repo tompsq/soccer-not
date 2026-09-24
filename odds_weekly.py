@@ -13,89 +13,101 @@ def send(txt):
 
 def main():
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    lines = []
+    captured = []
 
     with sync_playwright() as p:
         b = p.chromium.launch(headless=True, args=["--disable-blink-features=AutomationControlled", "--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"])
         ctx = b.new_context(viewport={"width": 1920, "height": 1080}, user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36", locale="en-US")
         ctx.add_init_script("Object.defineProperty(navigator,'webdriver',{get:()=>undefined});")
         pg = ctx.new_page()
+
+        # 🚨 核心：拦截网络请求
+        def on_response(resp):
+            url = resp.url
+            if "arcadia.pinnacle.com" in url and ("matchups" in url or "odds" in url or "markets" in url):
+                try:
+                    data = resp.json()
+                    if isinstance(data, list) and len(data) > 0:
+                        captured.append(data)
+                except Exception:
+                    pass
+
+        pg.on("response", on_response)
+
         try:
             pg.goto("https://www.pinnacle.com/en/soccer/matchups", timeout=60000, wait_until="domcontentloaded")
-            time.sleep(8)
+            time.sleep(10)
             pg.evaluate("""() => { const t = Array.from(document.querySelectorAll('button,div,span,a')).find(el => el.textContent.trim().toUpperCase() === 'LEAGUES'); if (t) t.click(); }""")
             time.sleep(5)
             pg.evaluate("""() => { const t = Array.from(document.querySelectorAll('a,div,span,li')).find(el => el.textContent.trim() === 'England - Premier League'); if (t) { t.scrollIntoView(); t.click(); } }""")
-            time.sleep(8)
+            time.sleep(15)  # 给 API 充足的响应时间
 
+            # 滚动加载，触发更多比赛 API
             for _ in range(8):
-                pg.evaluate("""() => { document.querySelectorAll('div').forEach(el => { if (el.scrollHeight > el.clientHeight) el.scrollTop += 600; }); window.scrollBy(0, 800); }""")
-                time.sleep(1.5)
-            time.sleep(3)
-
-            # 🚨 核心：点击所有展开按钮（+10/+5），让懒加载的大小球盘口渲染出来
-            pg.evaluate("""() => {
-                document.querySelectorAll('button, div, span').forEach(el => {
-                    const t = el.textContent.trim();
-                    if (t === '+10' || t === '+5' || t === '+更多') el.click();
-                });
-            }""")
-            time.sleep(6)
-
-            # 展开后再次滚动，确保所有卡片都已渲染
-            for _ in range(4):
                 pg.evaluate("""() => { window.scrollBy(0, 800); }""")
-                time.sleep(1.5)
-            time.sleep(3)
+                time.sleep(2)
+            time.sleep(5)
 
-            text_dump = pg.evaluate("() => document.body ? document.body.innerText : ''")
-            lines = [l.strip() for l in text_dump.split("\n") if l.strip()]
         except Exception as e:
             send(f"❌ `{ts}` 抓取异常: {str(e)[:200]}")
         finally:
             b.close()
 
-    if not lines:
-        send(f"⚠️ `{ts}` 页面无文字。")
+    if not captured:
+        send(f"⚠️ `{ts}` 未捕获到 API 数据，请检查网络或页面结构。")
         return
 
-    start_idx = next((i for i, l in enumerate(lines) if "(Match)" in l or "(比赛)" in l), -1)
-    if start_idx == -1:
-        send(f"⚠️ `{ts}` 未找到比赛标识。")
-        return
+    # ===== 解析 JSON 数据 =====
+    parsed = {}
+    for data in captured:
+        for item in data:
+            if not isinstance(item, dict): continue
+            # 抓取比赛名称和时间
+            home = away = None
+            if "home" in item and "away" in item:
+                home = item.get("home", "")
+                away = item.get("away", "")
+            elif "participants" in item:
+                parts = item["participants"]
+                if len(parts) >= 2:
+                    home, away = parts[0].get("name"), parts[1].get("name")
+            if not home or not away: continue
 
-    data = lines[start_idx:]
-    parsed, i = [], 0
-    while i < len(data):
-        if ("(Match)" in data[i] or "(比赛)" in data[i]) and i + 1 < len(data) and ("(Match)" in data[i+1] or "(比赛)" in data[i+1]):
-            home = data[i].replace(" (Match)", "").replace(" (比赛)", "").strip()
-            away = data[i + 1].replace(" (Match)", "").replace(" (比赛)", "").strip()
-            i += 2
-            m_time, odds = "未定时", []
-            while i < len(data):
-                nxt = data[i]
-                if "(Match)" in nxt or "(比赛)" in nxt: break
-                if re.match(r'^\d{2}:\d{2}$', nxt): m_time = nxt
-                elif re.match(r'^[+-]?\d+\.\d+$', nxt): odds.append(nxt)
-                i += 1
-            ml = [f"⚽ *{home} vs {away}* 🕒 `{m_time}`"]
-            if len(odds) >= 3:
-                ml.append(f"   🔹 `1X2` : {odds[0]} | {odds[1]} | {odds[2]}")
-            if len(odds) >= 7:
-                ml.append(f"   🔹 `亚盘` : 主{odds[3]} | 主{odds[4]} | 客 {odds[6]}")
-            if len(odds) >= 11:
-                ml.append(f"   🔹 `大小` : {odds[7]} | 大{odds[8]} | 小{odds[10]}")
-            if len(ml) > 1:
-                parsed.append("\n".join(ml))
-        else:
-            i += 1
+            match_id = str(item.get("id", ""))
+            if match_id not in parsed:
+                parsed[match_id] = {"home": home, "away": away, "1X2": [], "亚盘": [], "大小": []}
 
-    if parsed:
-        mid = max(1, len(parsed) // 2)
-        send(f"🎯 *【Pinnacle 英超盘口 (上)】*\n🕒 `{ts}`\n\n" + "\n\n".join(parsed[:mid]))
-        send(f"🎯 *【Pinnacle 英超盘口 (下)】*\n🕒 `{ts}`\n\n" + "\n\n".join(parsed[mid:]))
+            # 遍历市场数据
+            markets = item.get("markets", [])
+            for mk in markets:
+                mk_type = mk.get("type", "")
+                prices = mk.get("prices", [])
+                if mk_type == "moneyline":
+                    parsed[match_id]["1X2"] = [p.get("price") for p in prices if "price" in p]
+                elif mk_type == "spread":
+                    parsed[match_id]["亚盘"] = [p.get("price") for p in prices if "price" in p]
+                elif mk_type == "total":
+                    parsed[match_id]["大小"] = [p.get("price") for p in prices if "price" in p]
+
+    # ===== 组装消息 =====
+    final_msgs = []
+    for mid, m in parsed.items():
+        ml = [f"⚽ *{m['home']} vs {m['away']}*"]
+        if len(m["1X2"]) >= 3:
+            ml.append(f"   🔹 `1X2` : {m['1X2'][0]} | {m['1X2'][1]} | {m['1X2'][2]}")
+        if len(m["亚盘"]) >= 3:
+            ml.append(f"   🔹 `亚盘` : 主{m['亚盘'][0]} | 客 {m['亚盘'][1]}")
+        if len(m["大小"]) >= 2:
+            ml.append(f"   🔹 `大小` : 大{m['大小'][0]} | 小{m['大小'][1]}")
+        if len(ml) > 1:
+            final_msgs.append("\n".join(ml))
+
+    if final_msgs:
+        mid = max(1, len(final_msgs) // 2)
+        send(f"🎯 *【Pinnacle 英超盘口 (上)】*\n🕒 `{ts}`\n\n" + "\n\n".join(final_msgs[:mid]))
+        send(f"🎯 *【Pinnacle 英超盘口 (下)】*\n🕒 `{ts}`\n\n" + "\n\n".join(final_msgs[mid:]))
     else:
-        send(f"⚠️ `{ts}` 未解析出比赛。")
+        send(f"⚠️ `{ts}` 解析失败，未能组装出任何比赛消息。")
 
 if __name__ == "__main__":
     main()
