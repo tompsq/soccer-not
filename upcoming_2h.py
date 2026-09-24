@@ -41,6 +41,7 @@ def fetch(name, lid, t_start, t_end):
         home=next((p["name"] for p in ps if p.get("alignment")=="home"),None)
         away=next((p["name"] for p in ps if p.get("alignment")=="away"),None)
         if not home or not away: continue
+        if "(" in home or "(" in away: continue
         matches[m["id"]]={"home":home,"away":away,"time":mt.strftime("%m-%d %H:%M"),"1X2":{},"ah":None,"ou":None}
     if not matches: return []
     mks=get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/markets/straight")
@@ -74,12 +75,10 @@ def main():
     t_start, t_end = now_my, now_my + timedelta(hours=WINDOW_HOURS)
     ts = now_my.strftime("%Y-%m-%d %H:%M:%S")
     print(f"当前马来西亚时间：{ts}")
-    print(f"抓取窗口：{t_start.strftime('%m-%d %H:%M')} ~ {t_end.strftime('%m-%d %H:%M')}")
     all_msg=[]
     for name,lid in LEAGUES:
-        print(f"抓取 {name} ...")
         rows=fetch(name,lid,t_start,t_end)
-        print(f"  -> {len(rows)} 场")
+        print(f"{name}: {len(rows)} 场")
         if not rows: continue
         lines=[f"🏆 *【{name}】* （{len(rows)} 场）"]
         for m in rows:
