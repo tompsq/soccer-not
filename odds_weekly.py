@@ -61,7 +61,7 @@ def main():
             send(f"❌ `{ts}` 抓取异常: {str(e)[:200]}")
         finally:
             b.close()
-            # ===== 解析部分：最终完美版，补全大小球标签 =====
+            # ===== 解析部分：智能判断大小球格式 =====
     if not lines:
         send(f"⚠️ `{ts}` 页面无文字。")
         return
@@ -89,32 +89,42 @@ def main():
                 i += 1
 
             ml = [f"⚽ *{home} vs {away}* 🕒 `{m_time}`"]
+            total = len(odds)
 
-            # 1X2
-            if len(odds) >= 3:
+            # 1. 1X2 (固定3个)
+            if total >= 3:
                 ml.append(f"   🔹 `1X2` : {odds[0]} | {odds[1]} | {odds[2]}")
+                remain = total - 3
+            else:
+                remain = 0
 
-            # 亚盘（动态判断是 4 个还是 3 个）
-            if len(odds) >= 7:
+            # 2. 亚盘 (判断4个还是3个)
+            if remain >= 4:
+                # 4个：主让球 | 主赔 | 客让球 | 客赔
                 ml.append(f"   🔹 `亚盘` : 主{odds[3]} | 主{odds[4]} | 客 {odds[6]}")
                 size_start = 7
-            elif len(odds) >= 6:
+                remain -= 4
+            elif remain == 3:
+                # 3个：主让球 | 主赔 | 客赔
                 ml.append(f"   🔹 `亚盘` : 主{odds[3]} | 主{odds[4]} | 客 {odds[5]}")
                 size_start = 6
+                remain -= 3
+            else:
+                size_start = None
 
-            # 大小球：补全各种格式
-            if len(odds) >= size_start + 4:
-                # 完整版：盘口 | 大赔 | 盘口 | 小赔
-                ml.append(f"   🔹 `大小` : {odds[size_start]} | 大{odds[size_start+1]} | 小{odds[size_start+3]}")
-            elif len(odds) == size_start + 3:
-                # 异常版：盘口 | 大赔 | 小赔
-                ml.append(f"   🔹 `大小` : {odds[size_start]} | 大{odds[size_start+1]} | 小{odds[size_start+2]}")
-            elif len(odds) >= size_start + 2:
-                # 简版：大赔 | 小赔
-                ml.append(f"   🔹 `大小` : 大{odds[size_start]} | 小{odds[size_start+1]}")
-            elif len(odds) > size_start:
-                # 只剩1个数字兜底
-                ml.append(f"   🔹 `大小` : " + " | ".join(odds[size_start:]))
+            # 3. 大小球 (把剩下的全部归到这里)
+            if size_start is not None:
+                if remain == 4:
+                    # 4个：盘口 | 大赔 | 盘口 | 小赔
+                    ml.append(f"   🔹 `大小` : {odds[size_start]} | 大{odds[size_start+1]} | 小{odds[size_start+3]}")
+                elif remain == 3:
+                    # 3个：盘口 | 大赔 | 小赔
+                    ml.append(f"   🔹 `大小` : {odds[size_start]} | 大{odds[size_start+1]} | 小{odds[size_start+2]}")
+                elif remain == 2:
+                    # 2个：大赔 | 小赔 (如利物浦那场)
+                    ml.append(f"   🔹 `大小` : 大{odds[size_start]} | 小{odds[size_start+1]}")
+                elif remain == 1:
+                    ml.append(f"   🔹 `大小` : {odds[size_start]}")
 
             if len(ml) > 1:
                 parsed.append("\n".join(ml))
