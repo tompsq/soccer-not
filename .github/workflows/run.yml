@@ -2,7 +2,7 @@ name: Odds Weekly Monitor
 
 on:
   schedule:
-    - cron: '0 0 * * *' # 每天定时运行，或按需调整
+    - cron: '0 0 * * *'
   workflow_dispatch:
 
 jobs:
@@ -20,8 +20,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests playwright
-          playwright install chromium
+          pip install requests openpyxl
 
       - name: Run Python script
         env:
