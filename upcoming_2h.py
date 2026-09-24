@@ -1,95 +1,112 @@
-import os, requests
-from datetime import datetime, timezone, timedelta
+import os, time, requests
+from datetime import datetime, timedelta
 
 T, C = os.environ.get("TG_BOT_TOKEN"), os.environ.get("TG_CHAT_ID")
+WINDOW_HOURS = 5
+LEAGUES = [("英超",1980),("英冠",1977),("西甲",2196),("德甲",1842),("意甲",2436),("法甲",2036),("葡超",2386),("苏超",2421),("希超",2081),("欧冠",2627),("欧联",2630),("欧洲国家入选赛",2666)]
+H = {"User-Agent":"Mozilla/5.0","Accept":"application/json","Origin":"https://www.pinnacle.com","Referer":"https://www.pinnacle.com/"}
 
-# 11大核心联赛在 ESPN 上的公开代号
-LEAGUES_ESPN = {
-    "eng.1": "英超",
-    "esp.1": "西甲",
-    "ita.1": "意甲",
-    "ger.1": "德甲",
-    "fra.1": "法甲",
-    "uefa.champions": "欧冠",
-    "uefa.europa": "欧联/欧协联",
-    "por.1": "葡超",
-    "sco.1": "苏超",
-    "bel.1": "比甲",
-    "gre.1": "希超"
-}
+def send(t):
+    if not T or not C: print(t); return
+    try: requests.post(f"https://api.telegram.org/bot{T}/sendMessage",json={"chat_id":C,"text":t[:4000],"parse_mode":"Markdown"},timeout=30); time.sleep(1.2)
+    except Exception as e: print(e)
 
-def send(msg):
-    if not T or not C: return
-    url = f"https://api.telegram.org/bot{T}/sendMessage"
-    if len(msg) > 3800:
-        for i in range(0, len(msg), 3800):
-            requests.post(url, json={"chat_id": C, "text": msg[i:i+3800]})
-    else:
-        requests.post(url, json={"chat_id": C, "text": msg})
+def to_dec(a):
+    try:
+        a=float(a)
+        return round(a/100+1,3) if a>0 else round(100/abs(a)+1,3)
+    except: return None
 
-def get_free_scores():
-    res = ["====================\n⚽ 11大核心联赛完场比分 (白嫖版)\n===================="]
-    tz = timezone(timedelta(hours=8))
-    today = datetime.now(tz)
-    
-    # 强制覆盖过去 3 天（今天、昨天、前天，即周五、周六、周日），确保周六的比赛不漏掉
-    date_strings = [(today - timedelta(days=i)).strftime("%Y%m%d") for i in range(3)]
-    
-    league_results = {}
-    
-    for league_code, league_name in LEAGUES_ESPN.items():
-        league_matches = set()
-        for d_str in date_strings:
-            try:
-                # 显式带上 dates 参数，才能拿到指定日期的历史赛果
-                url = f"https://site.api.espn.com/apis/site/v2/sports/soccer/{league_code}/scoreboard?dates={d_str}"
-                r = requests.get(url, timeout=5)
-                if r.status_code != 200:
-                    continue
-                
-                data = r.json()
-                events = data.get("events", [])
+def get(url):
+    for _ in range(3):
+        try:
+            r=requests.get(url,headers=H,timeout=20)
+            if r.status_code==200: return r.json()
+        except: time.sleep(1.5)
+    return None
 
-                for ev in events:
-                    status_type = ev.get("status", {}).get("type", {})
-                    is_completed = status_type.get("completed", False)
-                    
-                    # 只要已经完场
-                    if is_completed:
-                        competitions = ev.get("competitions", [{}])[0]
-                        competitors = competitions.get("competitors", [])
-                        
-                        home_team, home_score = "", "-"
-                        away_team, away_score = "", "-"
-                        
-                        for comp in competitors:
-                            if comp.get("homeAway") == "home":
-                                home_team = comp.get("team", {}).get("displayName", "")
-                                home_score = comp.get("score", "0")
-                            elif comp.get("homeAway") == "away":
-                                away_team = comp.get("team", {}).get("displayName", "")
-                                away_score = comp.get("score", "0")
-                        
-                        if home_team and away_team:
-                            match_str = f"{home_team} {home_score} - {away_score} {away_team}"
-                            league_matches.add(match_str)
-            except Exception as e:
-                continue
-                
-        if league_matches:
-            league_results[league_name] = list(league_matches)
-
-    if not league_results:
-        return "⚽ 近期暂无已完场比赛记录。"
-
-    for l_name, matches in league_results.items():
-        res.append(f"【{l_name}】\n" + "\n".join(matches) + "\n" + "-"*15)
-        
-    return "\n".join(res)
+def fetch(name, lid, t_start, t_end):
+    ms = get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/matchups")
+    if not ms: return []
+    matches={}
+    for m in ms:
+        if m.get("type")!="matchup": continue
+        st=m.get("startTime","")
+        if not st: continue
+        try: mt=datetime.strptime(st[:19],"%Y-%m-%dT%H:%M:%S")+timedelta(hours=8)
+        except: continue
+        if not (t_start<=mt<=t_end): continue
+        ps=m.get("participants",[])
+        if len(ps)<2: continue
+        home=next((p["name"] for p in ps if p.get("alignment")=="home"),None)
+        away=next((p["name"] for p in ps if p.get("alignment")=="away"),None)
+        if not home or not away: continue
+        matches[m["id"]]={"home":home,"away":away,"time":mt.strftime("%m-%d %H:%M"),"1X2":{},"ah":None,"ou":None}
+    if not matches: return []
+    mks=get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/markets/straight")
+    if not mks: return []
+    for mk in mks:
+        mid=mk.get("matchupId")
+        if mid not in matches or mk.get("period")!=0 or mk.get("isAlternate") is True: continue
+        t,ps=mk.get("type"),mk.get("prices",[])
+        if t=="moneyline":
+            for p in ps:
+                d=p.get("designation")
+                if d in ("home","draw","away"): matches[mid]["1X2"][d]=to_dec(p["price"])
+        elif t=="spread":
+            hp=next((p for p in ps if p.get("designation")=="home"),None)
+            ap=next((p for p in ps if p.get("designation")=="away"),None)
+            if hp and ap:
+                line=hp.get("points",0)
+                if matches[mid]["ah"] is None or abs(line)<abs(matches[mid]["ah"][0]):
+                    matches[mid]["ah"]=(line,to_dec(hp["price"]),to_dec(ap["price"]))
+        elif t=="total":
+            op=next((p for p in ps if p.get("designation")=="over"),None)
+            up=next((p for p in ps if p.get("designation")=="under"),None)
+            if op and up:
+                line=op.get("points",0)
+                if matches[mid]["ou"] is None or abs(line-2.5)<abs(matches[mid]["ou"][0]-2.5):
+                    matches[mid]["ou"]=(line,to_dec(op["price"]),to_dec(up["price"]))
+    return sorted(matches.values(), key=lambda x: x["time"])
 
 def main():
-    msg = get_free_scores()
-    send(msg)
+    now=datetime.now()
+    t_start, t_end = now, now+timedelta(hours=WINDOW_HOURS)
+    ts=now.strftime("%Y-%m-%d %H:%M:%S")
+    print(f"抓取窗口：{t_start.strftime('%m-%d %H:%M')} ~ {t_end.strftime('%m-%d %H:%M')}，共 {len(LEAGUES)} 个联赛")
+    all_msg=[]
+    for name,lid in LEAGUES:
+        print(f"抓取 {name} ...")
+        rows=fetch(name,lid,t_start,t_end)
+        if not rows: continue
+        lines=[f"🏆 *【{name}】* （{len(rows)} 场）"]
+        for m in rows:
+            s=f"⚽ *{m['home']} vs {m['away']}* 🕒 `{m['time']}`"
+            if len(m["1X2"])>=3: s+=f"\n   🔹 `1X2` : {m['1X2']['home']} | {m['1X2']['draw']} | {m['1X2']['away']}"
+            if m["ah"]:
+                line,ho,ao=m["ah"]
+                ls=f"{line:+g}" if line!=0 else "0"
+                s+=f"\n   🔹 `亚盘` : 主{ls} {ho} | 客 {ao}"
+            if m["ou"]:
+                line,oo,uo=m["ou"]
+                s+=f"\n   🔹 `大小` : {line} 大{oo} | 小{uo}"
+            lines.append(s)
+        all_msg.append("\n\n".join(lines))
+        time.sleep(0.8)
+    if not all_msg:
+        send(f"⚠️ `{ts}` 未来 {WINDOW_HOURS} 小时内没有比赛。")
+        return
+    chunks, cur = [], ""
+    for block in all_msg:
+        if len(cur)+len(block)+4>3800: chunks.append(cur); cur=block
+        else: cur += ("\n\n" if cur else "")+block
+    if cur: chunks.append(cur)
+    total=len(chunks)
+    for idx,ch in enumerate(chunks,1):
+        title = f"⏰ *【未来 {WINDOW_HOURS} 小时内赛事"
+        if total>1: title += f" ({idx}/{total})"
+        title += f"】*\n🕒 `{ts}`\n\n"
+        send(title+ch)
 
 if __name__ == "__main__":
     main()
