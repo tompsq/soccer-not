@@ -143,89 +143,66 @@ def main():
         send(f"🔍 `{ts}` 未找到表头，前30行：\n```\n" + "\n".join(lines[:30])[:1500] + "\n```")
         return
 
-    # 从表头位置开始，往下收集所有数字
-    def collect_numbers(start_line, end_line):
-        nums = []
-        for j in range(start_line, min(end_line, len(lines))):
-            val = lines[j].strip()
-            if re.match(r'^[+-]?\d+\.\d+$', val):
-                nums.append(val)
-        return nums
+    # ===== 解析部分：简单直接，不猜结构 =====
+    if not lines:
+        send(f"⚠️ `{ts}` 页面无文字。")
+        return
 
-    # 表头结束后的“比赛数据区”才是我们要的
-    data_start = max(header_1x2, header_handicap, header_ou) + 1
-    data_lines = lines[data_start:]
+    start_idx = next((i for i, l in enumerate(lines) if "(比赛)" in l or "(Match)" in l), -1)
+    if start_idx == -1:
+        send(f"⚠️ `{ts}` 未找到 (比赛) 标识，前30行：\n```\n" + "\n".join(lines[:30])[:1500] + "\n```")
+        return
 
-    # 找到每场比赛的起始行（含“(比赛)”或“(Match)”）
-    match_indices = [j for j, l in enumerate(data_lines) if "(比赛)" in l or "(Match)" in l]
+    data = lines[start_idx:]
+    parsed, i = [], 0
 
-    # 两两配对
-    pairs = []
-    for j in range(0, len(match_indices) - 1, 2):
-        pairs.append((match_indices[j], match_indices[j + 1]))
+    while i < len(data):
+        # 判断是否为一场比赛 (两行连续的 (比赛))
+        if "(比赛)" in data[i] and i + 1 < len(data) and "(比赛)" in data[i + 1]:
+            home = data[i].replace(" (比赛)", "").strip()
+            away = data[i + 1].replace(" (比赛)", "").strip()
+            i += 2
+            m_time, odds = "未定时", []
 
-    parsed = []
-    for idx, (h, a) in enumerate(pairs):
-        home = data_lines[h].replace(" (比赛)", "").replace(" (Match)", "").strip()
-        away = data_lines[a].replace(" (比赛)", "").replace(" (Match)", "").strip()
-        
-        # 该场比赛的数据范围：从客队行到下一场主队行
-        seg_end = pairs[idx + 1][0] if idx + 1 < len(pairs) else len(data_lines)
-        seg = data_lines[a:seg_end]
+            # 收集本场所有数字
+            while i < len(data):
+                nxt = data[i]
+                if "(比赛)" in nxt: break
+                if re.match(r'^\d{2}:\d{2}$', nxt): m_time = nxt
+                elif re.match(r'^[+-]?\d+\.\d+$', nxt): odds.append(nxt)
+                i += 1
 
-        # 在段内提取时间
-        m_time = "未定时"
-        for l in seg:
-            if re.match(r'^\d{2}:\d{2}$', l.strip()):
-                m_time = l.strip()
-                break
+            ml = [f"⚽ *{home} vs {away}* 🕒 `{m_time}`"]
 
-        # 🚨 核心：从表头开始提取对应的三组数字
-        # 1X2 数字：只取 1X2 表头到 HANDICAP 表头之间的数字
-        n1x2 = collect_numbers(header_1x2, header_handicap)
-        # 亚盘数字：只取 HANDICAP 到 OVER/UNDER 之间的数字
-        n_handicap = collect_numbers(header_handicap, header_ou)
-        # 大小球数字：只取 OVER/UNDER 之后的数字
-        n_ou = collect_numbers(header_ou, len(lines))
+            # 严格按照 3 / 4 / 4 的节奏切分，不想要的数字直接忽略
+            # 1X2 (前3个)
+            if len(odds) >= 3:
+                ml.append(f"   🔹 `1X2` : {odds[0]} | {odds[1]} | {odds[2]}")
 
-        # 每次消费完，从对应的列表里去掉已经用掉的
-        # 因为每场只出现一次，所以我们直接用“切片”的方式匹配到对应位置
-        # 但因为每场数据是连续的，无法简单索引。
-        # 我们改个策略：不做全局提取，而是在本场比赛的 seg 内部提取。
-        # (上面的 collect_numbers 是全局的，会重复计算，所以这里我们用本地提取)
-        
-        seg_1x2, seg_hcp, seg_ou = [], [], []
-        for l in seg:
-            if re.match(r'^[+-]?\d+\.\d+$', l):
-                seg_1x2.append(l.strip())
+            # 亚盘 (第3~6个)
+            if len(odds) >= 7:
+                ml.append(f"   🔹 `亚盘` : 主{odds[3]} | 主{odds[4]} | 客 {odds[6]}")
+            elif len(odds) >= 6:
+                ml.append(f"   🔹 `亚盘` : 主{odds[3]} | 主{odds[4]} | 客 {odds[5]}")
 
-        total = len(seg_1x2)
-        ml = [f"⚽ *{home} vs {away}* 🕒 `{m_time}`"]
+            # 大小球 (第7个之后)
+            if len(odds) >= 11:
+                ml.append(f"   🔹 `大小` : {odds[7]} | 大{odds[8]} | 小{odds[10]}")
+            elif len(odds) >= 9:
+                # 缺了部分，但还能凑出大小球
+                ml.append(f"   🔹 `大小` : " + " | ".join(odds[7:]))
 
-        # 根据截图真实结构：3(1X2) + 4(亚盘) + 4(大小)
-        if total >= 3:
-            ml.append(f"   🔹 `1X2` : {seg_1x2[0]} | {seg_1x2[1]} | {seg_1x2[2]}")
-
-        if total >= 7:
-            # 亚盘取接下来的 4 个
-            ml.append(f"   🔹 `亚盘` : 主{seg_1x2[3]} | 主{seg_1x2[4]} | 客 {seg_1x2[6]}")
-
-        if total >= 11:
-            # 大小球取剩下的 4 个
-            ml.append(f"   🔹 `大小` : {seg_1x2[7]} | 大{seg_1x2[8]} | 小{seg_1x2[10]}")
-        elif total > 7:
-            # 如果不够 11 个，说明大小球缺盘口或只有赔率
-            ml.append(f"   🔹 `大小` : " + " | ".join(seg_1x2[7:]))
-
-        if len(ml) > 1:
-            parsed.append("\n".join(ml))
+            if len(ml) > 1:
+                parsed.append("\n".join(ml))
+        else:
+            i += 1
 
     if parsed:
         mid = max(1, len(parsed) // 2)
         send(f"🎯 *【Pinnacle 英超盘口 (上)】*\n🕒 `{ts}`\n\n" + "\n\n".join(parsed[:mid]))
         send(f"🎯 *【Pinnacle 英超盘口 (下)】*\n🕒 `{ts}`\n\n" + "\n\n".join(parsed[mid:]))
     else:
-        send(f"⚠️ `{ts}` 未解析出配对，前30行：\n```\n" + "\n".join(data_lines[:30])[:1500] + "\n```")
+        send(f"⚠️ `{ts}` 未解析出比赛，前30行：\n```\n" + "\n".join(data[:30])[:1500] + "\n```")
 
 
 if __name__ == "__main__":
