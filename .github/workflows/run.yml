@@ -2,7 +2,7 @@ name: Odds Weekly Monitor
 
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 12 * * 2'
   workflow_dispatch:
 
 jobs:
