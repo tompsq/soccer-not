@@ -1,10 +1,10 @@
-name: Pinnacle Odds Report
+name: Soccers Weekly Report
 
 on:
   workflow_dispatch:
   schedule:
-    # 每天北京时间 0/6/12/18 点跑一次（UTC 0/6/12/18）
-    - cron: '0 0,6,12,18 * * *'
+    # 每周二 UTC 0 点跑一次（北京时间/马来西亚时间 周二早上 8:00）
+    - cron: '0 0 * * 2'
 
 jobs:
   run-odds:
