@@ -64,6 +64,7 @@ def get(url):
         except:
             time.sleep(1.5)
     return None
+            "联赛": name,
 def fetch(name, lid):
     ms = get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/matchups")
     if not ms:
