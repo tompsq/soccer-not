@@ -2,18 +2,23 @@ name: Nations League Odds
 
 on:
   schedule:
-    - cron: '45 15 * * *'   # 大马时间每天 23:45
+    - cron: '0 23 * * *'   # 大马 07:00
+    - cron: '0 14 * * *'   # 大马 22:00
+    - cron: '45 15 * * *'  # 大马 23:45
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   run-script:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
@@ -27,3 +32,11 @@ jobs:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
         run: python nations_league_odds.py
+
+      - name: Commit history file
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add nations_history.json || true
+          git diff --staged --quiet || git commit -m "update nations_history.json"
+          git push || true
