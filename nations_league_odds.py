@@ -98,15 +98,19 @@ def fetch(name, lid):
         mid = mk.get("matchupId")
         if mid not in matches:
             continue
-        if mk.get("period") != 0:          # 只要全场
+        if mk.get("period") != 0:                # 只要全场
             continue
-        if mk.get("isAlternate") is True:  # 只要主盘
+        if mk.get("isAlternate") is True:        # 只要主盘
             continue
 
         t = mk.get("type")
+        key = str(mk.get("key", "")).lower()
         ps = mk.get("prices", [])
 
-        # 严格只处理这三种市场
+        # 明确排除 team_total、角球、红黄卡相关
+        if t == "team_total" or "tt;" in key or "corner" in key or "booking" in key or "card" in key:
+            continue
+
         if t == "moneyline":
             for p in ps:
                 d = p.get("designation")
@@ -126,10 +130,10 @@ def fetch(name, lid):
             up = next((p for p in ps if p.get("designation") == "under"), None)
             if op and up:
                 line = op.get("points", 0)
-                if matches[mid]["ou"] is None or abs(line - 2.5) < abs(matches[mid]["ou"][0] - 2.5):
-                    matches[mid]["ou"] = (line, to_dec(op["price"]), to_dec(up["price"]))
-
-        # 其他类型（角球、红黄卡、team_total 等）全部忽略
+                # 只接受合理的进球盘口范围，进一步排除异常
+                if 0.5 <= line <= 5.5:
+                    if matches[mid]["ou"] is None or abs(line - 2.5) < abs(matches[mid]["ou"][0] - 2.5):
+                        matches[mid]["ou"] = (line, to_dec(op["price"]), to_dec(up["price"]))
 
     sorted_m = sorted(matches.values(), key=lambda x: x["time"] or "9999")
     rows = []
