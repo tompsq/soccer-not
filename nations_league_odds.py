@@ -96,14 +96,23 @@ def fetch(name, lid):
 
     for mk in mks:
         mid = mk.get("matchupId")
-        if mid not in matches or mk.get("period") != 0 or mk.get("isAlternate") is True:
+        if mid not in matches:
             continue
-        t, ps = mk.get("type"), mk.get("prices", [])
+        if mk.get("period") != 0:          # 只要全场
+            continue
+        if mk.get("isAlternate") is True:  # 只要主盘
+            continue
+
+        t = mk.get("type")
+        ps = mk.get("prices", [])
+
+        # 严格只处理这三种市场
         if t == "moneyline":
             for p in ps:
                 d = p.get("designation")
                 if d in ("home", "draw", "away"):
                     matches[mid]["1X2"][d] = to_dec(p["price"])
+
         elif t == "spread":
             hp = next((p for p in ps if p.get("designation") == "home"), None)
             ap = next((p for p in ps if p.get("designation") == "away"), None)
@@ -111,6 +120,7 @@ def fetch(name, lid):
                 line = hp.get("points", 0)
                 if matches[mid]["ah"] is None or abs(line) < abs(matches[mid]["ah"][0]):
                     matches[mid]["ah"] = (line, to_dec(hp["price"]), to_dec(ap["price"]))
+
         elif t == "total":
             op = next((p for p in ps if p.get("designation") == "over"), None)
             up = next((p for p in ps if p.get("designation") == "under"), None)
@@ -118,6 +128,8 @@ def fetch(name, lid):
                 line = op.get("points", 0)
                 if matches[mid]["ou"] is None or abs(line - 2.5) < abs(matches[mid]["ou"][0] - 2.5):
                     matches[mid]["ou"] = (line, to_dec(op["price"]), to_dec(up["price"]))
+
+        # 其他类型（角球、红黄卡、team_total 等）全部忽略
 
     sorted_m = sorted(matches.values(), key=lambda x: x["time"] or "9999")
     rows = []
