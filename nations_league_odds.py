@@ -2,9 +2,11 @@ import os, time, requests, json
 from datetime import datetime, timedelta
 from openpyxl import Workbook
 
+# ================= 1. 基础配置与环境变量 =================
 T = os.environ.get("TG_BOT_TOKEN")
 C = os.environ.get("TG_CHAT_ID")
 HISTORY_FILE = "nations_history.json"
+XG_FILE = "xg_data.json"
 
 LEAGUES = [
     ("欧国联A", 200719),
@@ -79,6 +81,16 @@ def load_history():
 def save_history(data):
     with open(HISTORY_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+
+def load_xg_data():
+    if os.path.exists(XG_FILE):
+        try:
+            with open(XG_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            return {}
+    return {}
+# ================= 2. 赔率抓取核心逻辑 =================
 def fetch(name, lid, t_start, t_end):
     ms = get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/matchups")
     if not ms:
@@ -147,7 +159,7 @@ def fetch(name, lid, t_start, t_end):
                 if matches[mid]["ou"] is None or abs(line - 2.5) < abs(matches[mid]["ou"][0] - 2.5):
                     matches[mid]["ou"] = (line, to_dec(op["price"]), to_dec(up["price"]))
     return list(matches.values())
-
+# ================= 3. 主调度与 Excel 整合发送逻辑 =================
 def main():
     now_my = datetime.utcnow() + timedelta(hours=8)
     tomorrow = now_my.date() + timedelta(days=1)
@@ -159,7 +171,6 @@ def main():
     print(f"当前大马时间：{ts}  小时={hour}")
     history = load_history()
 
-    # 抓取明天的比赛
     current_matches = []
     for name, lid in LEAGUES:
         rows = fetch(name, lid, t_start, t_end)
@@ -167,11 +178,9 @@ def main():
         current_matches.extend(rows)
         time.sleep(0.6)
 
-    # 更新历史
     for m in current_matches:
         mid = m["id"]
         if mid not in history:
-            # 第一次出现 → 记录开盘
             history[mid] = {
                 "league": m["league"],
                 "home": m["home"],
@@ -188,7 +197,6 @@ def main():
                 "last_seen": ts,
             }
         else:
-            # 更新当前盘口
             history[mid]["curr_1x2"] = m["1X2"]
             history[mid]["curr_ah"] = m["ah"]
             history[mid]["curr_ou"] = m["ou"]
@@ -198,15 +206,12 @@ def main():
     save_history(history)
     print(f"历史记录已更新，共 {len(history)} 场")
 
-    # 只有 23 点之后的运行才发送报告
     if hour < 23:
         print("非最终运行，只更新历史，不发送")
         return
 
-    # ========== 最终发送 ==========
     rows = []
     for mid, h in history.items():
-        # 只保留明天的比赛
         try:
             ko = datetime.fromisoformat(h["kickoff"])
             if ko.date() != tomorrow:
@@ -244,26 +249,36 @@ def main():
         send(f"⚠️ `{ts}` 明天没有可发送的欧国联比赛")
         return
 
-    # 生成 Excel
+    # 生成双 Sheet Excel
     wb = Workbook()
-    ws = wb.active
-    ws.title = "开盘vs临盘"
+    
+    ws1 = wb.active
+    ws1.title = "开盘vs临盘"
     headers = list(rows[0].keys())
-    ws.append(headers)
+    ws1.append(headers)
     for r in rows:
-        ws.append([r.get(h) for h in headers])
+        ws1.append([r.get(h) for h in headers])
+
+    ws2 = wb.create_sheet(title="球队xG数据")
+    ws2.append(["球队", "场次", "场均预期进球(xG)", "场均预期失球(xGA)"])
+    xg_cache = load_xg_data()
+    if xg_cache:
+        for team, val in xg_cache.items():
+            ws2.append([team, val.get("matches", 0), val.get("xG_for", 0), val.get("xG_against", 0)])
+    else:
+        ws2.append(["暂无缓存数据", "", "", ""])
+
     fname = f"nations_open_close_{tomorrow.strftime('%Y%m%d')}.xlsx"
     wb.save(fname)
 
-    # 发送文字摘要
     msg = f"📅 *【明天 ({tomorrow.strftime('%Y-%m-%d')}) 欧国联 开盘vs临盘】*\n🕒 `{ts}`\n共 {len(rows)} 场\n\n"
-    for r in rows[:15]:  # 防止太长
+    for r in rows[:15]:
         msg += f"⚽ *{r['主队']} vs {r['客队']}* `{r['时间']}`\n"
         msg += f"   开盘 1X2: {r['开盘主胜']} | {r['开盘平局']} | {r['开盘客胜']}\n"
         msg += f"   临盘 1X2: {r['临盘主胜']} | {r['临盘平局']} | {r['临盘客胜']}\n\n"
     send(msg)
 
-    send_file(fname, caption=f"欧国联 开盘vs临盘 {tomorrow.strftime('%Y-%m-%d')}（共{len(rows)}场）")
+    send_file(fname, caption=f"欧国联 赔率与xG综合报表 {tomorrow.strftime('%Y-%m-%d')}（共{len(rows)}场）")
     print("最终报告已发送")
 
 if __name__ == "__main__":
