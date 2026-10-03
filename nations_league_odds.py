@@ -69,27 +69,41 @@ def get(url):
             time.sleep(1.5)
     return None
 
+# ================= 自动初始化与加载本地缓存 =================
 def load_history():
-    if os.path.exists(HISTORY_FILE):
+    if not os.path.exists(HISTORY_FILE):
         try:
-            with open(HISTORY_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except:
-            return {}
-    return {}
+            with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+                json.dump({}, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print("初始化 nations_history.json 失败:", e)
+        return {}
+    try:
+        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except:
+        return {}
 
 def save_history(data):
     with open(HISTORY_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def load_xg_data():
-    if os.path.exists(XG_FILE):
+    if not os.path.exists(XG_FILE):
+        default_xg = {
+            "示例国家队": {"matches": 0, "xG_for": 0.0, "xG_against": 0.0}
+        }
         try:
-            with open(XG_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except:
-            return {}
-    return {}
+            with open(XG_FILE, "w", encoding="utf-8") as f:
+                json.dump(default_xg, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print("初始化 xg_data.json 失败:", e)
+        return default_xg
+    try:
+        with open(XG_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except:
+        return {}
 # ================= 2. 赔率抓取核心逻辑 =================
 def fetch(name, lid, t_start, t_end):
     ms = get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/matchups")
@@ -249,9 +263,10 @@ def main():
         send(f"⚠️ `{ts}` 明天没有可发送的欧国联比赛")
         return
 
-    # 生成双 Sheet Excel
+    # ================= 生成双 Sheet Excel =================
     wb = Workbook()
     
+    # Sheet 1: 赔率开盘 vs 临盘
     ws1 = wb.active
     ws1.title = "开盘vs临盘"
     headers = list(rows[0].keys())
@@ -259,18 +274,18 @@ def main():
     for r in rows:
         ws1.append([r.get(h) for h in headers])
 
+    # Sheet 2: 球队 xG 数据缓存
     ws2 = wb.create_sheet(title="球队xG数据")
     ws2.append(["球队", "场次", "场均预期进球(xG)", "场均预期失球(xGA)"])
     xg_cache = load_xg_data()
     if xg_cache:
         for team, val in xg_cache.items():
             ws2.append([team, val.get("matches", 0), val.get("xG_for", 0), val.get("xG_against", 0)])
-    else:
-        ws2.append(["暂无缓存数据", "", "", ""])
 
     fname = f"nations_open_close_{tomorrow.strftime('%Y%m%d')}.xlsx"
     wb.save(fname)
 
+    # 推送 Telegram 文本摘要
     msg = f"📅 *【明天 ({tomorrow.strftime('%Y-%m-%d')}) 欧国联 开盘vs临盘】*\n🕒 `{ts}`\n共 {len(rows)} 场\n\n"
     for r in rows[:15]:
         msg += f"⚽ *{r['主队']} vs {r['客队']}* `{r['时间']}`\n"
@@ -278,6 +293,7 @@ def main():
         msg += f"   临盘 1X2: {r['临盘主胜']} | {r['临盘平局']} | {r['临盘客胜']}\n\n"
     send(msg)
 
+    # 推送双 Sheet 打包好的 Excel 文件
     send_file(fname, caption=f"欧国联 赔率与xG综合报表 {tomorrow.strftime('%Y-%m-%d')}（共{len(rows)}场）")
     print("最终报告已发送")
 
