@@ -2,10 +2,9 @@ name: Nations League Odds
 
 on:
   schedule:
-    - cron: '0 23 * * *'   # 大马 07:00 赔率抓取
-    - cron: '0 14 * * *'   # 大马 22:00 赔率抓取
-    - cron: '45 15 * * *'  # 大马 23:45 赔率抓取与最终发送
-    - cron: '0 4 * * 1'    # 每周一早晨顺便更新/触发其他任务（可选）
+    - cron: '0 23 * * *'   # 大马 07:00
+    - cron: '0 14 * * *'   # 大马 22:00
+    - cron: '45 15 * * *'  # 大马 23:45
   workflow_dispatch:
 
 permissions:
@@ -34,10 +33,10 @@ jobs:
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
         run: python nations_league_odds.py
 
-      - name: Commit history and cache file
+      - name: Commit history file
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add nations_history.json xg_data.json || true
-          git diff --staged --quiet || git commit -m "update data cache"
+          git add nations_history.json || true
+          git diff --staged --quiet || git commit -m "update nations_history.json"
           git push || true
