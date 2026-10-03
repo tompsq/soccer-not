@@ -1,198 +1,151 @@
-import os, time, requests, json
+import os
+import time
+import json
+import requests
 from datetime import datetime, timedelta
 from openpyxl import Workbook
 
-# ================= 1. 基础配置与环境变量 =================
-T = os.environ.get("TG_BOT_TOKEN")
-C = os.environ.get("TG_CHAT_ID")
-HISTORY_FILE = "nations_history.json"
-XG_FILE = "xg_data.json"
+# ================= 1. 配置与基础 API 请求模块 =================
+API_KEY = os.getenv("ODDS_API_KEY", "你的API_KEY")
+TG_TOKEN = os.getenv("TG_BOT_TOKEN", "你的TG_TOKEN")
+TG_CHAT_ID = os.getenv("TG_CHAT_ID", "你的TG_CHAT_ID")
 
 LEAGUES = [
-    ("欧国联A", 200719),
-    ("欧国联B", 200721),
-    ("欧国联C", 200726),
-    ("欧国联D", 200727),
+    ("UEFA Nations League", "soccer_uefa_nations_league"),
 ]
 
-H = {
-    "User-Agent": "Mozilla/5.0",
-    "Accept": "application/json",
-    "Origin": "https://www.pinnacle.com",
-    "Referer": "https://www.pinnacle.com/",
-}
-
-def send(t):
-    if not T or not C:
-        print(t)
-        return
+def fetch(name, league_key, t_start, t_end):
+    url = f"https://api.the-odds-api.com/v4/sports/{league_key}/odds/"
+    params = {
+        "apiKey": API_KEY,
+        "regions": "eu,uk",
+        "markets": "h2h,spreads,totals",
+        "oddsFormat": "decimal",
+    }
     try:
-        requests.post(
-            f"https://api.telegram.org/bot{T}/sendMessage",
-            json={"chat_id": C, "text": t[:4000], "parse_mode": "Markdown"},
-            timeout=30,
-        )
-        time.sleep(1.2)
+        r = requests.get(url, params=params, timeout=15)
+        if r.status_code != 200:
+            print(f"API请求失败 {name}: {r.status_code}, {r.text}")
+            return []
+        
+        data = r.json()
+        matches = []
+        for item in data:
+            ko_str = item.get("commence_time")
+            if not ko_str:
+                continue
+            ko_dt = datetime.fromisoformat(ko_str.replace("Z", "+00:00"))
+            ko_naive = ko_dt.replace(tzinfo=None) + timedelta(hours=8)
+            
+            if not (t_start <= ko_naive <= t_end):
+                continue
+                
+            match_id = item.get("id")
+            home = item.get("home_team")
+            away = item.get("away_team")
+            
+            odds_1x2 = {}
+            ah_data = []
+            ou_data = []
+            
+            for bookmaker in item.get("bookmakers", []):
+                if bookmaker.get("key") in ["pinnacle", "bet365"]:
+                    for market in bookmaker.get("markets", []):
+                        m_key = market.get("key")
+                        if m_key == "h2h":
+                            for out in market.get("outcomes", []):
+                                name_team = out.get("name")
+                                price = out.get("price")
+                                if name_team == home:
+                                    odds_1x2["home"] = price
+                                elif name_team == away:
+                                    odds_1x2["away"] = price
+                                else:
+                                    odds_1x2["draw"] = price
+                        elif m_key == "spreads":
+                            for out in market.get("outcomes", []):
+                                if out.get("name") == home:
+                                    ah_data = [market.get("last_update"), out.get("point"), out.get("price")]
+                        elif m_key == "totals":
+                            for out in market.get("outcomes", []):
+                                if out.get("name") == "Over":
+                                    ou_data = [market.get("last_update"), out.get("point"), out.get("price")]
+                    if odds_1x2:
+                        break
+            
+            matches.append({
+                "id": match_id,
+                "league": name,
+                "home": home,
+                "away": away,
+                "kickoff": ko_naive.isoformat(),
+                "time": ko_naive.strftime("%H:%M"),
+                "1X2": odds_1x2,
+                "ah": ah_data,
+                "ou": ou_data
+            })
+        return matches
     except Exception as e:
-        print(e)
+        print(f"抓取异常 {name}: {e}")
+        return []
 
-def send_file(path, caption=""):
-    if not T or not C:
-        print("文件已生成:", path)
+def send(text):
+    if not TG_TOKEN or not TG_CHAT_ID:
+        print("未配置 Telegram 参数")
         return
+    url = f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage"
+    payload = {"chat_id": TG_CHAT_ID, "text": text, "parse_mode": "Markdown"}
     try:
-        with open(path, "rb") as f:
-            requests.post(
-                f"https://api.telegram.org/bot{T}/sendDocument",
-                data={"chat_id": C, "caption": caption},
-                files={"document": f},
-                timeout=60,
-            )
-        time.sleep(1.5)
+        requests.post(url, json=payload, timeout=10)
     except Exception as e:
-        print("发送文件失败:", e)
+        print(f"发送TG消息失败: {e}")
 
-def to_dec(a):
+def send_file(filepath, caption=""):
+    if not TG_TOKEN or not TG_CHAT_ID:
+        return
+    url = f"https://api.telegram.org/bot{TG_TOKEN}/sendDocument"
     try:
-        a = float(a)
-        return round(a / 100 + 1, 3) if a > 0 else round(100 / abs(a) + 1, 3)
-    except:
-        return None
-
-def get(url):
-    for _ in range(3):
-        try:
-            r = requests.get(url, headers=H, timeout=20)
-            if r.status_code == 200:
-                return r.json()
-        except:
-            time.sleep(1.5)
-    return None
-
-# ================= 自动初始化与加载本地缓存 =================
+        with open(filepath, "rb") as f:
+            files = {"document": f}
+            data = {"chat_id": TG_CHAT_ID, "caption": caption, "parse_mode": "Markdown"}
+            requests.post(url, data=data, files=files, timeout=30)
+    except Exception as e:
+        print(f"发送文件失败: {e}")
+# ================= 2. 历史与缓存管理模块 =================
 def load_history():
-    if not os.path.exists(HISTORY_FILE):
-        try:
-            with open(HISTORY_FILE, "w", encoding="utf-8") as f:
-                json.dump({}, f, ensure_ascii=False, indent=2)
-        except Exception as e:
-            print("初始化 nations_history.json 失败:", e)
+    if not os.path.exists("nations_history.json"):
         return {}
     try:
-        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+        with open("nations_history.json", "r", encoding="utf-8") as f:
             return json.load(f)
     except:
         return {}
 
-def save_history(data):
-    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+def save_history(history):
+    try:
+        with open("nations_history.json", "w", encoding="utf-8") as f:
+            json.dump(history, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"保存历史失败: {e}")
 
 def load_xg_data():
-    if not os.path.exists(XG_FILE):
+    xg_file = "xg_data.json"
+    if not os.path.exists(xg_file):
         default_xg = {
             "示例国家队": {"matches": 0, "xG_for": 0.0, "xG_against": 0.0}
         }
         try:
-            with open(XG_FILE, "w", encoding="utf-8") as f:
+            with open(xg_file, "w", encoding="utf-8") as f:
                 json.dump(default_xg, f, ensure_ascii=False, indent=2)
-        except Exception as e:
-            print("初始化 xg_data.json 失败:", e)
+        except:
+            pass
         return default_xg
     try:
-        with open(XG_FILE, "r", encoding="utf-8") as f:
+        with open(xg_file, "r", encoding="utf-8") as f:
             return json.load(f)
     except:
         return {}
-# ================= 2. 赔率抓取核心逻辑 =================
-def fetch(name, lid, t_start, t_end):
-    ms = get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/matchups")
-    if not ms:
-        return []
-    matches = {}
-    for m in ms:
-        if m.get("type") != "matchup":
-            continue
-        st = m.get("startTime", "")
-        if not st:
-            continue
-        try:
-            mt = datetime.strptime(st[:19], "%Y-%m-%dT%H:%M:%S") + timedelta(hours=8)
-        except:
-            continue
-        if not (t_start <= mt <= t_end):
-            continue
-        ps = m.get("participants", [])
-        if len(ps) < 2:
-            continue
-        home = next((p["name"] for p in ps if p.get("alignment") == "home"), None)
-        away = next((p["name"] for p in ps if p.get("alignment") == "away"), None)
-        if not home or not away or "(" in home or "(" in away:
-            continue
-        matches[m["id"]] = {
-            "id": str(m["id"]),
-            "league": name,
-            "home": home,
-            "away": away,
-            "time": mt.strftime("%m-%d %H:%M"),
-            "kickoff": mt.isoformat(),
-            "1X2": {},
-            "ah": None,
-            "ou": None,
-        }
-    if not matches:
-        return []
 
-    mks = get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/markets/straight")
-    if not mks:
-        return []
-
-    for mk in mks:
-        mid = mk.get("matchupId")
-        if mid not in matches or mk.get("period") != 0 or mk.get("isAlternate") is True:
-            continue
-        t = mk.get("type")
-        ps = mk.get("prices", [])
-        if t == "moneyline":
-            for p in ps:
-                d = p.get("designation")
-                if d in ("home", "draw", "away"):
-                    matches[mid]["1X2"][d] = to_dec(p["price"])
-        elif t == "spread":
-            hp = next((p for p in ps if p.get("designation") == "home"), None)
-            ap = next((p for p in ps if p.get("designation") == "away"), None)
-            if hp and ap:
-                line = hp.get("points", 0)
-                if matches[mid]["ah"] is None or abs(line) < abs(matches[mid]["ah"][0]):
-                    matches[mid]["ah"] = (line, to_dec(hp["price"]), to_dec(ap["price"]))
-        elif t == "total":
-            op = next((p for p in ps if p.get("designation") == "over"), None)
-            up = next((p for p in ps if p.get("designation") == "under"), None)
-            if op and up:
-                line = op.get("points", 0)
-                if matches[mid]["ou"] is None or abs(line - 2.5) < abs(matches[mid]["ou"][0] - 2.5):
-                    matches[mid]["ou"] = (line, to_dec(op["price"]), to_dec(up["price"]))
-    return list(matches.values())
-["away"],
-            "开盘主胜": h["open_1x2"].get("home"),
-            "开盘平局": h["open_1x2"].get("draw"),
-            "开盘客胜": h["open_1x2"].get("away"),
-            "临盘主胜": h["curr_1x2"].get("home"),
-            "临盘平局": h["curr_1x2"].get("draw"),
-            "临盘客胜": h["curr_1x2"].get("away"),
-            "开盘亚盘": h["open_ah"][0] if h["open_ah"] else None,
-            "开盘亚盘主": h["open_ah"][1] if h["open_ah"] else None,
-            "开盘亚盘客": h["open_ah"][2] if h["open_ah"] else None,
-            "临盘亚盘": h["curr_ah"][0] if h["curr_ah"] else None,
-            "临盘亚盘主": h["curr_ah"][1] if h["curr_ah"] else None,
-            "临盘亚盘客": h["curr_ah"][2] if h["curr_ah"] else None,
-            "开盘大小": h["open_ou"][0] if h["open_ou"] else None,
-            "开盘大": h["open_ou"][1] if h["open_ou"] else None,
-            "开盘小": h["open_ou"][2] if h["open_ou"] else None,
-            "临盘大小": h["curr_ou"][0] if h["curr_ou"] else None,
-            "临盘大": h["curr_ou"][1] if h["curr_ou"] else None,
-            "临盘小": h["curr_ou"][2] if h["curr_ou"] else None,
-        # ================= 3. 主调度与 Excel 整合发送逻辑（已集成 xG + 伤停） =================
 def load_injuries_data():
     inj_file = "injuries_data.json"
     if not os.path.exists(inj_file):
@@ -210,7 +163,7 @@ def load_injuries_data():
             return json.load(f)
     except:
         return {}
-
+# ================= 3. 主调度与 Excel 整合发送逻辑 =================
 def main():
     now_my = datetime.utcnow() + timedelta(hours=8)
     tomorrow = now_my.date() + timedelta(days=1)
@@ -338,8 +291,8 @@ def main():
         msg += f"   临盘 1X2: {r['临盘主胜']} | {r['临盘平局']} | {r['临盘客胜']}\n\n"
     send(msg)
 
-    # 推送双 Sheet 打包好的 Excel 文件
-    send_file(fname, caption=f"欧国联 赔率与xG综合报表 {tomorrow.strftime('%Y-%m-%d')}（共{len(rows)}场）")
+    # 推送包含 赔率 + xG + 伤停 的三合一 Excel 文件
+    send_file(fname, caption=f"欧国联 赔率+xG+伤停 综合总表 {tomorrow.strftime('%Y-%m-%d')}（共{len(rows)}场）")
     print("最终报告已发送")
 
 if __name__ == "__main__":
