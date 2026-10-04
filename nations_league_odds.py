@@ -1,4 +1,4 @@
-import os, time, requests, json
+import os, time, requests
 from datetime import datetime, timedelta
 from openpyxl import Workbook
 
@@ -67,11 +67,10 @@ def get(url):
     return None
 def fetch_all():
     now_my = datetime.utcnow() + timedelta(hours=8)
-    # 抓取未来 48 小时内的比赛，方便测试
     t_start = now_my
     t_end = now_my + timedelta(hours=48)
-
     all_matches = {}
+
     for name, lid in LEAGUES:
         ms = get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/matchups")
         if not ms:
@@ -109,9 +108,10 @@ def fetch_all():
         if not matches:
             continue
 
-       mks = get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/markets/straight")
+        mks = get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/markets/straight")
         if not mks:
             continue
+
         for mk in mks:
             mid = mk.get("matchupId")
             if mid not in matches or mk.get("period") != 0 or mk.get("isAlternate") is True:
@@ -140,32 +140,27 @@ def fetch_all():
         all_matches.update(matches)
         time.sleep(0.5)
     return all_matches
-
 def main():
     ts = (datetime.utcnow() + timedelta(hours=8)).strftime("%Y-%m-%d %H:%M:%S")
     print(f"开始快速测试 {ts}")
 
-    # 第 1 次抓取（开盘）
     print("第 1 次抓取...")
     snap1 = fetch_all()
     print(f"抓到 {len(snap1)} 场")
-    time.sleep(120)  # 等 2 分钟
+    time.sleep(120)
 
-    # 第 2 次抓取
     print("第 2 次抓取...")
     snap2 = fetch_all()
     print(f"抓到 {len(snap2)} 场")
-    time.sleep(120)  # 再等 2 分钟
+    time.sleep(120)
 
-    # 第 3 次抓取（临盘）
     print("第 3 次抓取...")
     snap3 = fetch_all()
     print(f"抓到 {len(snap3)} 场")
 
-    # 合并数据（以第 1 次出现的比赛为基准）
     rows = []
     for mid, m1 in snap1.items():
-        m3 = snap3.get(mid, m1)  # 如果第 3 次没有，就用第 1 次的
+        m3 = snap3.get(mid, m1)
         row = {
             "联赛": m1["league"],
             "时间": m1["time"],
@@ -196,7 +191,6 @@ def main():
         send(f"⚠️ `{ts}` 测试未抓到比赛")
         return
 
-    # 生成 Excel
     wb = Workbook()
     ws = wb.active
     ws.title = "快速测试"
@@ -207,7 +201,6 @@ def main():
     fname = f"nations_test_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
     wb.save(fname)
 
-    # 发送
     msg = f"🧪 *快速测试结果*\n🕒 `{ts}`\n共 {len(rows)} 场\n（第1次 vs 第3次）\n\n"
     for r in rows[:10]:
         msg += f"⚽ *{r['主队']} vs {r['客队']}* `{r['时间']}`\n"
