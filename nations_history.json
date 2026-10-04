@@ -1,938 +1,221 @@
-{
-  "1636866914": {
-    "league": "欧国联A",
-    "home": "Croatia",
-    "away": "England",
-    "time": "10-04 00:00",
-    "kickoff": "2026-10-04T00:00:00",
-    "open_1x2": {
-      "home": 4.5,
-      "away": 1.781,
-      "draw": 3.95
-    },
-    "open_ah": [
-      0.75,
-      1.893,
-      2.01
-    ],
-    "open_ou": [
-      3.0,
-      2.07,
-      1.833
-    ],
-    "curr_1x2": {
-      "home": 4.5,
-      "away": 1.794,
-      "draw": 3.92
-    },
-    "curr_ah": [
-      0.75,
-      1.885,
-      2.03
-    ],
-    "curr_ou": [
-      2.75,
-      1.855,
-      2.04
-    ],
-    "first_seen": "2026-10-03 06:55:32",
-    "last_seen": "2026-10-03 07:12:34"
-  },
-  "1636867951": {
-    "league": "欧国联A",
-    "home": "Spain",
-    "away": "Czechia",
-    "time": "10-04 02:45",
-    "kickoff": "2026-10-04T02:45:00",
-    "open_1x2": {
-      "home": 1.069,
-      "away": 30.69,
-      "draw": 13.42
-    },
-    "open_ah": [
-      -2.75,
-      1.909,
-      1.943
-    ],
-    "open_ou": [
-      3.5,
-      1.855,
-      1.99
-    ],
-    "curr_1x2": {
-      "home": 1.069,
-      "away": 30.69,
-      "draw": 13.42
-    },
-    "curr_ah": [
-      -2.75,
-      1.909,
-      1.943
-    ],
-    "curr_ou": [
-      3.5,
-      1.855,
-      1.99
-    ],
-    "first_seen": "2026-10-03 06:55:32",
-    "last_seen": "2026-10-03 07:12:34"
-  },
-  "1637406782": {
-    "league": "欧国联B",
-    "home": "Switzerland",
-    "away": "Slovenia",
-    "time": "10-04 02:45",
-    "kickoff": "2026-10-04T02:45:00",
-    "open_1x2": {
-      "home": 1.315,
-      "away": 10.01,
-      "draw": 5.42
-    },
-    "open_ah": [
-      -1.5,
-      2.0,
-      1.893
-    ],
-    "open_ou": [
-      2.5,
-      1.901,
-      1.971
-    ],
-    "curr_1x2": {
-      "home": 1.315,
-      "away": 10.01,
-      "draw": 5.42
-    },
-    "curr_ah": [
-      -1.5,
-      2.0,
-      1.893
-    ],
-    "curr_ou": [
-      2.5,
-      1.901,
-      1.971
-    ],
-    "first_seen": "2026-10-03 06:55:32",
-    "last_seen": "2026-10-03 07:12:34"
-  },
-  "1637406573": {
-    "league": "欧国联B",
-    "home": "North Macedonia",
-    "away": "Scotland",
-    "time": "10-04 02:45",
-    "kickoff": "2026-10-04T02:45:00",
-    "open_1x2": {
-      "home": 4.99,
-      "away": 1.769,
-      "draw": 3.62
-    },
-    "open_ah": [
-      0.75,
-      1.862,
-      2.03
-    ],
-    "open_ou": [
-      2.25,
-      1.971,
-      1.893
-    ],
-    "curr_1x2": {
-      "home": 4.87,
-      "away": 1.82,
-      "draw": 3.5
-    },
-    "curr_ah": [
-      0.5,
-      2.08,
-      1.826
-    ],
-    "curr_ou": [
-      2.25,
-      1.99,
-      1.877
-    ],
-    "first_seen": "2026-10-03 06:55:32",
-    "last_seen": "2026-10-03 07:12:34"
-  },
-  "1637406505": {
-    "league": "欧国联C",
-    "home": "Estonia",
-    "away": "Luxembourg",
-    "time": "10-04 00:00",
-    "kickoff": "2026-10-04T00:00:00",
-    "open_1x2": {
-      "home": 3.01,
-      "away": 2.63,
-      "draw": 3.03
-    },
-    "open_ah": [
-      0.0,
-      2.08,
-      1.813
-    ],
-    "open_ou": [
-      2.0,
-      1.813,
-      2.05
-    ],
-    "curr_1x2": {
-      "home": 3.01,
-      "away": 2.63,
-      "draw": 3.03
-    },
-    "curr_ah": [
-      0.0,
-      2.08,
-      1.813
-    ],
-    "curr_ou": [
-      2.0,
-      1.813,
-      2.05
-    ],
-    "first_seen": "2026-10-03 06:55:32",
-    "last_seen": "2026-10-03 07:12:34"
-  },
-  "1637553996": {
-    "league": "欧国联C",
-    "home": "Belarus",
-    "away": "San Marino",
-    "time": "10-04 00:00",
-    "kickoff": "2026-10-04T00:00:00",
-    "open_1x2": {
-      "home": 1.073,
-      "away": 26.47,
-      "draw": 12.68
-    },
-    "open_ah": [
-      -2.5,
-      1.862,
-      1.971
-    ],
-    "open_ou": [
-      3.25,
-      1.862,
-      1.952
-    ],
-    "curr_1x2": {
-      "home": 1.073,
-      "away": 26.47,
-      "draw": 12.68
-    },
-    "curr_ah": [
-      -2.5,
-      1.862,
-      1.971
-    ],
-    "curr_ou": [
-      3.25,
-      1.862,
-      1.952
-    ],
-    "first_seen": "2026-10-03 06:55:32",
-    "last_seen": "2026-10-03 07:12:34"
-  },
-  "1637553998": {
-    "league": "欧国联C",
-    "home": "Iceland",
-    "away": "Bulgaria",
-    "time": "10-04 00:00",
-    "kickoff": "2026-10-04T00:00:00",
-    "open_1x2": {
-      "home": 1.42,
-      "away": 7.89,
-      "draw": 4.54
-    },
-    "open_ah": [
-      -1.25,
-      2.01,
-      1.87
-    ],
-    "open_ou": [
-      2.75,
-      2.03,
-      1.833
-    ],
-    "curr_1x2": {
-      "home": 1.42,
-      "away": 7.89,
-      "draw": 4.54
-    },
-    "curr_ah": [
-      -1.25,
-      2.01,
-      1.87
-    ],
-    "curr_ou": [
-      2.75,
-      2.03,
-      1.833
-    ],
-    "first_seen": "2026-10-03 06:55:32",
-    "last_seen": "2026-10-03 07:12:34"
-  },
-  "1637497678": {
-    "league": "欧国联D",
-    "home": "Azerbaijan",
-    "away": "Lithuania",
-    "time": "10-04 21:00",
-    "kickoff": "2026-10-04T21:00:00",
-    "open_1x2": {
-      "home": 2.32,
-      "away": 3.27,
-      "draw": 3.04
-    },
-    "open_ah": [
-      -0.25,
-      1.971,
-      1.833
-    ],
-    "open_ou": [
-      2.0,
-      1.952,
-      1.833
-    ],
-    "curr_1x2": {
-      "home": 2.32,
-      "away": 3.27,
-      "draw": 3.04
-    },
-    "curr_ah": [
-      -0.25,
-      1.971,
-      1.833
-    ],
-    "curr_ou": [
-      2.0,
-      1.952,
-      1.833
-    ],
-    "first_seen": "2026-10-03 06:55:32",
-    "last_seen": "2026-10-03 07:12:34"
-  },
-  "1637448314": {
-    "league": "欧国联A",
-    "home": "Portugal",
-    "away": "Norway",
-    "time": "10-05 02:45",
-    "kickoff": "2026-10-05T02:45:00",
-    "open_1x2": {
-      "home": 1.645,
-      "away": 4.65,
-      "draw": 4.68
-    },
-    "open_ah": [
-      -1.0,
-      2.06,
-      1.855
-    ],
-    "open_ou": [
-      3.25,
-      1.885,
-      2.0
-    ],
-    "curr_1x2": {
-      "home": 1.645,
-      "away": 4.65,
-      "draw": 4.68
-    },
-    "curr_ah": [
-      -1.0,
-      2.06,
-      1.855
-    ],
-    "curr_ou": [
-      3.25,
-      1.885,
-      2.0
-    ],
-    "first_seen": "2026-10-04 10:59:19",
-    "last_seen": "2026-10-04 10:59:19"
-  },
-  "1637436580": {
-    "league": "欧国联A",
-    "home": "Netherlands",
-    "away": "Serbia",
-    "time": "10-05 02:45",
-    "kickoff": "2026-10-05T02:45:00",
-    "open_1x2": {
-      "home": 1.155,
-      "away": 15.82,
-      "draw": 8.5
-    },
-    "open_ah": [
-      -2.25,
-      1.962,
-      1.909
-    ],
-    "open_ou": [
-      3.5,
-      1.971,
-      1.885
-    ],
-    "curr_1x2": {
-      "home": 1.155,
-      "away": 15.82,
-      "draw": 8.5
-    },
-    "curr_ah": [
-      -2.25,
-      1.962,
-      1.909
-    ],
-    "curr_ou": [
-      3.5,
-      1.971,
-      1.885
-    ],
-    "first_seen": "2026-10-04 10:59:19",
-    "last_seen": "2026-10-04 10:59:19"
-  },
-  "1637437042": {
-    "league": "欧国联A",
-    "home": "Greece",
-    "away": "Germany",
-    "time": "10-05 02:45",
-    "kickoff": "2026-10-05T02:45:00",
-    "open_1x2": {
-      "home": 4.09,
-      "away": 1.862,
-      "draw": 3.94
-    },
-    "open_ah": [
-      0.5,
-      2.04,
-      1.87
-    ],
-    "open_ou": [
-      2.75,
-      1.84,
-      2.06
-    ],
-    "curr_1x2": {
-      "home": 4.09,
-      "away": 1.862,
-      "draw": 3.94
-    },
-    "curr_ah": [
-      0.5,
-      2.04,
-      1.87
-    ],
-    "curr_ou": [
-      2.75,
-      1.84,
-      2.06
-    ],
-    "first_seen": "2026-10-04 10:59:19",
-    "last_seen": "2026-10-04 10:59:19"
-  },
-  "1637448385": {
-    "league": "欧国联A",
-    "home": "Wales",
-    "away": "Denmark",
-    "time": "10-05 02:45",
-    "kickoff": "2026-10-05T02:45:00",
-    "open_1x2": {
-      "home": 3.73,
-      "away": 2.0,
-      "draw": 3.76
-    },
-    "open_ah": [
-      0.5,
-      1.901,
-      2.01
-    ],
-    "open_ou": [
-      2.75,
-      1.952,
-      1.935
-    ],
-    "curr_1x2": {
-      "home": 3.73,
-      "away": 2.0,
-      "draw": 3.76
-    },
-    "curr_ah": [
-      0.5,
-      1.901,
-      2.01
-    ],
-    "curr_ou": [
-      2.75,
-      1.952,
-      1.935
-    ],
-    "first_seen": "2026-10-04 10:59:19",
-    "last_seen": "2026-10-04 10:59:19"
-  },
-  "1637592491": {
-    "league": "欧国联B",
-    "home": "Kosovo",
-    "away": "Austria",
-    "time": "10-05 00:00",
-    "kickoff": "2026-10-05T00:00:00",
-    "open_1x2": {
-      "home": 3.42,
-      "away": 2.14,
-      "draw": 3.58
-    },
-    "open_ah": [
-      0.25,
-      2.03,
-      1.862
-    ],
-    "open_ou": [
-      2.5,
-      1.847,
-      2.03
-    ],
-    "curr_1x2": {
-      "home": 3.42,
-      "away": 2.14,
-      "draw": 3.58
-    },
-    "curr_ah": [
-      0.25,
-      2.03,
-      1.862
-    ],
-    "curr_ou": [
-      2.5,
-      1.847,
-      2.03
-    ],
-    "first_seen": "2026-10-04 10:59:19",
-    "last_seen": "2026-10-04 10:59:19"
-  },
-  "1637436579": {
-    "league": "欧国联B",
-    "home": "Ireland",
-    "away": "Israel",
-    "time": "10-05 02:45",
-    "kickoff": "2026-10-05T02:45:00",
-    "open_1x2": {
-      "home": 2.06,
-      "away": 3.74,
-      "draw": 3.48
-    },
-    "open_ah": [
-      -0.5,
-      2.07,
-      1.833
-    ],
-    "open_ou": [
-      2.25,
-      1.877,
-      2.0
-    ],
-    "curr_1x2": {
-      "home": 2.06,
-      "away": 3.74,
-      "draw": 3.48
-    },
-    "curr_ah": [
-      -0.5,
-      2.07,
-      1.833
-    ],
-    "curr_ou": [
-      2.25,
-      1.877,
-      2.0
-    ],
-    "first_seen": "2026-10-04 10:59:19",
-    "last_seen": "2026-10-04 10:59:19"
-  },
-  "1637432161": {
-    "league": "欧国联D",
-    "home": "Malta",
-    "away": "Andorra",
-    "time": "10-05 00:00",
-    "kickoff": "2026-10-05T00:00:00",
-    "open_1x2": {
-      "home": 1.629,
-      "away": 6.97,
-      "draw": 3.28
-    },
-    "open_ah": [
-      -0.75,
-      1.84,
-      2.0
-    ],
-    "open_ou": [
-      2.0,
-      1.87,
-      1.952
-    ],
-    "curr_1x2": {
-      "home": 1.629,
-      "away": 6.97,
-      "draw": 3.28
-    },
-    "curr_ah": [
-      -0.75,
-      1.84,
-      2.0
-    ],
-    "curr_ou": [
-      2.0,
-      1.87,
-      1.952
-    ],
-    "first_seen": "2026-10-04 10:59:19",
-    "last_seen": "2026-10-04 10:59:19"
-  },
-  "1637469585": {
-    "league": "欧国联A",
-    "home": "France",
-    "away": "Belgium",
-    "time": "10-06 02:45",
-    "kickoff": "2026-10-06T02:45:00",
-    "open_1x2": {
-      "home": 1.538,
-      "away": 5.63,
-      "draw": 4.76
-    },
-    "open_ah": [
-      -1.0,
-      1.862,
-      2.05
-    ],
-    "open_ou": [
-      3.25,
-      2.02,
-      1.87
-    ],
-    "curr_1x2": {
-      "home": 1.526,
-      "away": 5.73,
-      "draw": 4.8
-    },
-    "curr_ah": [
-      -1.0,
-      1.84,
-      2.08
-    ],
-    "curr_ou": [
-      3.25,
-      2.02,
-      1.877
-    ],
-    "first_seen": "2026-10-05 00:01:58",
-    "last_seen": "2026-10-05 07:12:57"
-  },
-  "1637469377": {
-    "league": "欧国联A",
-    "home": "Italy",
-    "away": "Turkiye",
-    "time": "10-06 02:45",
-    "kickoff": "2026-10-06T02:45:00",
-    "open_1x2": {
-      "home": 1.461,
-      "away": 6.34,
-      "draw": 5.1
-    },
-    "open_ah": [
-      -1.25,
-      1.98,
-      1.926
-    ],
-    "open_ou": [
-      3.25,
-      2.07,
-      1.833
-    ],
-    "curr_1x2": {
-      "home": 1.427,
-      "away": 6.93,
-      "draw": 5.18
-    },
-    "curr_ah": [
-      -1.25,
-      1.935,
-      1.962
-    ],
-    "curr_ou": [
-      3.0,
-      1.855,
-      2.05
-    ],
-    "first_seen": "2026-10-05 00:01:58",
-    "last_seen": "2026-10-05 07:12:57"
-  },
-  "1637469470": {
-    "league": "欧国联B",
-    "home": "Ukraine",
-    "away": "Hungary",
-    "time": "10-06 02:45",
-    "kickoff": "2026-10-06T02:45:00",
-    "open_1x2": {
-      "home": 2.52,
-      "away": 3.0,
-      "draw": 3.14
-    },
-    "open_ah": [
-      0.0,
-      1.775,
-      2.12
-    ],
-    "open_ou": [
-      2.25,
-      1.901,
-      1.952
-    ],
-    "curr_1x2": {
-      "home": 2.57,
-      "away": 3.04,
-      "draw": 3.12
-    },
-    "curr_ah": [
-      0.0,
-      1.787,
-      2.13
-    ],
-    "curr_ou": [
-      2.25,
-      2.01,
-      1.862
-    ],
-    "first_seen": "2026-10-05 00:01:58",
-    "last_seen": "2026-10-05 07:12:57"
-  },
-  "1637590245": {
-    "league": "欧国联B",
-    "home": "Northern Ireland",
-    "away": "Georgia",
-    "time": "10-06 02:45",
-    "kickoff": "2026-10-06T02:45:00",
-    "open_1x2": {
-      "home": 2.47,
-      "away": 3.14,
-      "draw": 3.06
-    },
-    "open_ah": [
-      -0.25,
-      2.11,
-      1.787
-    ],
-    "open_ou": [
-      2.0,
-      1.862,
-      1.99
-    ],
-    "curr_1x2": {
-      "home": 2.45,
-      "away": 3.29,
-      "draw": 3.06
-    },
-    "curr_ah": [
-      -0.25,
-      2.08,
-      1.826
-    ],
-    "curr_ou": [
-      2.0,
-      1.962,
-      1.909
-    ],
-    "first_seen": "2026-10-05 00:01:58",
-    "last_seen": "2026-10-05 07:12:57"
-  },
-  "1637469583": {
-    "league": "欧国联B",
-    "home": "Bosnia and Herzegovina",
-    "away": "Poland",
-    "time": "10-06 02:45",
-    "kickoff": "2026-10-06T02:45:00",
-    "open_1x2": {
-      "home": 2.95,
-      "away": 2.4,
-      "draw": 3.4
-    },
-    "open_ah": [
-      0.25,
-      1.8,
-      2.09
-    ],
-    "open_ou": [
-      2.5,
-      1.952,
-      1.901
-    ],
-    "curr_1x2": {
-      "home": 2.99,
-      "away": 2.39,
-      "draw": 3.5
-    },
-    "curr_ah": [
-      0.25,
-      1.826,
-      2.08
-    ],
-    "curr_ou": [
-      2.5,
-      1.901,
-      1.962
-    ],
-    "first_seen": "2026-10-05 00:01:58",
-    "last_seen": "2026-10-05 07:12:57"
-  },
-  "1637469584": {
-    "league": "欧国联B",
-    "home": "Romania",
-    "away": "Sweden",
-    "time": "10-06 02:45",
-    "kickoff": "2026-10-06T02:45:00",
-    "open_1x2": {
-      "home": 4.27,
-      "away": 1.741,
-      "draw": 4.08
-    },
-    "open_ah": [
-      0.75,
-      1.901,
-      1.971
-    ],
-    "open_ou": [
-      2.75,
-      1.826,
-      2.04
-    ],
-    "curr_1x2": {
-      "home": 4.45,
-      "away": 1.735,
-      "draw": 4.16
-    },
-    "curr_ah": [
-      0.75,
-      1.935,
-      1.952
-    ],
-    "curr_ou": [
-      3.0,
-      2.03,
-      1.847
-    ],
-    "first_seen": "2026-10-05 00:01:58",
-    "last_seen": "2026-10-05 07:12:57"
-  },
-  "1637475773": {
-    "league": "欧国联C",
-    "home": "Kazakhstan",
-    "away": "Faroe Islands",
-    "time": "10-06 22:00",
-    "kickoff": "2026-10-06T22:00:00",
-    "open_1x2": {
-      "home": 2.45,
-      "away": 3.25,
-      "draw": 2.95
-    },
-    "open_ah": [
-      -0.25,
-      2.07,
-      1.787
-    ],
-    "open_ou": [
-      2.0,
-      1.87,
-      1.952
-    ],
-    "curr_1x2": {
-      "home": 2.45,
-      "away": 3.25,
-      "draw": 2.95
-    },
-    "curr_ah": [
-      -0.25,
-      2.07,
-      1.787
-    ],
-    "curr_ou": [
-      2.0,
-      1.87,
-      1.952
-    ],
-    "first_seen": "2026-10-05 00:01:58",
-    "last_seen": "2026-10-05 07:12:57"
-  },
-  "1637457152": {
-    "league": "欧国联C",
-    "home": "Cyprus",
-    "away": "Latvia",
-    "time": "10-06 00:00",
-    "kickoff": "2026-10-06T00:00:00",
-    "open_1x2": {
-      "home": 1.602,
-      "away": 5.66,
-      "draw": 3.84
-    },
-    "open_ah": [
-      -0.75,
-      1.8,
-      2.07
-    ],
-    "open_ou": [
-      2.25,
-      1.833,
-      2.01
-    ],
-    "curr_1x2": {
-      "home": 1.617,
-      "away": 5.77,
-      "draw": 3.89
-    },
-    "curr_ah": [
-      -0.75,
-      1.806,
-      2.08
-    ],
-    "curr_ou": [
-      2.25,
-      1.84,
-      2.02
-    ],
-    "first_seen": "2026-10-05 00:01:58",
-    "last_seen": "2026-10-05 07:12:57"
-  },
-  "1637469469": {
-    "league": "欧国联C",
-    "home": "Montenegro",
-    "away": "Armenia",
-    "time": "10-06 02:45",
-    "kickoff": "2026-10-06T02:45:00",
-    "open_1x2": {
-      "home": 1.535,
-      "away": 5.71,
-      "draw": 4.25
-    },
-    "open_ah": [
-      -1.0,
-      1.909,
-      1.943
-    ],
-    "open_ou": [
-      2.75,
-      1.926,
-      1.909
-    ],
-    "curr_1x2": {
-      "home": 1.546,
-      "away": 5.83,
-      "draw": 4.31
-    },
-    "curr_ah": [
-      -1.0,
-      1.917,
-      1.952
-    ],
-    "curr_ou": [
-      2.75,
-      1.935,
-      1.917
-    ],
-    "first_seen": "2026-10-05 00:01:58",
-    "last_seen": "2026-10-05 07:12:57"
-  }
+import os, time, requests, json
+from datetime import datetime, timedelta
+from openpyxl import Workbook
+
+T = os.environ.get("TG_BOT_TOKEN")
+C = os.environ.get("TG_CHAT_ID")
+
+LEAGUES = [
+    ("欧国联A", 200719),
+    ("欧国联B", 200721),
+    ("欧国联C", 200726),
+    ("欧国联D", 200727),
+]
+
+H = {
+    "User-Agent": "Mozilla/5.0",
+    "Accept": "application/json",
+    "Origin": "https://www.pinnacle.com",
+    "Referer": "https://www.pinnacle.com/",
 }
+
+def send(t):
+    if not T or not C:
+        print(t)
+        return
+    try:
+        requests.post(
+            f"https://api.telegram.org/bot{T}/sendMessage",
+            json={"chat_id": C, "text": t[:4000], "parse_mode": "Markdown"},
+            timeout=30,
+        )
+        time.sleep(1.2)
+    except Exception as e:
+        print(e)
+
+def send_file(path, caption=""):
+    if not T or not C:
+        print("文件已生成:", path)
+        return
+    try:
+        with open(path, "rb") as f:
+            requests.post(
+                f"https://api.telegram.org/bot{T}/sendDocument",
+                data={"chat_id": C, "caption": caption},
+                files={"document": f},
+                timeout=60,
+            )
+        time.sleep(1.5)
+    except Exception as e:
+        print("发送文件失败:", e)
+
+def to_dec(a):
+    try:
+        a = float(a)
+        return round(a / 100 + 1, 3) if a > 0 else round(100 / abs(a) + 1, 3)
+    except:
+        return None
+
+def get(url):
+    for _ in range(3):
+        try:
+            r = requests.get(url, headers=H, timeout=20)
+            if r.status_code == 200:
+                return r.json()
+        except:
+            time.sleep(1.5)
+    return None
+def fetch_all():
+    now_my = datetime.utcnow() + timedelta(hours=8)
+    # 抓取未来 48 小时内的比赛，方便测试
+    t_start = now_my
+    t_end = now_my + timedelta(hours=48)
+
+    all_matches = {}
+    for name, lid in LEAGUES:
+        ms = get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/matchups")
+        if not ms:
+            continue
+        matches = {}
+        for m in ms:
+            if m.get("type") != "matchup":
+                continue
+            st = m.get("startTime", "")
+            if not st:
+                continue
+            try:
+                mt = datetime.strptime(st[:19], "%Y-%m-%dT%H:%M:%S") + timedelta(hours=8)
+            except:
+                continue
+            if not (t_start <= mt <= t_end):
+                continue
+            ps = m.get("participants", [])
+            if len(ps) < 2:
+                continue
+            home = next((p["name"] for p in ps if p.get("alignment") == "home"), None)
+            away = next((p["name"] for p in ps if p.get("alignment") == "away"), None)
+            if not home or not away or "(" in home or "(" in away:
+                continue
+            matches[m["id"]] = {
+                "id": str(m["id"]),
+                "league": name,
+                "home": home,
+                "away": away,
+                "time": mt.strftime("%m-%d %H:%M"),
+                "1X2": {},
+                "ah": None,
+                "ou": None,
+            }
+        if not matches:
+            continue
+
+        mks = get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/markets/straight")
+        if not mks:
+            continue
+        for mk in mks:
+            mid = mk.get("matchupId")
+            if mid not in matches or mk.get("period") != 0 or mk.get("isAlternate") is True:
+                continue
+            t = mk.get("type")
+            ps = mk.get("prices", [])
+            if t == "moneyline":
+                for p in ps:
+                    d = p.get("designation")
+                    if d in ("home", "draw", "away"):
+                        matches[mid]["1X2"][d] = to_dec(p["price"])
+            elif t == "spread":
+                hp = next((p for p in ps if p.get("designation") == "home"), None)
+                ap = next((p for p in ps if p.get("designation") == "away"), None)
+                if hp and ap:
+                    line = hp.get("points", 0)
+                    if matches[mid]["ah"] is None or abs(line) < abs(matches[mid]["ah"][0]):
+                        matches[mid]["ah"] = (line, to_dec(hp["price"]), to_dec(ap["price"]))
+            elif t == "total":
+                op = next((p for p in ps if p.get("designation") == "over"), None)
+                up = next((p for p in ps if p.get("designation") == "under"), None)
+                if op and up:
+                    line = op.get("points", 0)
+                    if matches[mid]["ou"] is None or abs(line - 2.5) < abs(matches[mid]["ou"][0] - 2.5):
+                        matches[mid]["ou"] = (line, to_dec(op["price"]), to_dec(up["price"]))
+        all_matches.update(matches)
+        time.sleep(0.5)
+    return all_matches
+
+def main():
+    ts = (datetime.utcnow() + timedelta(hours=8)).strftime("%Y-%m-%d %H:%M:%S")
+    print(f"开始快速测试 {ts}")
+
+    # 第 1 次抓取（开盘）
+    print("第 1 次抓取...")
+    snap1 = fetch_all()
+    print(f"抓到 {len(snap1)} 场")
+    time.sleep(120)  # 等 2 分钟
+
+    # 第 2 次抓取
+    print("第 2 次抓取...")
+    snap2 = fetch_all()
+    print(f"抓到 {len(snap2)} 场")
+    time.sleep(120)  # 再等 2 分钟
+
+    # 第 3 次抓取（临盘）
+    print("第 3 次抓取...")
+    snap3 = fetch_all()
+    print(f"抓到 {len(snap3)} 场")
+
+    # 合并数据（以第 1 次出现的比赛为基准）
+    rows = []
+    for mid, m1 in snap1.items():
+        m3 = snap3.get(mid, m1)  # 如果第 3 次没有，就用第 1 次的
+        row = {
+            "联赛": m1["league"],
+            "时间": m1["time"],
+            "主队": m1["home"],
+            "客队": m1["away"],
+            "开盘主胜": m1["1X2"].get("home"),
+            "开盘平局": m1["1X2"].get("draw"),
+            "开盘客胜": m1["1X2"].get("away"),
+            "临盘主胜": m3["1X2"].get("home"),
+            "临盘平局": m3["1X2"].get("draw"),
+            "临盘客胜": m3["1X2"].get("away"),
+            "开盘亚盘": m1["ah"][0] if m1["ah"] else None,
+            "开盘亚盘主": m1["ah"][1] if m1["ah"] else None,
+            "开盘亚盘客": m1["ah"][2] if m1["ah"] else None,
+            "临盘亚盘": m3["ah"][0] if m3["ah"] else None,
+            "临盘亚盘主": m3["ah"][1] if m3["ah"] else None,
+            "临盘亚盘客": m3["ah"][2] if m3["ah"] else None,
+            "开盘大小": m1["ou"][0] if m1["ou"] else None,
+            "开盘大": m1["ou"][1] if m1["ou"] else None,
+            "开盘小": m1["ou"][2] if m1["ou"] else None,
+            "临盘大小": m3["ou"][0] if m3["ou"] else None,
+            "临盘大": m3["ou"][1] if m3["ou"] else None,
+            "临盘小": m3["ou"][2] if m3["ou"] else None,
+        }
+        rows.append(row)
+
+    if not rows:
+        send(f"⚠️ `{ts}` 测试未抓到比赛")
+        return
+
+    # 生成 Excel
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "快速测试"
+    headers = list(rows[0].keys())
+    ws.append(headers)
+    for r in rows:
+        ws.append([r.get(h) for h in headers])
+    fname = f"nations_test_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
+    wb.save(fname)
+
+    # 发送
+    msg = f"🧪 *快速测试结果*\n🕒 `{ts}`\n共 {len(rows)} 场\n（第1次 vs 第3次）\n\n"
+    for r in rows[:10]:
+        msg += f"⚽ *{r['主队']} vs {r['客队']}* `{r['时间']}`\n"
+        msg += f"开盘: {r['开盘主胜']} | {r['开盘平局']} | {r['开盘客胜']}\n"
+        msg += f"临盘: {r['临盘主胜']} | {r['临盘平局']} | {r['临盘客胜']}\n\n"
+    send(msg)
+    send_file(fname, caption=f"快速测试 开盘vs临盘（共{len(rows)}场）")
+    print("测试完成，已发送")
+
+if __name__ == "__main__":
+    main()
