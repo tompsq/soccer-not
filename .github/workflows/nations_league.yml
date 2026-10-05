@@ -2,9 +2,8 @@ name: Nations League Odds
 
 on:
   schedule:
-    - cron: '0 23 * * *'   # 大马 07:00
-    - cron: '0 14 * * *'   # 大马 22:00
-    - cron: '45 15 * * *'  # 大马 23:45
+    - cron: '0 2 * * *'     # 大马 10:00
+    - cron: '45 15 * * *'   # 大马 23:45
   workflow_dispatch:
 
 permissions:
