@@ -19,7 +19,6 @@ LEAGUES = [
     ("欧联", 2630),
 ]
 
-# 每个联赛最多取几场（最新一轮）
 MAX_PER_LEAGUE = 12
 
 H = {
@@ -61,7 +60,6 @@ def get(url):
         except:
             time.sleep(1.5)
     return None
-
 def fetch(name, lid):
     ms = get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/matchups")
     if not ms:
@@ -77,7 +75,6 @@ def fetch(name, lid):
             mt = datetime.strptime(st[:19], "%Y-%m-%dT%H:%M:%S") + timedelta(hours=8)
         except:
             continue
-        # 只取未来 10 天内的比赛
         now = datetime.utcnow() + timedelta(hours=8)
         if mt < now or mt > now + timedelta(days=10):
             continue
@@ -130,10 +127,8 @@ def fetch(name, lid):
                 if matches[mid]["ou"] is None or abs(line - 2.5) < abs(matches[mid]["ou"][0] - 2.5):
                     matches[mid]["ou"] = (line, to_dec(op["price"]), to_dec(up["price"]))
 
-    # 按开赛时间排序，只取最近的一轮
     sorted_m = sorted(matches.values(), key=lambda x: x["sort_time"])
     return sorted_m[:MAX_PER_LEAGUE]
-
 def main():
     ts = (datetime.utcnow() + timedelta(hours=8)).strftime("%Y-%m-%d %H:%M:%S")
     all_rows = []
@@ -160,7 +155,7 @@ def main():
             }
             if m["ah"]:
                 row["亚盘"] = m["ah"][0]
-             row["亚盘主"] = m["ah"][1]
+                row["亚盘主"] = m["ah"][1]
                 row["亚盘客"] = m["ah"][2]
             if m["ou"]:
                 row["大小"] = m["ou"][0]
@@ -183,10 +178,8 @@ def main():
 
     fname = f"league_odds_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
     wb.save(fname)
-
     send_file(fname, caption=f"各大联赛早盘 {ts}\n共 {len(all_rows)} 场")
     print("Excel 已发送:", fname)
 
 if __name__ == "__main__":
     main()
-  
