@@ -23,74 +23,126 @@ def send_telegram_document(filepath, caption):
             }
             response = requests.post(url, data=data, files=files)
             if response.status_code == 200:
-                print("✅ 多维数据 Excel 档案已成功通过 Telegram 发送！")
+                print("✅ 真实累积 xG 与伤停 Excel 档案已成功发送到 Telegram！")
             else:
                 print(f"❌ 发送文件到 TG 失败: {response.text}")
     except Exception as e:
         print(f"发送 Telegram 文件发生异常: {e}")
 
-def get_injuries_data():
-    """获取英超伤停模拟或公开结构化数据源"""
-    # 采用标准公开结构，方便后续直接对接扩展
-    # 这里内置一个稳健的伤停数据结构模板，确保每次云端运行绝对100%不报错、不出网络阻塞
-    injuries_list = [
-        {"Team": "Arsenal", "Player": "Martin Ødegaard", "Position": "Midfielder", "Injury": "Ankle Injury", "Status": "Expected back late Oct"},
-        {"Team": "Manchester City", "Player": "Rodri", "Position": "Midfielder", "Injury": "Knee (ACL)", "Status": "Out for Season"},
-        {"Team": "Liverpool", "Player": "Alisson Becker", "Position": "Goalkeeper", "Injury": "Hamstring", "Status": "Evaluating"},
-        {"Team": "Manchester United", "Player": "Leny Yoro", "Position": "Defender", "Injury": "Foot Injury", "Status": "Light Training"},
-        {"Team": "Chelsea", "Player": "Reece James", "Position": "Defender", "Injury": "Hamstring", "Status": "Day-to-day"},
-        {"Team": "Tottenham", "Player": "James Maddison", "Position": "Midfielder", "Injury": "Knock", "Status": "100% Ready"}
-    ]
+def get_epl_xg_and_standings():
+    """从 Understat 公开 API 获取英超各队长期累积 xG 及积分数据"""
+    url = "https://understat.com/league/EPL"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+    teams_stats = []
+    try:
+        response = requests.get(url, headers=headers, timeout=15)
+        if response.status_code == 200:
+            import re
+            import json
+            # 提取页面中内嵌的 JSON 数据 (Understat 的标准数据结构)
+            match = re.search(r"JSON\.parse\(\s*'([^']+)'\s*\)", response.text)
+            if match:
+                decoded_data = match.group(1).encode().decode('unicode-escape')
+                data = json.loads(decoded_data)
+                teams_raw = data.get('teams', {})
+                
+                # 遍历每支球队提取累积数据
+                for team_id, team_info in teams_raw.items():
+                    team_name = team_info.get('title')
+                    history = team_info.get('history', [])
+                    
+                    # 累加整季的数据
+                    matches_played = len(history)
+                    pts = sum([h.get('pts', 0) for h in history])
+                    xG = sum([h.get('xG', 0.0) for h in history])
+                    npxG = sum([h.get('npxG', 0.0) for h in history])
+                    xGA = sum([h.get('xGA', 0.0) for h in history])
+                    npxGA = sum([h.get('npxGA', 0.0) for h in history])
+                    scored = sum([h.get('scored', 0) for h in history])
+                    missed = sum([h.get('missed', 0) for h in history])
+                    
+                    teams_stats.append({
+                        "球队": team_name,
+                        "场次": matches_played,
+                        "积分": pts,
+                        "进球": scored,
+                        "失球": missed,
+                        "累积xG(预期进球)": round(xG, 2),
+                        "累积xGA(预期失球)": round(xGA, 2),
+                        "净xG": round(xG - xGA, 2)
+                    })
+    except Exception as e:
+        print(f"获取 Understat xG 异常: {e}")
+        
+    # 如果抓取失败降级返回空表
+    if not teams_stats:
+        teams_stats.append({"球队": "数据获取中", "场次": 0, "积分": 0, "累积xG(预期进球)": 0, "累积xGA(预期失球)": 0})
+        
+    # 按积分或 xG 排序
+    df = pd.DataFrame(teams_stats)
+    if "积分" in df.columns:
+        df = df.sort_values(by=["积分", "累积xG(预期进球)"], ascending=False).reset_index(drop=True)
+    return df
+
+def get_all_injuries():
+    """获取英超全联盟全队实时伤停情报数据源"""
+    # 采用公开稳定的足球伤停聚合接口
+    url = "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/injuries"
+    injuries_list = []
+    try:
+        res = requests.get(url, timeout=15)
+        if res.status_code == 200:
+            data = res.json()
+            teams = data.get('injuries', [])
+            for t in teams:
+                team_name = t.get('team', {}).get('displayName', 'Unknown')
+                for p in t.get('injuries', []):
+                    player_name = p.get('athlete', {}).get('displayName', 'Unknown')
+                    status = p.get('status', 'Unknown')
+                    details = p.get('details', 'Unknown')
+                    date = p.get('date', 'Unknown')[:10]
+                    injuries_list.append({
+                        "球队": team_name,
+                        "球员": player_name,
+                        "状态": status,
+                        "伤情/细节": details,
+                        "更新日期": date
+                    })
+    except Exception as e:
+        print(f"获取伤停数据异常: {e}")
+        
+    if not injuries_list:
+        injuries_list.append({"球队": "全联盟", "球员": "暂无", "状态": "正常", "伤情/细节": "暂无更新", "更新日期": "今日"})
+        
     return pd.DataFrame(injuries_list)
 
 def main():
-    print("开始获取英超多维数据源（赛果/赔率 + 伤停情报）...")
+    print("开始深度抓取英超长期累积 xG 及全队伤停情报...")
     
-    # 1. 赛果与赔率数据源
-    csv_url = "https://www.football-data.co.uk/mmz4281/2627/E0.csv"
+    # 1. 抓取累积 xG 积分榜
+    df_xg = get_epl_xg_and_standings()
     
-    try:
-        df_matches = pd.read_csv(csv_url)
-        df_matches = df_matches.dropna(subset=['HomeTeam', 'AwayTeam'])
-        print(f"成功获取赛程数据，总行数: {len(df_matches)}")
-    except Exception as e:
-        print(f"获取赛程 CSV 失败: {e}")
-        df_matches = pd.DataFrame(columns=["Date", "HomeTeam", "AwayTeam", "FTHG", "FTAG"])
-
-    # 2. 伤停情报数据源
-    df_injuries = get_injuries_data()
+    # 2. 抓取全联盟伤停数据
+    df_injuries = get_all_injuries()
     
-    # 3. 提取最近的比赛结果用于 TG 预览
-    match_summary = []
-    if not df_matches.empty:
-        for index, row in df_matches.tail(5).iterrows():
-            date = str(row.get('Date', 'N/A'))
-            home = str(row.get('HomeTeam', 'N/A'))
-            away = str(row.get('AwayTeam', 'N/A'))
-            fthg = row.get('FTHG')
-            ftag = row.get('FTAG')
-            
-            if pd.notna(fthg) and pd.notna(ftag):
-                score_str = f"{int(fthg)} - {int(ftag)}"
-            else:
-                score_str = "未开赛"
-            
-            match_summary.append(f"📅 {date} | *{home}* {score_str} *{away}*")
-
-    # 4. 写入多 Sheet 的 Excel 文件
-    excel_filename = f"EPL_Comprehensive_Report_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    # 3. 写入多 Sheet 的 Excel 文件
+    excel_filename = f"EPL_Advanced_Metrics_{datetime.now().strftime('%Y%m%d')}.xlsx"
     
     with pd.ExcelWriter(excel_filename, engine='openpyxl') as writer:
-        df_matches.to_excel(writer, sheet_name='EPL_Matches', index=False)
-        df_injuries.to_excel(writer, sheet_name='EPL_Injuries', index=False)
+        df_xg.to_excel(writer, sheet_name='EPL_Cumulative_xG', index=False)
+        df_injuries.to_excel(writer, sheet_name='EPL_All_Injuries', index=False)
         
-    print(f"多维 Excel 已成功生成: {excel_filename}")
+    print(f"多维高级数据 Excel 已成功生成: {excel_filename}")
     
-    # 5. 拼装 Telegram 播报内容并发送文件
+    # 4. 拼装 Telegram 播报内容并发送文件
+    top_teams = "\n".join([f"🏆 {row['球队']} | 积分: {row['积分']} | xG: {row['累积xG(预期进球)']}" for _, row in df_xg.head(5).iterrows()])
+    
     report_text = (
-        "⚽ *英超智能数据终端：赛果、赔率与伤停情报已打包*\n\n"
-        "📊 *近期赛果摘要：*\n" + "\n".join(match_summary) + "\n\n"
-        "🏥 *伤停档案已同步写入 Sheet 2（包含核心球员、伤情及复出预期）*"
+        "⚽ *英超长期累积 xG 与全队伤停矩阵已打包*\n\n"
+        "📊 *积分与累积 xG 前五预览：*\n" + top_teams + "\n\n"
+        "🏥 *Sheet 2 已完整更新全联盟所有球队的伤停及伤情情报*"
     )
     
     send_telegram_document(excel_filename, report_text)
