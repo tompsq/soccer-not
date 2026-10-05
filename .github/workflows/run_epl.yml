@@ -1,0 +1,30 @@
+name: Auto Get EPL xG & Send Excel
+
+on:
+  schedule:
+    # 每天定时运行（默认 UTC 时间 00:00，折合马币/北京时间早上 8:00 运行）
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 支持你在网页上手动点击随时运行
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v3
+
+      - name: 设置 Python 环境
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: 安装依赖
+        run: |
+          pip install requests openpyxl
+
+      - name: 运行英超抓取脚本并发送 TG
+        env:
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+        run: |
+          python epl_to_excel.py
