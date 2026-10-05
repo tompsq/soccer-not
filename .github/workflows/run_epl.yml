@@ -2,9 +2,8 @@ name: Auto Get EPL xG & Send Excel
 
 on:
   schedule:
-    # 每天定时运行（默认 UTC 时间 00:00，折合马币/北京时间早上 8:00 运行）
     - cron: '0 0 * * *'
-  workflow_dispatch: # 支持你在网页上手动点击随时运行
+  workflow_dispatch:
 
 jobs:
   run-script:
