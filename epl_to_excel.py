@@ -15,16 +15,17 @@ TG_CHAT_ID = os.getenv("TG_CHAT_ID")
 
 # 严密的浏览器伪装 Headers，防止 GitHub Actions 云端 IP 被拦截
 HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,"
-        " like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    ),
+    "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1",
     "Accept": "application/json, text/plain, */*",
     "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
     "Referer": "https://www.sofascore.com/",
     "Origin": "https://www.sofascore.com",
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "same-site",
+    "Connection": "keep-alive"
 }
-
 
 def get_json(url):
   try:
