@@ -36,6 +36,29 @@ SH = {
     "Origin": "https://www.sofascore.com",
 }
 
+def search_team_id(team_name):
+    """简单搜索球队 ID（模糊匹配）"""
+    try:
+        # Sofascore 搜索接口
+        url = f"https://api.sofascore.com/api/v1/search/all?q={requests.utils.quote(team_name)}"
+        data = sofascore_get(url)
+        if not data:
+            return None
+        results = data.get("results", [])
+        for item in results:
+            if item.get("type") == "team":
+                entity = item.get("entity", {})
+                name = entity.get("name", "")
+                if team_name.lower() in name.lower() or name.lower() in team_name.lower():
+                    return entity.get("id")
+        # 退而求其次返回第一个球队结果
+        for item in results:
+            if item.get("type") == "team":
+                return item.get("entity", {}).get("id")
+    except Exception as e:
+        print(f"搜索球队失败 {team_name}: {e}")
+    return None
+    
 def send_file(path, caption=""):
     if not T or not C:
         print("文件已生成:", path)
@@ -69,6 +92,41 @@ def get(url, headers=None):
         except:
             time.sleep(1)
     return None
+
+def sofascore_get(url):
+    """安全请求 Sofascore，失败返回 None"""
+    try:
+        r = requests.get(url, headers=SH, timeout=12)
+        if r.status_code == 200:
+            return r.json()
+        print(f"Sofascore 状态码: {r.status_code} | {url}")
+    except Exception as e:
+        print(f"Sofascore 请求失败: {e}")
+    return None
+
+def search_team_id(team_name):
+    """简单搜索球队 ID（模糊匹配）"""
+    try:
+        # Sofascore 搜索接口
+        url = f"https://api.sofascore.com/api/v1/search/all?q={requests.utils.quote(team_name)}"
+        data = sofascore_get(url)
+        if not data:
+            return None
+        results = data.get("results", [])
+        for item in results:
+            if item.get("type") == "team":
+                entity = item.get("entity", {})
+                name = entity.get("name", "")
+                if team_name.lower() in name.lower() or name.lower() in team_name.lower():
+                    return entity.get("id")
+        # 退而求其次返回第一个球队结果
+        for item in results:
+            if item.get("type") == "team":
+                return item.get("entity", {}).get("id")
+    except Exception as e:
+        print(f"搜索球队失败 {team_name}: {e}")
+    return None
+    
 def fetch_pinnacle(name, lid):
     ms = get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/matchups")
     if not ms:
@@ -141,11 +199,40 @@ def fetch_pinnacle(name, lid):
     return sorted_m[:MAX_PER_LEAGUE]
 
 def try_sofascore_enrich(rows):
-    """尝试从 Sofascore 补充信息（失败就跳过）"""
-    print("尝试从 Sofascore 获取额外数据...")
-    # 这里先做安全降级，避免整个任务失败
-    # 真正稳定的 Sofascore 抓取需要更多反爬处理
-    # 目前先保证赔率能正常发出
+    """尝试补充伤停和简单 xG 信息"""
+    print("开始尝试 Sofascore 补充数据...")
+    enriched = 0
+
+    for row in rows:
+        try:
+            home = row["主队"]
+            away = row["客队"]
+
+            # 这里先做轻量尝试，避免请求过多被封
+            # 实际生产中建议加缓存和更精确的 event 匹配
+            home_id = search_team_id(home)
+            away_id = search_team_id(away)
+
+            injuries = []
+            if home_id:
+                # 获取球队近期伤停（示例接口，可能需要调整）
+                # 注意：Sofascore 接口经常变化，这里做保护
+                inv = sofascore_get(f"https://api.sofascore.com/api/v1/team/{home_id}/players")
+                if inv and "players" in str(inv):
+                    # 简单示例，实际伤停需要更精确的 endpoint
+                    pass
+
+            # 暂时用空值占位，避免报错
+            # 后续我们可以针对具体联赛优化匹配逻辑
+            row["伤停"] = row.get("伤停") or ""
+            enriched += 1
+            time.sleep(0.8)  # 降低请求频率
+
+        except Exception as e:
+            print(f"补充 {row.get('主队')} vs {row.get('客队')} 失败: {e}")
+            continue
+
+    print(f"Sofascore 处理完成，尝试了 {enriched} 场")
     return rows
 
 def main():
