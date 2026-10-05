@@ -19,7 +19,8 @@ jobs:
 
       - name: 安装依赖
         run: |
-          pip install requests openpyxl
+  pip install requests openpyxl curl_cffi
+
 
       - name: 运行英超抓取脚本并发送 TG
         env:
