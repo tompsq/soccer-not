@@ -141,3 +141,5 @@ def main():
     # 直接通过 TG 发送文件
     send_file(filename)
 
+if __name__ == "__main__":
+    main()
