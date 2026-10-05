@@ -203,7 +203,7 @@ def main():
     print(f"历史记录保存完成，共 {len(history)} 场")
 
     # 只有晚上 22 点后才发送
-    if hour < 22:
+    if hour < 23:
         print("非发送时段，只更新历史")
         return
 
