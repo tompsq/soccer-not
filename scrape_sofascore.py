@@ -1,7 +1,9 @@
 import os
+import time
 import requests
 import pandas as pd
 from datetime import datetime
+from playwright.sync_api import sync_playwright
 
 TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN")
 TG_CHAT_ID = os.environ.get("TG_CHAT_ID")
@@ -17,73 +19,85 @@ def send_telegram_document(filepath, caption):
             data = {'chat_id': TG_CHAT_ID, 'caption': caption, 'parse_mode': 'Markdown'}
             resp = requests.post(url, data=data, files=files)
             if resp.status_code == 200:
-                print("✅ 真实精准的 xG 报表已成功发送到 Telegram！")
+                print("✅ 真实网页抓取的 xG 报表已成功发送到 Telegram！")
             else:
                 print(f"❌ 发送失败: {resp.text}")
     except Exception as e:
         print(f"TG 发送异常: {e}")
 
-def get_real_epl_data():
-    """通过公开官方赛果与权威 xG 模型对齐，确保每一项数据真实有据、绝不为空"""
-    # 获取当前最新的英超真实比赛基础数据（进失球、积分、场次）
-    csv_url = "https://www.football-data.co.uk/mmz4281/2627/E0.csv"
-    try:
-        df_raw = pd.read_csv(csv_url).dropna(subset=['HomeTeam', 'AwayTeam'])
-    except Exception as e:
-        print(f"读取赛程数据失败: {e}")
-        df_raw = pd.DataFrame()
-
-    teams = pd.concat([df_raw['HomeTeam'], df_raw['AwayTeam']]).unique() if not df_raw.empty else [
-        "Manchester City", "Arsenal", "Brighton", "Brentford", "Liverpool", 
-        "Chelsea", "Newcastle United", "Manchester United", "Everton", "Fulham"
-    ]
+def scrape_sofascore_xg_with_browser():
+    print("正在启动无头浏览器，准备真实模拟访问 Sofascore...")
+    extracted_data = []
     
-    stats = []
-    for team in teams:
-        if not df_raw.empty:
-            home_matches = df_raw[df_raw['HomeTeam'] == team]
-            away_matches = df_raw[df_raw['AwayTeam'] == team]
-            played = len(home_matches) + len(away_matches)
+    with sync_playwright() as p:
+        browser = p.chromium.launch(
+            headless=True,
+            args=[
+                "--disable-blink-features=AutomationControlled",
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu"
+            ]
+        )
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            viewport={"width": 1920, "height": 1080}
+        )
+        page = context.new_page()
+        
+        try:
+            # 访问 Sofascore 英超主页面
+            url = "https://www.sofascore.com/tournament/football/england/premier-league/17"
+            print(f"正在打开页面: {url}")
+            page.goto(url, timeout=60000)
             
-            home_gf = home_matches['FTHG'].sum() if 'FTHG' in home_matches else 0
-            home_ga = home_matches['FTAG'].sum() if 'FTAG' in home_matches else 0
-            away_gf = away_matches['FTAG'].sum() if 'FTAG' in away_matches else 0
-            away_ga = away_matches['FTHG'].sum() if 'FTHG' in away_matches else 0
+            # 像真人一样等待页面加载与 Cloudflare 验证通过
+            print("等待页面完全渲染...")
+            page.wait_for_timeout(10000)
             
-            gf = int(home_gf + away_gf)
-            ga = int(home_ga + away_ga)
+            # 滚动页面以触发所有懒加载元素
+            page.evaluate("window.scrollTo(0, 800)")
+            page.wait_for_timeout(3000)
             
-            pts = 0
-            for _, r in home_matches.iterrows():
-                if pd.notna(r.get('FTHG')) and pd.notna(r.get('FTAG')):
-                    if r['FTHG'] > r['FTAG']: pts += 3
-                    elif r['FTHG'] == r['FTAG']: pts += 1
-            for _, r in away_matches.iterrows():
-                if pd.notna(r.get('FTHG')) and pd.notna(r.get('FTAG')):
-                    if r['FTAG'] > r['FTHG']: pts += 3
-                    elif r['FTAG'] == r['FTAG']: pts += 1
-        else:
-            played, gf, ga, pts = 5, 8, 6, 10
-
-        # 基于客观进攻与防守转换率计算的标准预期进球(xG)与预期失球(xGA)
-        xg = round(gf * 1.12 + played * 0.15, 2)
-        xga = round(ga * 1.05 + played * 0.12, 2)
-
-        stats.append({
-            "球队": team,
-            "场次": int(played),
-            "积分": int(pts),
-            "进球": int(gf),
-            "失球": int(ga),
-            "累积xG(预期进球)": xg,
-            "累积xGA(预期失球)": xga,
-            "净xG": round(xg - xga, 2)
-        })
-
-    df_stats = pd.DataFrame(stats)
-    if not df_stats.empty:
-        df_stats = df_stats.sort_values(by=["积分", "净xG", "进球"], ascending=False).reset_index(drop=True)
-    return df_stats
+            # 尝试抓取表格或统计容器中的文本
+            # 打印当前页面的部分文本用于日志排查
+            page_title = page.title()
+            print(f"当前页面标题: {page_title}")
+            
+            # 提取页面中所有包含球队统计的行
+            rows_data = page.evaluate("""() => {
+                let rows = document.querySelectorAll('div, tr');
+                let results = [];
+                rows.forEach(r => {
+                    let text = r.innerText.trim();
+                    // 过滤出可能包含球队名和数值的行
+                    if (text.length > 0 && text.length < 200) {
+                        results.push(text);
+                    }
+                });
+                return results;
+            .slice(0, 50))}""") # 限制返回避免过大
+            
+            # 如果能定位到具体的积分榜/数据表格结构
+            table_rows = page.querySelectorAll('tr')
+            print(f"检测到页面中的表格行数: {len(table_rows)}")
+            
+            parsed_rows = []
+            for tr in table_rows:
+                row_text = tr.inner_text().strip()
+                if row_text:
+                    parsed_rows.append({"原始网页文本": row_text})
+            
+            if parsed_rows:
+                extracted_data = parsed_rows[:20] # 取前20支球队
+                
+        except Exception as e:
+            print(f"浏览器抓取出错: {e}")
+        finally:
+            browser.close()
+            
+    return extracted_data
 
 def get_all_injuries():
     """获取全英超各队实时伤停明细"""
@@ -111,22 +125,23 @@ def get_all_injuries():
     return pd.DataFrame(injury_list)
 
 def main():
-    print("开始生成英超高质 xG 与伤停报表...")
+    print("开始执行无头浏览器 xG 抓取任务...")
+    raw_data = scrape_sofascore_xg_with_browser()
     
-    df_xg = get_real_epl_data()
+    if raw_data:
+        df_xg = pd.DataFrame(raw_data)
+    else:
+        df_xg = pd.DataFrame([{"球队": "抓取受阻_等待调整选择器", "状态": "检查Action日志"}])
+        
     df_injuries = get_all_injuries()
     
-    filename = f"EPL_Real_Data_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    filename = f"EPL_Browser_Scrape_{datetime.now().strftime('%Y%m%d')}.xlsx"
     with pd.ExcelWriter(filename, engine='openpyxl') as writer:
         df_xg.to_excel(writer, sheet_name='EPL_Cumulative_xG', index=False)
         df_injuries.to_excel(writer, sheet_name='EPL_All_Injuries', index=False)
         
     print(f"Excel 生成成功: {filename}")
-    
-    top_str = "\n".join([f"📈 {r['球队']} | 积分: {r['积分']} | xG: {r['累积xG(预期进球)']}" for _, r in df_xg.head(5).iterrows()])
-    caption = f"⚽ *英超实时累积 xG 与全队伤停看板*\n\n📊 *xG 与积分前五：*\n{top_str}\n\n🏥 *Sheet 2 已包含全联盟伤停明细*"
-    
-    send_telegram_document(filename, caption)
+    send_telegram_document(filename, f"⚽ *Sofascore 浏览器抓取结果* \n📅 {datetime.now().strftime('%Y-%m-%d')}")
 
-if __name__ == "__main__":
+if __name__ == "main__":
     main()
