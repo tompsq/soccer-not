@@ -145,6 +145,12 @@ def fetch_pinnacle(name, lid):
 
     sorted_m = sorted(matches.values(), key=lambda x: x["sort_time"])
     return sorted_m[:MAX_PER_LEAGUE]
+
+def try_sofascore_enrich(rows):
+    print("开始尝试从 Sofascore 获取长期 xG 数据...")
+    print("Sofascore 部分暂时跳过（先保证赔率正常）")
+    return rows
+
 def main():
     print("=== 脚本开始运行 ===")
     ts = (datetime.utcnow() + timedelta(hours=8)).strftime("%Y-%m-%d %H:%M:%S")
@@ -176,7 +182,7 @@ def main():
             all_rows.append(row)
         time.sleep(0.5)
 
-    all_rows = try_sofascore_enrich(all_rows)
+ # all_rows = try_sofascore_enrich(all_rows)
 
     if not all_rows:
         print("没有抓到数据")
