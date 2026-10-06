@@ -34,7 +34,6 @@ SH = {
     "Referer": "https://www.sofascore.com/",
     "Origin": "https://www.sofascore.com",
 }
-
 def send_file(path, caption=""):
     if not T or not C:
         print("文件已生成:", path)
@@ -58,15 +57,17 @@ def to_dec(a):
     except:
         return None
 
-def sofascore_get(url):
-    try:
-        r = requests.get(url, headers=SH, timeout=12)
-        if r.status_code == 200:
-            return r.json()
-        print(f"Sofascore {r.status_code}: {url[:80]}")
-    except Exception as e:
-        print(f"Sofascore 错误: {e}")
+def get(url, headers=None):
+    headers = headers or H
+    for _ in range(3):
+        try:
+            r = requests.get(url, headers=headers, timeout=15)
+            if r.status_code == 200:
+                return r.json()
+        except:
+            time.sleep(1)
     return None
+
 def sofascore_get(url):
     try:
         r = requests.get(url, headers=SH, timeout=12)
@@ -147,62 +148,7 @@ def fetch_pinnacle(name, lid):
 
 def try_sofascore_enrich(rows):
     print("开始尝试从 Sofascore 获取长期 xG 数据...")
-    cache = {}
-
-    for i, row in enumerate(rows):
-        home = row.get("主队", "")
-        away = row.get("客队", "")
-        print(f"[{i+1}/{len(rows)}] {home} vs {away}")
-
-        for col, team in [("主队xG", home), ("客队xG", away)]:
-            if not team:
-                continue
-            if team in cache:
-                row[col] = cache[team]
-                continue
-
-            try:
-                # 搜索球队
-                q = requests.utils.quote(team)
-                search_url = f"https://api.sofascore.com/api/v1/search/all?q={q}"
-                data = sofascore_get(search_url)
-
-                team_id = None
-                if data and "results" in data:
-                    for item in data["results"]:
-                        if item.get("type") == "team":
-                            entity = item.get("entity", {})
-                            name = entity.get("name", "")
-                            if team.lower() in name.lower() or name.lower() in team.lower():
-                                team_id = entity.get("id")
-                                print(f"  找到球队: {name} (id={team_id})")
-                                break
-
-                if not team_id:
-                    print(f"  未找到球队: {team}")
-                    cache[team] = None
-                    continue
-
-                # 尝试获取统计（先测试接口是否通）
-                # 注意：不同联赛的 season / unique-tournament ID 不同，这里先做通用尝试
-                stats = sofascore_get(f"https://api.sofascore.com/api/v1/team/{team_id}/statistics/seasons")
-                if stats:
-                    print(f"  {team} 获取到 seasons 数据")
-                    # 这里暂时不解析具体 xG，先确认能拿到数据
-                    # 后续根据实际返回结构再提取
-                    cache[team] = "有数据"
-                    row[col] = "有数据"
-                else:
-                    print(f"  {team} 无 seasons 数据")
-                    cache[team] = None
-
-                time.sleep(1.2)
-
-            except Exception as e:
-                print(f"  {team} 异常: {e}")
-                cache[team] = None
-
-    print("Sofascore 处理结束")
+    print("Sofascore 部分暂时跳过（先保证赔率正常）")
     return rows
 
 def main():
@@ -236,7 +182,7 @@ def main():
             all_rows.append(row)
         time.sleep(0.5)
 
- # all_rows = try_sofascore_enrich(all_rows)
+    all_rows = try_sofascore_enrich(all_rows)
 
     if not all_rows:
         print("没有抓到数据")
