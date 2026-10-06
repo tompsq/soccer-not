@@ -143,5 +143,5 @@ def main():
     print(f"Excel 生成成功: {filename}")
     send_telegram_document(filename, f"⚽ *Sofascore 浏览器抓取结果* \n📅 {datetime.now().strftime('%Y-%m-%d')}")
 
-if __name__ == "main__":
+if __name__ == "__main__":
     main()
