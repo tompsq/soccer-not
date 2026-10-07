@@ -1,28 +1,16 @@
 import os
-import time
 import requests
 import pandas as pd
 from datetime import datetime
 
-# 替换为 Football-Data.org 的公开 API 端点（支持各大主流联赛）
-# 注：如果你申请了免费的 X-Auth-Token 密钥可以在 headers 里加上，不加也可以直接请求部分公开数据
-BASE_URL = "https://api.football-data.org/v4"
-
-# 联赛代码对应表
-LEAGUES = {
-    "Premier League": "PL",
-    "La Liga": "PD",
-    "Bundesliga": "BL1",
-    "Serie A": "SA",
-    "Ligue 1": "FL1"
+# 使用 openfootball 官方维护的公开 JSON 数据库（无需任何 Key，永不 403）
+LEAGUES_DATA = {
+    "Premier League": "https://raw.githubusercontent.com/openfootball/eng-england/master/2025-26/1-premierleague.json",
+    "La Liga": "https://raw.githubusercontent.com/openfootball/esp-spain/master/2025-26/1-primera.json",
+    "Serie A": "https://raw.githubusercontent.com/openfootball/ita-italy/master/2025-26/1-seriea.json",
+    "Bundesliga": "https://raw.githubusercontent.com/openfootball/deu-germany/master/2025-26/1-bundesliga.json",
+    "Ligue 1": "https://raw.githubusercontent.com/openfootball/fra-france/master/2025-26/1-ligue1.json"
 }
-
-# 也可以配置你在 Github Secrets 里的 API Key（如果有的话）
-FOOTBALL_DATA_API_KEY = os.environ.get("FOOTBALL_DATA_API_KEY", "")
-
-HEADERS = {
-    "X-Auth-Token": FOOTBALL_DATA_API_KEY
-} if FOOTBALL_DATA_API_KEY else {}
 
 TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN")
 TG_CHAT_ID = os.environ.get("TG_CHAT_ID")
@@ -38,95 +26,99 @@ def send_telegram_document(filepath, caption):
             data = {'chat_id': TG_CHAT_ID, 'caption': caption, 'parse_mode': 'Markdown'}
             resp = requests.post(url, data=data, files=files)
             if resp.status_code == 200:
-                print("✅ 真实赛场与积分数据报表已成功发送到 Telegram！")
+                print("✅ 足球赛事数据报表已成功发送到 Telegram！")
             else:
                 print(f"❌ 发送失败: {resp.text}")
     except Exception as e:
         print(f"TG 发送异常: {e}")
 
-def get_json(url):
-    response = requests.get(url, headers=HEADERS, timeout=30)
-    response.raise_for_status()
-    return response.json()
-
-def fetch_league_standings(league_name, competition_code):
-    """从稳定接口获取官方真实积分榜及进失球数据"""
-    url = f"{BASE_URL}/competitions/{competition_code}/standings"
-    print(f"正在获取 {league_name} 真实积分与战绩数据...")
-    
+def parse_standings_from_json(league_name, url):
+    print(f"正在获取 {league_name} 公开赛果数据...")
     try:
-        data = get_json(url)
-        standings = data.get("standings", [])
+        resp = requests.get(url, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
         
-        # 寻找总积分榜 (TOTAL)
-        total_table = None
-        for s in standings:
-            if s.get("type") == "TOTAL":
-                total_table = s.get("table", [])
-                break
+        # 统计各支球队的积分与进失球
+        teams_stats = {}
+        
+        rounds = data.get("rounds", [])
+        for r in rounds:
+            matches = r.get("matches", [])
+            for m in matches:
+                score = m.get("score", {})
+                if not score.get("ft"):
+                    continue # 未进行完的比赛跳过
                 
-        if not total_table:
-            return []
-            
-        season_info = data.get("season", {})
-        season_name = f"{season_info.get('startDate', '')[:4]}/{season_info.get('endDate', '')[:4]}"
-        
-        league_rows = []
-        for row in total_table:
-            team_name = row.get("team", {}).get("name", "Unknown")
-            played = row.get("playedGames", 0)
-            pts = row.get("points", 0)
-            gf = row.get("goalsFor", 0)
-            ga = row.get("goalsAgainst", 0)
-            gd = row.get("goalDifference", 0)
-            
-            league_rows.append({
+                team1 = m.get("team1")
+                team2 = m.get("team2")
+                goals1 = score["ft"][0]
+                goals2 = score["ft"][1]
+                
+                for t in [team1, team2]:
+                    if t not in teams_stats:
+                        teams_stats[t] = {"Matches": 0, "Points": 0, "Goals For": 0, "Goals Against": 0}
+                
+                teams_stats[team1]["Matches"] += 1
+                teams_stats[team2]["Matches"] += 1
+                teams_stats[team1]["Goals For"] += goals1
+                teams_stats[team1]["Goals Against"] += goals2
+                teams_stats[team2]["Goals For"] += goals2
+                teams_stats[team2]["Goals Against"] += goals1
+                
+                if goals1 > goals2:
+                    teams_stats[team1]["Points"] += 3
+                elif goals1 < goals2:
+                    teams_stats[team2]["Points"] += 3
+                else:
+                    teams_stats[team1]["Points"] += 1
+                    teams_stats[team2]["Points"] += 1
+                    
+        rows = []
+        for team, stats in teams_stats.items():
+            gd = stats["Goals For"] - stats["Goals Against"]
+            rows.append({
                 "League": league_name,
-                "Season": season_name,
-                "Team": team_name,
-                "Matches": played,
-                "Points": pts,
-                "Goals For": gf,
-                "Goals Against": ga,
+                "Team": team,
+                "Matches": stats["Matches"],
+                "Points": stats["Points"],
+                "Goals For": stats["Goals For"],
+                "Goals Against": stats["Goals Against"],
                 "Goal Difference": gd
             })
             
-        return league_rows
+        # 按积分和净胜球排序
+        rows.sort(key=lambda x: (x["Points"], x["Goal Difference"], x["Goals For"]), reverse=True)
+        return rows
         
     except Exception as e:
-        print(f"获取 {league_name} 数据失败: {e}")
+        print(f"获取 {league_name} 数据异常: {e}")
         return []
 
 def main():
-    print("Starting Stable Football Data Scraper...")
+    print("Starting OpenFootball Data Scraper...")
     all_rows = []
 
-    for league_name, code in LEAGUES.items():
+    for league_name, url in LEAGUES_DATA.items():
         print("\n" + "=" * 50)
-        print(f"Processing: {league_name}")
-        print("=" * 50)
-        
-        rows = fetch_league_standings(league_name, code)
+        rows = parse_standings_from_json(league_name, url)
         if rows:
             all_rows.extend(rows)
-            
-        time.sleep(0.5) # 友好的请求间隔
+
+    if not all_rows:
+        raise Exception("No data collected from openfootball source.")
 
     df = pd.DataFrame(all_rows)
-    if df.empty:
-        raise Exception("No data collected from API.")
-
     output_file = "football_standings_stats.xlsx"
+    
     with pd.ExcelWriter(output_file, engine="openpyxl") as writer:
-        df.to_excel(writer, sheet_name="Standings & Stats", index=False)
+        df.to_excel(writer, sheet_name="Standings", index=False)
 
     print("\n" + "=" * 50)
-    print("DONE")
-    print("=" * 50)
-    print(f"Total Teams: {len(df)}")
-    print(f"Output: {output_file}")
+    print(f"Total Teams Processed: {len(df)}")
+    print(f"Output Excel: {output_file}")
 
-    caption = f"⚽ *官方稳定赛场数据报表*\n📊 涵盖各大主流联赛实时积分与净胜球\n📅 {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+    caption = f"⚽ *公开足球联赛实时积分榜*\n📊 涵盖英超、西甲、意甲、德甲、法甲\n📅 {datetime.now().strftime('%Y-%m-%d %H:%M')}"
     send_telegram_document(output_file, caption)
 
 if __name__ == "__main__":
