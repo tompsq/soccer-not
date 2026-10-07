@@ -28,12 +28,6 @@ H = {
     "Referer": "https://www.pinnacle.com/",
 }
 
-SH = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Accept": "*/*",
-    "Referer": "https://www.sofascore.com/",
-    "Origin": "https://www.sofascore.com",
-}
 def send_file(path, caption=""):
     if not T or not C:
         print("文件已生成:", path)
@@ -48,7 +42,7 @@ def send_file(path, caption=""):
             )
         time.sleep(1.5)
     except Exception as e:
-        print("发送文件失败:", e)
+        print("发送失败:", e)
 
 def to_dec(a):
     try:
@@ -57,33 +51,23 @@ def to_dec(a):
     except:
         return None
 
-def get(url, headers=None):
-    headers = headers or H
+def get(url):
     for _ in range(3):
         try:
-            r = requests.get(url, headers=headers, timeout=15)
+            r = requests.get(url, headers=H, timeout=15)
             if r.status_code == 200:
                 return r.json()
         except:
             time.sleep(1)
     return None
 
-def sofascore_get(url):
-    try:
-        r = requests.get(url, headers=SH, timeout=12)
-        if r.status_code == 200:
-            return r.json()
-        print(f"Sofascore {r.status_code}: {url[:80]}")
-    except Exception as e:
-        print(f"Sofascore 错误: {e}")
-    return None
-
-def fetch_pinnacle(name, lid):
+def fetch_pinnacle(name, lid, only_upcoming_2h=False):
     ms = get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/matchups")
     if not ms:
         return []
     matches = {}
     now = datetime.utcnow() + timedelta(hours=8)
+
     for m in ms:
         if m.get("type") != "matchup":
             continue
@@ -94,8 +78,14 @@ def fetch_pinnacle(name, lid):
             mt = datetime.strptime(st[:19], "%Y-%m-%dT%H:%M:%S") + timedelta(hours=8)
         except:
             continue
-        if mt < now or mt > now + timedelta(days=10):
-            continue
+
+        if only_upcoming_2h:
+            if not (now <= mt <= now + timedelta(hours=2)):
+                continue
+        else:
+            if mt < now or mt > now + timedelta(days=10):
+                continue
+
         ps = m.get("participants", [])
         if len(ps) < 2:
             continue
@@ -103,6 +93,7 @@ def fetch_pinnacle(name, lid):
         away = next((p["name"] for p in ps if p.get("alignment") == "away"), None)
         if not home or not away or "(" in home or "(" in away:
             continue
+
         matches[m["id"]] = {
             "home": home,
             "away": away,
@@ -112,10 +103,11 @@ def fetch_pinnacle(name, lid):
             "ah": None,
             "ou": None,
         }
+
     if not matches:
         return []
 
-    mks = get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/markets/straight")
+mks = get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/markets/straight")
     if mks:
         for mk in mks:
             mid = mk.get("matchupId")
@@ -144,21 +136,24 @@ def fetch_pinnacle(name, lid):
                         matches[mid]["ou"] = (line, to_dec(op["price"]), to_dec(up["price"]))
 
     sorted_m = sorted(matches.values(), key=lambda x: x["sort_time"])
+    if only_upcoming_2h:
+        return sorted_m
     return sorted_m[:MAX_PER_LEAGUE]
 
-def try_sofascore_enrich(rows):
-    print("开始尝试从 Sofascore 获取长期 xG 数据...")
-    print("Sofascore 部分暂时跳过（先保证赔率正常）")
-    return rows
-
 def main():
-    print("=== 脚本开始运行 ===")
+    mode = os.environ.get("RUN_MODE", "auto")
+    event = os.environ.get("EVENT_NAME", "")
+    only_upcoming_2h = (mode == "manual_upcoming")
+
+    print(f"运行模式: {mode} | 事件: {event}")
+    print(f"只抓未来2小时: {only_upcoming_2h}")
+
     ts = (datetime.utcnow() + timedelta(hours=8)).strftime("%Y-%m-%d %H:%M:%S")
     all_rows = []
 
-    for name, lid in LEAGUES:
+for name, lid in LEAGUES:
         print(f"抓取 {name}...")
-        rows = fetch_pinnacle(name, lid)
+        rows = fetch_pinnacle(name, lid, only_upcoming_2h=only_upcoming_2h)
         print(f"  → {len(rows)} 场")
         for m in rows:
             row = {
@@ -175,30 +170,37 @@ def main():
                 "大小": m["ou"][0] if m["ou"] else None,
                 "大球": m["ou"][1] if m["ou"] else None,
                 "小球": m["ou"][2] if m["ou"] else None,
-                "主队xG": None,
-                "客队xG": None,
-                "伤停": "",
             }
             all_rows.append(row)
         time.sleep(0.5)
 
-    all_rows = try_sofascore_enrich(all_rows)
-
     if not all_rows:
         print("没有抓到数据")
+        # 手动 upcoming 没数据时也可以发个提示
+        if only_upcoming_2h and T and C:
+            try:
+                requests.post(
+                    f"https://api.telegram.org/bot{T}/sendMessage",
+                    json={"chat_id": C, "text": f"⚠️ `{ts}` 未来2小时内没有比赛。", "parse_mode": "Markdown"},
+                    timeout=30,
+                )
+            except:
+                pass
         return
-
     wb = Workbook()
     ws = wb.active
     ws.title = "盘口"
-    headers = ["联赛","时间","主队","客队","主胜","平局","客胜","亚盘","亚盘主","亚盘客","大小","大球","小球","主队xG","客队xG","伤停"]
+    headers = ["联赛", "时间", "主队", "客队", "主胜", "平局", "客胜", "亚盘", "亚盘主", "亚盘客", "大小", "大球", "小球"]
     ws.append(headers)
     for r in all_rows:
         ws.append([r.get(h) for h in headers])
 
-    fname = f"league_odds_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
+    tag = "临盘2h" if only_upcoming_2h else "盘口"
+    fname = f"league_odds_{tag}_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
     wb.save(fname)
-    send_file(fname, caption=f"各大联赛早盘 {ts}\n共 {len(all_rows)} 场")
+
+    caption = f"各大联赛{tag} {ts}\n共 {len(all_rows)} 场"
+    send_file(fname, caption=caption)
     print("Excel 已发送:", fname)
 
 if __name__ == "__main__":
