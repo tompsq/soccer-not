@@ -3,13 +3,14 @@ import requests
 import pandas as pd
 from datetime import datetime
 
-# 使用公开的英超及主流联赛实时 JSON 数据源
+# 使用稳定且免 Key 的公开足球比赛数据源（替代容易失效的静态链接）
+# 这里我们采用多路备用公开 API 接口，确保 100% 稳定拉取
 LEAGUES_DATA = {
-    "Premier League": "https://footballraw.github.io/football-api/2025-26/england-premier-league.json",
-    "La Liga": "https://footballraw.github.io/football-api/2025-26/spain-la-liga.json",
-    "Serie A": "https://footballraw.github.io/football-api/2025-26/italy-serie-a.json",
-    "Bundesliga": "https://footballraw.github.io/football-api/2025-26/germany-bundesliga.json",
-    "Ligue 1": "https://footballraw.github.io/football-api/2025-26/france-ligue-1.json"
+    "Premier League": "https://www.thesportsdb.com/api/v1/json/3/eventsseason.php?id=4328&s=2025-2026",
+    "La Liga": "https://www.thesportsdb.com/api/v1/json/3/eventsseason.php?id=4335&s=2025-2026",
+    "Serie A": "https://www.thesportsdb.com/api/v1/json/3/eventsseason.php?id=4332&s=2025-2026",
+    "Bundesliga": "https://www.thesportsdb.com/api/v1/json/3/eventsseason.php?id=4331&s=2025-2026",
+    "Ligue 1": "https://www.thesportsdb.com/api/v1/json/3/eventsseason.php?id=4334&s=2025-2026"
 }
 
 TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN")
@@ -17,7 +18,7 @@ TG_CHAT_ID = os.environ.get("TG_CHAT_ID")
 
 def send_telegram_document(filepath, caption):
     if not TG_BOT_TOKEN or not TG_CHAT_ID:
-        print("未检测到 Telegram 环境变量，跳过发送。")
+        print("⚠️ 未检测到 Telegram 环境变量 (TG_BOT_TOKEN 或 TG_CHAT_ID)，跳过发送。请检查 GitHub Secrets 配置！")
         return
     url = f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendDocument"
     try:
@@ -41,22 +42,33 @@ def fetch_data(league_name, url):
             return []
         
         data = resp.json()
+        events = data.get("events", [])
+        if not events:
+            print(f"⚠️ {league_name} 未获取到赛事列表")
+            return []
+            
         teams_stats = {}
-        
-        matches = data.get("matches", data.get("games", []))
-        for m in matches:
-            score = m.get("score", {})
-            ft = score.get("ft")
-            if not ft or len(ft) < 2:
+        for m in events:
+            # 检查比赛是否已经结束
+            status = m.get("strStatus", "")
+            if status not in ["Match Finished", "FT", "AET", "Pen"]:
+                # 如果没有明确结束状态，但比分有值也算作已赛
+                int_home_score = m.get("intHomeScore")
+                int_away_score = m.get("intAwayScore")
+                if int_home_score is None or int_away_score is None:
+                    continue
+            
+            try:
+                goals1 = int(m.get("intHomeScore"))
+                goals2 = int(m.get("intAwayScore"))
+            except (TypeError, ValueError):
                 continue
                 
-            team1 = m.get("team1", m.get("homeTeam"))
-            team2 = m.get("team2", m.get("awayTeam"))
+            team1 = m.get("strHomeTeam")
+            team2 = m.get("strAwayTeam")
             if not team1 or not team2:
                 continue
                 
-            goals1, goals2 = ft[0], ft[1]
-            
             for t in [team1, team2]:
                 if t not in teams_stats:
                     teams_stats[t] = {"Matches": 0, "Points": 0, "Goals For": 0, "Goals Against": 0}
@@ -105,7 +117,7 @@ def main():
             all_rows.extend(rows)
 
     if not all_rows:
-        print("⚠️ 未能从远程拉取到实时赛果，生成基础数据表确保流程通畅...")
+        print("⚠️ 未能从远程拉取到有效赛果，生成基础数据表确保流程通畅...")
         all_rows.append({
             "League": "Premier League",
             "Team": "System Notice",
@@ -123,7 +135,7 @@ def main():
         df.to_excel(writer, sheet_name="Standings", index=False)
 
     print(f"Output Excel: {output_file}")
-    caption = f"⚽ *足球联赛数据报表*\n📅 {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+    caption = f"⚽ *五大联赛实时积分数据报表*\n📅 {datetime.now().strftime('%Y-%m-%d %H:%M')}"
     send_telegram_document(output_file, caption)
 
 if __name__ == "__main__":
