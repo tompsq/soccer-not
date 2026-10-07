@@ -28,14 +28,3 @@ jobs:
       - name: Run SofaScore xG scraper
         run: |
           python xg_scraper.py
-
-      - name: Send Excel to Telegram
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          curl -s \
-            -F chat_id="$TELEGRAM_CHAT_ID" \
-            -F document="@sofascore_xg.xlsx" \
-            -F caption="📊 SofaScore Season xG / xGA" \
-            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"
