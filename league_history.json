@@ -1,0 +1,2436 @@
+{
+  "英超|Arsenal|Leeds United|10-10 19:30": {
+    "id": "1636483914",
+    "home": "Arsenal",
+    "away": "Leeds United",
+    "time": "10-10 19:30",
+    "sort_time": "2026-10-10T19:30:00",
+    "1X2": {
+      "home": 1.392,
+      "away": 8.07,
+      "draw": 5.1
+    },
+    "ah": [
+      -1.25,
+      1.962,
+      1.943
+    ],
+    "ou": [
+      2.5,
+      1.84,
+      2.06
+    ]
+  },
+  "英超|Sunderland|Brighton|10-10 22:00": {
+    "id": "1636486479",
+    "home": "Sunderland",
+    "away": "Brighton",
+    "time": "10-10 22:00",
+    "sort_time": "2026-10-10T22:00:00",
+    "1X2": {
+      "home": 3.03,
+      "away": 2.38,
+      "draw": 3.55
+    },
+    "ah": [
+      0.25,
+      1.855,
+      2.06
+    ],
+    "ou": [
+      2.75,
+      2.04,
+      1.855
+    ]
+  },
+  "英超|Chelsea|Bournemouth|10-10 22:00": {
+    "id": "1636483915",
+    "home": "Chelsea",
+    "away": "Bournemouth",
+    "time": "10-10 22:00",
+    "sort_time": "2026-10-10T22:00:00",
+    "1X2": {
+      "home": 1.73,
+      "away": 4.61,
+      "draw": 4.15
+    },
+    "ah": [
+      -0.75,
+      1.926,
+      1.98
+    ],
+    "ou": [
+      3.25,
+      2.04,
+      1.855
+    ]
+  },
+  "英超|Aston Villa|Brentford|10-10 22:00": {
+    "id": "1636486480",
+    "home": "Aston Villa",
+    "away": "Brentford",
+    "time": "10-10 22:00",
+    "sort_time": "2026-10-10T22:00:00",
+    "1X2": {
+      "home": 2.67,
+      "away": 2.64,
+      "draw": 3.57
+    },
+    "ah": [
+      0.0,
+      1.962,
+      1.943
+    ],
+    "ou": [
+      2.75,
+      1.926,
+      1.962
+    ]
+  },
+  "英超|Ipswich Town|Fulham|10-10 22:00": {
+    "id": "1636480727",
+    "home": "Ipswich Town",
+    "away": "Fulham",
+    "time": "10-10 22:00",
+    "sort_time": "2026-10-10T22:00:00",
+    "1X2": {
+      "home": 2.85,
+      "away": 2.46,
+      "draw": 3.63
+    },
+    "ah": [
+      0.0,
+      2.11,
+      1.813
+    ],
+    "ou": [
+      2.75,
+      1.98,
+      1.909
+    ]
+  },
+  "英超|Manchester United|Tottenham Hotspur|10-11 00:30": {
+    "id": "1636486484",
+    "home": "Manchester United",
+    "away": "Tottenham Hotspur",
+    "time": "10-11 00:30",
+    "sort_time": "2026-10-11T00:30:00",
+    "1X2": {
+      "home": 1.735,
+      "away": 4.35,
+      "draw": 4.33
+    },
+    "ah": [
+      -0.75,
+      1.935,
+      1.971
+    ],
+    "ou": [
+      3.25,
+      2.03,
+      1.862
+    ]
+  },
+  "英超|Hull City|Everton|10-11 21:00": {
+    "id": "1636549954",
+    "home": "Hull City",
+    "away": "Everton",
+    "time": "10-11 21:00",
+    "sort_time": "2026-10-11T21:00:00",
+    "1X2": {
+      "home": 3.78,
+      "away": 2.07,
+      "draw": 3.5
+    },
+    "ah": [
+      0.5,
+      1.84,
+      2.08
+    ],
+    "ou": [
+      2.5,
+      2.06,
+      1.84
+    ]
+  },
+  "英超|Crystal Palace|Nottingham Forest|10-11 21:00": {
+    "id": "1636537510",
+    "home": "Crystal Palace",
+    "away": "Nottingham Forest",
+    "time": "10-11 21:00",
+    "sort_time": "2026-10-11T21:00:00",
+    "1X2": {
+      "home": 2.68,
+      "away": 2.73,
+      "draw": 3.41
+    },
+    "ah": [
+      0.0,
+      1.935,
+      1.971
+    ],
+    "ou": [
+      2.5,
+      1.98,
+      1.909
+    ]
+  },
+  "英超|Liverpool|Manchester City|10-11 23:30": {
+    "id": "1636549955",
+    "home": "Liverpool",
+    "away": "Manchester City",
+    "time": "10-11 23:30",
+    "sort_time": "2026-10-11T23:30:00",
+    "1X2": {
+      "home": 2.62,
+      "away": 2.58,
+      "draw": 3.77
+    },
+    "ah": [
+      0.0,
+      1.971,
+      1.935
+    ],
+    "ou": [
+      3.0,
+      1.926,
+      1.962
+    ]
+  },
+  "英超|Coventry City|Newcastle United|10-13 03:00": {
+    "id": "1636549953",
+    "home": "Coventry City",
+    "away": "Newcastle United",
+    "time": "10-13 03:00",
+    "sort_time": "2026-10-13T03:00:00",
+    "1X2": {
+      "home": 3.5,
+      "away": 2.1,
+      "draw": 3.67
+    },
+    "ah": [
+      0.25,
+      2.09,
+      1.833
+    ],
+    "ou": [
+      2.75,
+      1.855,
+      2.04
+    ]
+  },
+  "西甲|Malaga|Espanyol|10-10 03:00": {
+    "id": "1636739062",
+    "home": "Malaga",
+    "away": "Espanyol",
+    "time": "10-10 03:00",
+    "sort_time": "2026-10-10T03:00:00",
+    "1X2": {
+      "home": 2.84,
+      "away": 2.72,
+      "draw": 3.19
+    },
+    "ah": [
+      0.0,
+      2.0,
+      1.909
+    ],
+    "ou": [
+      2.25,
+      1.901,
+      1.99
+    ]
+  },
+  "西甲|Rayo Vallecano|Athletic Bilbao|10-10 20:00": {
+    "id": "1636734374",
+    "home": "Rayo Vallecano",
+    "away": "Athletic Bilbao",
+    "time": "10-10 20:00",
+    "sort_time": "2026-10-10T20:00:00",
+    "1X2": {
+      "home": 2.85,
+      "away": 2.61,
+      "draw": 3.34
+    },
+    "ah": [
+      0.0,
+      2.05,
+      1.87
+    ],
+    "ou": [
+      2.5,
+      2.02,
+      1.877
+    ]
+  },
+  "西甲|Alaves|Atletico Madrid|10-10 22:15": {
+    "id": "1636739064",
+    "home": "Alaves",
+    "away": "Atletico Madrid",
+    "time": "10-10 22:15",
+    "sort_time": "2026-10-10T22:15:00",
+    "1X2": {
+      "home": 4.27,
+      "away": 1.87,
+      "draw": 3.77
+    },
+    "ah": [
+      0.5,
+      2.04,
+      1.877
+    ],
+    "ou": [
+      2.5,
+      1.909,
+      1.98
+    ]
+  },
+  "西甲|Barcelona|Getafe|10-11 00:30": {
+    "id": "1636738966",
+    "home": "Barcelona",
+    "away": "Getafe",
+    "time": "10-11 00:30",
+    "sort_time": "2026-10-11T00:30:00",
+    "1X2": {
+      "home": 1.066,
+      "away": 23.68,
+      "draw": 17.36
+    },
+    "ah": [
+      -2.75,
+      1.84,
+      2.04
+    ],
+    "ou": [
+      4.0,
+      1.98,
+      1.87
+    ]
+  },
+  "西甲|Real Madrid|Villarreal|10-11 03:00": {
+    "id": "1636760042",
+    "home": "Real Madrid",
+    "away": "Villarreal",
+    "time": "10-11 03:00",
+    "sort_time": "2026-10-11T03:00:00",
+    "1X2": {
+      "home": 1.342,
+      "away": 7.69,
+      "draw": 6.12
+    },
+    "ah": [
+      -1.5,
+      1.893,
+      2.01
+    ],
+    "ou": [
+      3.75,
+      1.962,
+      1.926
+    ]
+  },
+  "西甲|Elche|Celta Vigo|10-11 20:00": {
+    "id": "1636734375",
+    "home": "Elche",
+    "away": "Celta Vigo",
+    "time": "10-11 20:00",
+    "sort_time": "2026-10-11T20:00:00",
+    "1X2": {
+      "home": 2.78,
+      "away": 2.71,
+      "draw": 3.3
+    },
+    "ah": [
+      0.0,
+      1.98,
+      1.926
+    ],
+    "ou": [
+      2.25,
+      1.855,
+      2.04
+    ]
+  },
+  "西甲|Real Sociedad|Deportivo La Coruna|10-11 22:15": {
+    "id": "1636760043",
+    "home": "Real Sociedad",
+    "away": "Deportivo La Coruna",
+    "time": "10-11 22:15",
+    "sort_time": "2026-10-11T22:15:00",
+    "1X2": {
+      "home": 1.69,
+      "away": 5.11,
+      "draw": 4.01
+    },
+    "ah": [
+      -0.75,
+      1.893,
+      2.01
+    ],
+    "ou": [
+      2.75,
+      2.01,
+      1.877
+    ]
+  },
+  "西甲|Real Betis|Osasuna|10-12 00:30": {
+    "id": "1636739065",
+    "home": "Real Betis",
+    "away": "Osasuna",
+    "time": "10-12 00:30",
+    "sort_time": "2026-10-12T00:30:00",
+    "1X2": {
+      "home": 1.559,
+      "away": 5.76,
+      "draw": 4.5
+    },
+    "ah": [
+      -1.0,
+      2.0,
+      1.901
+    ],
+    "ou": [
+      2.75,
+      1.99,
+      1.893
+    ]
+  },
+  "西甲|Racing Santander|Valencia|10-12 03:00": {
+    "id": "1636769009",
+    "home": "Racing Santander",
+    "away": "Valencia",
+    "time": "10-12 03:00",
+    "sort_time": "2026-10-12T03:00:00",
+    "1X2": {
+      "home": 2.33,
+      "away": 3.06,
+      "draw": 3.59
+    },
+    "ah": [
+      -0.25,
+      2.03,
+      1.877
+    ],
+    "ou": [
+      2.75,
+      1.862,
+      2.03
+    ]
+  },
+  "西甲|Levante|Sevilla|10-13 03:00": {
+    "id": "1636769010",
+    "home": "Levante",
+    "away": "Sevilla",
+    "time": "10-13 03:00",
+    "sort_time": "2026-10-13T03:00:00",
+    "1X2": {
+      "home": 2.73,
+      "away": 2.71,
+      "draw": 3.35
+    },
+    "ah": [
+      0.0,
+      1.962,
+      1.943
+    ],
+    "ou": [
+      2.5,
+      2.07,
+      1.833
+    ]
+  },
+  "西甲|Deportivo La Coruna|Levante|10-17 03:00": {
+    "id": "1637159039",
+    "home": "Deportivo La Coruna",
+    "away": "Levante",
+    "time": "10-17 03:00",
+    "sort_time": "2026-10-17T03:00:00",
+    "1X2": {
+      "home": 2.08,
+      "away": 3.54,
+      "draw": 3.48
+    },
+    "ah": [
+      -0.25,
+      1.806,
+      2.06
+    ],
+    "ou": [
+      2.5,
+      1.917,
+      1.917
+    ]
+  },
+  "意甲|Genoa|Fiorentina|10-10 21:00": {
+    "id": "1636768864",
+    "home": "Genoa",
+    "away": "Fiorentina",
+    "time": "10-10 21:00",
+    "sort_time": "2026-10-10T21:00:00",
+    "1X2": {
+      "home": 3.33,
+      "away": 2.37,
+      "draw": 3.21
+    },
+    "ah": [
+      0.25,
+      1.885,
+      2.03
+    ],
+    "ou": [
+      2.25,
+      1.87,
+      2.02
+    ]
+  },
+  "意甲|Internazionale|Parma|10-11 00:00": {
+    "id": "1636768865",
+    "home": "Internazionale",
+    "away": "Parma",
+    "time": "10-11 00:00",
+    "sort_time": "2026-10-11T00:00:00",
+    "1X2": {
+      "home": 1.151,
+      "away": 15.7,
+      "draw": 9.27
+    },
+    "ah": [
+      -2.25,
+      1.935,
+      1.952
+    ],
+    "ou": [
+      3.5,
+      1.926,
+      1.943
+    ]
+  },
+  "意甲|Napoli|Frosinone|10-11 02:45": {
+    "id": "1636760044",
+    "home": "Napoli",
+    "away": "Frosinone",
+    "time": "10-11 02:45",
+    "sort_time": "2026-10-11T02:45:00",
+    "1X2": {
+      "home": 1.469,
+      "away": 6.29,
+      "draw": 5.02
+    },
+    "ah": [
+      -1.25,
+      1.99,
+      1.917
+    ],
+    "ou": [
+      3.25,
+      2.0,
+      1.893
+    ]
+  },
+  "意甲|Como|Roma|10-11 18:30": {
+    "id": "1636760045",
+    "home": "Como",
+    "away": "Roma",
+    "time": "10-11 18:30",
+    "sort_time": "2026-10-11T18:30:00",
+    "1X2": {
+      "home": 2.56,
+      "away": 2.73,
+      "draw": 3.63
+    },
+    "ah": [
+      0.0,
+      1.893,
+      2.02
+    ],
+    "ou": [
+      3.0,
+      2.05,
+      1.847
+    ]
+  },
+  "意甲|Lecce|Bologna|10-11 21:00": {
+    "id": "1636769011",
+    "home": "Lecce",
+    "away": "Bologna",
+    "time": "10-11 21:00",
+    "sort_time": "2026-10-11T21:00:00",
+    "1X2": {
+      "home": 4.61,
+      "away": 1.952,
+      "draw": 3.26
+    },
+    "ah": [
+      0.5,
+      1.943,
+      1.962
+    ],
+    "ou": [
+      2.25,
+      1.901,
+      1.98
+    ]
+  },
+  "意甲|Lazio|Monza|10-11 21:00": {
+    "id": "1636768866",
+    "home": "Lazio",
+    "away": "Monza",
+    "time": "10-11 21:00",
+    "sort_time": "2026-10-11T21:00:00",
+    "1X2": {
+      "home": 1.588,
+      "away": 5.99,
+      "draw": 4.16
+    },
+    "ah": [
+      -1.0,
+      2.06,
+      1.855
+    ],
+    "ou": [
+      2.5,
+      1.917,
+      1.971
+    ]
+  },
+  "意甲|Sassuolo|AC Milan|10-12 00:00": {
+    "id": "1636760046",
+    "home": "Sassuolo",
+    "away": "AC Milan",
+    "time": "10-12 00:00",
+    "sort_time": "2026-10-12T00:00:00",
+    "1X2": {
+      "home": 4.36,
+      "away": 1.82,
+      "draw": 3.9
+    },
+    "ah": [
+      0.75,
+      1.847,
+      2.07
+    ],
+    "ou": [
+      2.75,
+      1.99,
+      1.901
+    ]
+  },
+  "意甲|Cagliari|Juventus|10-12 02:45": {
+    "id": "1636769012",
+    "home": "Cagliari",
+    "away": "Juventus",
+    "time": "10-12 02:45",
+    "sort_time": "2026-10-12T02:45:00",
+    "1X2": {
+      "home": 6.38,
+      "away": 1.578,
+      "draw": 4.04
+    },
+    "ah": [
+      1.0,
+      1.877,
+      2.03
+    ],
+    "ou": [
+      2.5,
+      2.06,
+      1.84
+    ]
+  },
+  "意甲|Atalanta|Venezia|10-13 00:30": {
+    "id": "1636769013",
+    "home": "Atalanta",
+    "away": "Venezia",
+    "time": "10-13 00:30",
+    "sort_time": "2026-10-13T00:30:00",
+    "1X2": {
+      "home": 1.578,
+      "away": 6.13,
+      "draw": 4.16
+    },
+    "ah": [
+      -1.0,
+      1.962,
+      1.943
+    ],
+    "ou": [
+      3.0,
+      1.917,
+      1.971
+    ]
+  },
+  "意甲|Torino|Udinese|10-13 02:45": {
+    "id": "1636760047",
+    "home": "Torino",
+    "away": "Udinese",
+    "time": "10-13 02:45",
+    "sort_time": "2026-10-13T02:45:00",
+    "1X2": {
+      "home": 2.35,
+      "away": 3.35,
+      "draw": 3.23
+    },
+    "ah": [
+      -0.25,
+      2.01,
+      1.893
+    ],
+    "ou": [
+      2.25,
+      1.926,
+      1.962
+    ]
+  },
+  "意甲|Frosinone|Sassuolo|10-17 02:45": {
+    "id": "1637157225",
+    "home": "Frosinone",
+    "away": "Sassuolo",
+    "time": "10-17 02:45",
+    "sort_time": "2026-10-17T02:45:00",
+    "1X2": {
+      "home": 2.42,
+      "away": 2.9,
+      "draw": 3.43
+    },
+    "ah": [
+      -0.25,
+      2.1,
+      1.781
+    ],
+    "ou": [
+      3.0,
+      1.885,
+      1.952
+    ]
+  },
+  "德甲|Borussia Dortmund|Werder Bremen|10-10 02:30": {
+    "id": "1636598006",
+    "home": "Borussia Dortmund",
+    "away": "Werder Bremen",
+    "time": "10-10 02:30",
+    "sort_time": "2026-10-10T02:30:00",
+    "1X2": {
+      "home": 1.386,
+      "away": 7.21,
+      "draw": 5.61
+    },
+    "ah": [
+      -1.5,
+      1.99,
+      1.917
+    ],
+    "ou": [
+      3.5,
+      2.05,
+      1.847
+    ]
+  },
+  "德甲|Hoffenheim|Hamburger SV|10-10 21:30": {
+    "id": "1636590116",
+    "home": "Hoffenheim",
+    "away": "Hamburger SV",
+    "time": "10-10 21:30",
+    "sort_time": "2026-10-10T21:30:00",
+    "1X2": {
+      "home": 1.441,
+      "away": 7.13,
+      "draw": 4.91
+    },
+    "ah": [
+      -1.25,
+      1.893,
+      2.02
+    ],
+    "ou": [
+      3.5,
+      2.04,
+      1.855
+    ]
+  },
+  "德甲|Mainz 05|Bayer Leverkusen|10-10 21:30": {
+    "id": "1636598004",
+    "home": "Mainz 05",
+    "away": "Bayer Leverkusen",
+    "time": "10-10 21:30",
+    "sort_time": "2026-10-10T21:30:00",
+    "1X2": {
+      "home": 3.0,
+      "away": 2.22,
+      "draw": 3.99
+    },
+    "ah": [
+      0.25,
+      1.943,
+      1.962
+    ],
+    "ou": [
+      3.25,
+      1.935,
+      1.952
+    ]
+  },
+  "德甲|Union Berlin|Elversberg|10-10 21:30": {
+    "id": "1636598008",
+    "home": "Union Berlin",
+    "away": "Elversberg",
+    "time": "10-10 21:30",
+    "sort_time": "2026-10-10T21:30:00",
+    "1X2": {
+      "home": 2.33,
+      "away": 2.87,
+      "draw": 3.92
+    },
+    "ah": [
+      -0.25,
+      2.05,
+      1.862
+    ],
+    "ou": [
+      3.0,
+      1.917,
+      1.971
+    ]
+  },
+  "德甲|Augsburg|Bayern Munich|10-10 21:30": {
+    "id": "1636592218",
+    "home": "Augsburg",
+    "away": "Bayern Munich",
+    "time": "10-10 21:30",
+    "sort_time": "2026-10-10T21:30:00",
+    "1X2": {
+      "home": 9.86,
+      "away": 1.2,
+      "draw": 9.26
+    },
+    "ah": [
+      2.25,
+      1.99,
+      1.901
+    ],
+    "ou": [
+      4.5,
+      1.909,
+      1.962
+    ]
+  },
+  "德甲|Paderborn|Stuttgart|10-10 21:30": {
+    "id": "1636592221",
+    "home": "Paderborn",
+    "away": "Stuttgart",
+    "time": "10-10 21:30",
+    "sort_time": "2026-10-10T21:30:00",
+    "1X2": {
+      "home": 5.03,
+      "away": 1.585,
+      "draw": 4.82
+    },
+    "ah": [
+      1.0,
+      1.99,
+      1.917
+    ],
+    "ou": [
+      3.5,
+      1.952,
+      1.935
+    ]
+  },
+  "德甲|RB Leipzig|Eintracht Frankfurt|10-11 00:30": {
+    "id": "1636592222",
+    "home": "RB Leipzig",
+    "away": "Eintracht Frankfurt",
+    "time": "10-11 00:30",
+    "sort_time": "2026-10-11T00:30:00",
+    "1X2": {
+      "home": 1.575,
+      "away": 4.98,
+      "draw": 4.95
+    },
+    "ah": [
+      -1.0,
+      1.909,
+      2.0
+    ],
+    "ou": [
+      3.75,
+      1.98,
+      1.901
+    ]
+  },
+  "德甲|FC Koln|Borussia Monchengladbach|10-11 21:30": {
+    "id": "1636598005",
+    "home": "FC Koln",
+    "away": "Borussia Monchengladbach",
+    "time": "10-11 21:30",
+    "sort_time": "2026-10-11T21:30:00",
+    "1X2": {
+      "home": 2.04,
+      "away": 3.28,
+      "draw": 4.18
+    },
+    "ah": [
+      -0.5,
+      2.05,
+      1.87
+    ],
+    "ou": [
+      3.25,
+      2.01,
+      1.877
+    ]
+  },
+  "德甲|Freiburg|Schalke 04|10-11 23:30": {
+    "id": "1636590120",
+    "home": "Freiburg",
+    "away": "Schalke 04",
+    "time": "10-11 23:30",
+    "sort_time": "2026-10-11T23:30:00",
+    "1X2": {
+      "home": 1.685,
+      "away": 5.23,
+      "draw": 3.96
+    },
+    "ah": [
+      -0.75,
+      1.87,
+      2.04
+    ],
+    "ou": [
+      3.0,
+      2.0,
+      1.893
+    ]
+  },
+  "德甲|Eintracht Frankfurt|FC Koln|10-17 02:30": {
+    "id": "1637151320",
+    "home": "Eintracht Frankfurt",
+    "away": "FC Koln",
+    "time": "10-17 02:30",
+    "sort_time": "2026-10-17T02:30:00",
+    "1X2": {
+      "home": 1.885,
+      "away": 3.56,
+      "draw": 4.17
+    },
+    "ah": [
+      -0.5,
+      1.893,
+      1.962
+    ],
+    "ou": [
+      3.5,
+      1.952,
+      1.885
+    ]
+  },
+  "英冠|West Ham United|Queens Park Rangers|10-10 03:00": {
+    "id": "1637090785",
+    "home": "West Ham United",
+    "away": "Queens Park Rangers",
+    "time": "10-10 03:00",
+    "sort_time": "2026-10-10T03:00:00",
+    "1X2": {
+      "home": 1.513,
+      "away": 5.54,
+      "draw": 4.66
+    },
+    "ah": [
+      -1.0,
+      1.855,
+      2.0
+    ],
+    "ou": [
+      3.0,
+      1.877,
+      1.962
+    ]
+  },
+  "英冠|Charlton Athletic|Bristol City|10-10 19:30": {
+    "id": "1637095156",
+    "home": "Charlton Athletic",
+    "away": "Bristol City",
+    "time": "10-10 19:30",
+    "sort_time": "2026-10-10T19:30:00",
+    "1X2": {
+      "home": 3.24,
+      "away": 2.28,
+      "draw": 3.3
+    },
+    "ah": [
+      0.25,
+      1.893,
+      1.962
+    ],
+    "ou": [
+      2.25,
+      1.862,
+      1.98
+    ]
+  },
+  "英冠|Swansea City|Norwich City|10-10 19:30": {
+    "id": "1637095155",
+    "home": "Swansea City",
+    "away": "Norwich City",
+    "time": "10-10 19:30",
+    "sort_time": "2026-10-10T19:30:00",
+    "1X2": {
+      "home": 2.46,
+      "away": 2.82,
+      "draw": 3.48
+    },
+    "ah": [
+      0.0,
+      1.8,
+      2.07
+    ],
+    "ou": [
+      2.75,
+      1.926,
+      1.909
+    ]
+  },
+  "英冠|West Bromwich Albion|Birmingham City|10-10 19:30": {
+    "id": "1637095153",
+    "home": "West Bromwich Albion",
+    "away": "Birmingham City",
+    "time": "10-10 19:30",
+    "sort_time": "2026-10-10T19:30:00",
+    "1X2": {
+      "home": 2.38,
+      "away": 2.96,
+      "draw": 3.42
+    },
+    "ah": [
+      -0.25,
+      2.06,
+      1.806
+    ],
+    "ou": [
+      2.5,
+      1.877,
+      1.952
+    ]
+  },
+  "英冠|Blackburn Rovers|Cardiff City|10-10 22:00": {
+    "id": "1637096635",
+    "home": "Blackburn Rovers",
+    "away": "Cardiff City",
+    "time": "10-10 22:00",
+    "sort_time": "2026-10-10T22:00:00",
+    "1X2": {
+      "home": 2.7,
+      "away": 2.48,
+      "draw": 3.61
+    },
+    "ah": [
+      0.0,
+      2.01,
+      1.847
+    ],
+    "ou": [
+      3.0,
+      2.05,
+      1.806
+    ]
+  },
+  "英冠|Watford|Burnley|10-10 22:00": {
+    "id": "1637090786",
+    "home": "Watford",
+    "away": "Burnley",
+    "time": "10-10 22:00",
+    "sort_time": "2026-10-10T22:00:00",
+    "1X2": {
+      "home": 2.95,
+      "away": 2.28,
+      "draw": 3.67
+    },
+    "ah": [
+      0.25,
+      1.855,
+      2.0
+    ],
+    "ou": [
+      2.75,
+      2.02,
+      1.826
+    ]
+  },
+  "英冠|Bolton Wanderers|Stoke City|10-10 22:00": {
+    "id": "1637095189",
+    "home": "Bolton Wanderers",
+    "away": "Stoke City",
+    "time": "10-10 22:00",
+    "sort_time": "2026-10-10T22:00:00",
+    "1X2": {
+      "home": 2.78,
+      "away": 2.56,
+      "draw": 3.34
+    },
+    "ah": [
+      0.0,
+      2.01,
+      1.847
+    ],
+    "ou": [
+      2.5,
+      1.893,
+      1.943
+    ]
+  },
+  "英冠|Derby County|Wrexham|10-10 22:00": {
+    "id": "1637095180",
+    "home": "Derby County",
+    "away": "Wrexham",
+    "time": "10-10 22:00",
+    "sort_time": "2026-10-10T22:00:00",
+    "1X2": {
+      "home": 2.75,
+      "away": 2.55,
+      "draw": 3.41
+    },
+    "ah": [
+      0.0,
+      2.0,
+      1.855
+    ],
+    "ou": [
+      2.5,
+      2.05,
+      1.8
+    ]
+  },
+  "英冠|Sheffield United|Lincoln City|10-10 22:00": {
+    "id": "1637095181",
+    "home": "Sheffield United",
+    "away": "Lincoln City",
+    "time": "10-10 22:00",
+    "sort_time": "2026-10-10T22:00:00",
+    "1X2": {
+      "home": 2.15,
+      "away": 3.43,
+      "draw": 3.4
+    },
+    "ah": [
+      -0.25,
+      1.862,
+      2.0
+    ],
+    "ou": [
+      2.5,
+      2.02,
+      1.826
+    ]
+  },
+  "英冠|Middlesbrough|Wolverhampton|10-10 22:00": {
+    "id": "1637090787",
+    "home": "Middlesbrough",
+    "away": "Wolverhampton",
+    "time": "10-10 22:00",
+    "sort_time": "2026-10-10T22:00:00",
+    "1X2": {
+      "home": 2.28,
+      "away": 2.97,
+      "draw": 3.63
+    },
+    "ah": [
+      -0.25,
+      2.0,
+      1.862
+    ],
+    "ou": [
+      3.0,
+      2.05,
+      1.8
+    ]
+  },
+  "英冠|Preston North End|Millwall|10-10 22:00": {
+    "id": "1637095179",
+    "home": "Preston North End",
+    "away": "Millwall",
+    "time": "10-10 22:00",
+    "sort_time": "2026-10-10T22:00:00",
+    "1X2": {
+      "home": 2.84,
+      "away": 2.43,
+      "draw": 3.49
+    },
+    "ah": [
+      0.0,
+      2.09,
+      1.781
+    ],
+    "ou": [
+      2.5,
+      1.862,
+      1.98
+    ]
+  },
+  "英冠|Southampton|Portsmouth|10-11 19:00": {
+    "id": "1637137704",
+    "home": "Southampton",
+    "away": "Portsmouth",
+    "time": "10-11 19:00",
+    "sort_time": "2026-10-11T19:00:00",
+    "1X2": {
+      "home": 1.61,
+      "away": 5.15,
+      "draw": 4.18
+    },
+    "ah": [
+      -1.0,
+      2.06,
+      1.806
+    ],
+    "ou": [
+      2.75,
+      1.82,
+      2.03
+    ]
+  },
+  "葡超|Moreirense|Gil Vicente|10-10 01:45": {
+    "id": "1637175573",
+    "home": "Moreirense",
+    "away": "Gil Vicente",
+    "time": "10-10 01:45",
+    "sort_time": "2026-10-10T01:45:00",
+    "1X2": {
+      "home": 3.54,
+      "away": 2.25,
+      "draw": 3.09
+    },
+    "ah": [
+      0.25,
+      1.935,
+      1.917
+    ],
+    "ou": [
+      2.25,
+      2.08,
+      1.781
+    ]
+  },
+  "葡超|Braga|Sporting CP|10-10 03:15": {
+    "id": "1637181731",
+    "home": "Braga",
+    "away": "Sporting CP",
+    "time": "10-10 03:15",
+    "sort_time": "2026-10-10T03:15:00",
+    "1X2": {
+      "home": 3.55,
+      "away": 2.04,
+      "draw": 3.58
+    },
+    "ah": [
+      0.5,
+      1.82,
+      2.05
+    ],
+    "ou": [
+      2.5,
+      1.98,
+      1.855
+    ]
+  },
+  "葡超|Casa Pia|Santa Clara|10-10 22:30": {
+    "id": "1637175574",
+    "home": "Casa Pia",
+    "away": "Santa Clara",
+    "time": "10-10 22:30",
+    "sort_time": "2026-10-10T22:30:00",
+    "1X2": {
+      "home": 4.3,
+      "away": 1.909,
+      "draw": 3.37
+    },
+    "ah": [
+      0.5,
+      1.935,
+      1.917
+    ],
+    "ou": [
+      2.0,
+      1.781,
+      2.08
+    ]
+  },
+  "葡超|Maritimo|Porto|10-11 01:00": {
+    "id": "1637178760",
+    "home": "Maritimo",
+    "away": "Porto",
+    "time": "10-11 01:00",
+    "sort_time": "2026-10-11T01:00:00",
+    "1X2": {},
+    "ah": [
+      1.25,
+      1.962,
+      1.746
+    ],
+    "ou": [
+      2.75,
+      1.926,
+      1.769
+    ]
+  },
+  "葡超|Academico de Viseu|Estoril|10-11 03:30": {
+    "id": "1637175575",
+    "home": "Academico de Viseu",
+    "away": "Estoril",
+    "time": "10-11 03:30",
+    "sort_time": "2026-10-11T03:30:00",
+    "1X2": {
+      "home": 2.28,
+      "away": 3.15,
+      "draw": 3.41
+    },
+    "ah": [
+      -0.25,
+      1.971,
+      1.885
+    ],
+    "ou": [
+      2.5,
+      1.917,
+      1.917
+    ]
+  },
+  "葡超|Rio Ave|Nacional da Madeira|10-11 22:30": {
+    "id": "1637175576",
+    "home": "Rio Ave",
+    "away": "Nacional da Madeira",
+    "time": "10-11 22:30",
+    "sort_time": "2026-10-11T22:30:00",
+    "1X2": {
+      "home": 2.34,
+      "away": 3.19,
+      "draw": 3.25
+    },
+    "ah": [
+      -0.25,
+      2.01,
+      1.847
+    ],
+    "ou": [
+      2.25,
+      1.833,
+      2.01
+    ]
+  },
+  "葡超|Benfica|Vitoria Guimaraes|10-12 01:00": {
+    "id": "1637178761",
+    "home": "Benfica",
+    "away": "Vitoria Guimaraes",
+    "time": "10-12 01:00",
+    "sort_time": "2026-10-12T01:00:00",
+    "1X2": {},
+    "ah": [
+      -1.75,
+      1.877,
+      1.813
+    ],
+    "ou": [
+      3.25,
+      1.935,
+      1.758
+    ]
+  },
+  "葡超|Arouca|Estrela da Amadora|10-12 03:30": {
+    "id": "1637181732",
+    "home": "Arouca",
+    "away": "Estrela da Amadora",
+    "time": "10-12 03:30",
+    "sort_time": "2026-10-12T03:30:00",
+    "1X2": {
+      "home": 2.07,
+      "away": 3.47,
+      "draw": 3.56
+    },
+    "ah": [
+      -0.25,
+      1.806,
+      2.06
+    ],
+    "ou": [
+      2.5,
+      1.893,
+      1.935
+    ]
+  },
+  "葡超|Famalicao|Alverca|10-13 03:15": {
+    "id": "1637175577",
+    "home": "Famalicao",
+    "away": "Alverca",
+    "time": "10-13 03:15",
+    "sort_time": "2026-10-13T03:15:00",
+    "1X2": {
+      "home": 1.833,
+      "away": 4.92,
+      "draw": 3.29
+    },
+    "ah": [
+      -0.5,
+      1.84,
+      2.02
+    ],
+    "ou": [
+      2.5,
+      2.04,
+      1.813
+    ]
+  },
+  "苏超|Hearts|St Mirren|10-10 22:00": {
+    "id": "1637157189",
+    "home": "Hearts",
+    "away": "St Mirren",
+    "time": "10-10 22:00",
+    "sort_time": "2026-10-10T22:00:00",
+    "1X2": {
+      "home": 1.467,
+      "away": 6.06,
+      "draw": 4.76
+    },
+    "ah": [
+      -1.25,
+      2.01,
+      1.847
+    ],
+    "ou": [
+      3.0,
+      1.806,
+      2.04
+    ]
+  },
+  "苏超|Falkirk|Dundee FC|10-10 22:00": {
+    "id": "1637158349",
+    "home": "Falkirk",
+    "away": "Dundee FC",
+    "time": "10-10 22:00",
+    "sort_time": "2026-10-10T22:00:00",
+    "1X2": {
+      "home": 2.01,
+      "away": 3.61,
+      "draw": 3.6
+    },
+    "ah": [
+      -0.5,
+      2.02,
+      1.84
+    ],
+    "ou": [
+      2.75,
+      1.952,
+      1.885
+    ]
+  },
+  "苏超|Rangers|Kilmarnock|10-10 22:00": {
+    "id": "1637159053",
+    "home": "Rangers",
+    "away": "Kilmarnock",
+    "time": "10-10 22:00",
+    "sort_time": "2026-10-10T22:00:00",
+    "1X2": {
+      "home": 1.149,
+      "away": 14.28,
+      "draw": 8.45
+    },
+    "ah": [
+      -2.25,
+      1.901,
+      1.935
+    ],
+    "ou": [
+      3.5,
+      1.813,
+      2.01
+    ]
+  },
+  "苏超|Dundee United|Hibernian|10-10 22:00": {
+    "id": "1637159055",
+    "home": "Dundee United",
+    "away": "Hibernian",
+    "time": "10-10 22:00",
+    "sort_time": "2026-10-10T22:00:00",
+    "1X2": {
+      "home": 2.73,
+      "away": 2.47,
+      "draw": 3.58
+    },
+    "ah": [
+      0.0,
+      2.03,
+      1.833
+    ],
+    "ou": [
+      2.75,
+      1.82,
+      2.03
+    ]
+  },
+  "苏超|Motherwell|Celtic|10-11 19:00": {
+    "id": "1637159056",
+    "home": "Motherwell",
+    "away": "Celtic",
+    "time": "10-11 19:00",
+    "sort_time": "2026-10-11T19:00:00",
+    "1X2": {
+      "home": 4.45,
+      "away": 1.641,
+      "draw": 4.52
+    },
+    "ah": [
+      1.0,
+      1.826,
+      2.04
+    ],
+    "ou": [
+      3.25,
+      2.03,
+      1.813
+    ]
+  },
+  "苏超|Aberdeen|St Johnstone|10-11 21:00": {
+    "id": "1637159054",
+    "home": "Aberdeen",
+    "away": "St Johnstone",
+    "time": "10-11 21:00",
+    "sort_time": "2026-10-11T21:00:00",
+    "1X2": {
+      "home": 2.17,
+      "away": 3.36,
+      "draw": 3.41
+    },
+    "ah": [
+      -0.25,
+      1.885,
+      1.971
+    ],
+    "ou": [
+      2.5,
+      1.962,
+      1.877
+    ]
+  },
+  "比甲|Beveren|Lommel|10-10 02:45": {
+    "id": "1637193358",
+    "home": "Beveren",
+    "away": "Lommel",
+    "time": "10-10 02:45",
+    "sort_time": "2026-10-10T02:45:00",
+    "1X2": {
+      "home": 1.82,
+      "away": 4.01,
+      "draw": 3.94
+    },
+    "ah": [
+      -0.5,
+      1.826,
+      2.04
+    ],
+    "ou": [
+      2.75,
+      1.82,
+      2.03
+    ]
+  },
+  "比甲|Cercle Brugge|Anderlecht|10-10 22:00": {
+    "id": "1637194810",
+    "home": "Cercle Brugge",
+    "away": "Anderlecht",
+    "time": "10-10 22:00",
+    "sort_time": "2026-10-10T22:00:00",
+    "1X2": {
+      "home": 3.56,
+      "away": 1.98,
+      "draw": 3.77
+    },
+    "ah": [
+      0.5,
+      1.87,
+      1.99
+    ],
+    "ou": [
+      2.75,
+      1.82,
+      2.02
+    ]
+  },
+  "比甲|RAAL La Louviere|Club Brugge|10-11 00:15": {
+    "id": "1637190782",
+    "home": "RAAL La Louviere",
+    "away": "Club Brugge",
+    "time": "10-11 00:15",
+    "sort_time": "2026-10-11T00:15:00",
+    "1X2": {
+      "home": 6.66,
+      "away": 1.405,
+      "draw": 5.12
+    },
+    "ah": [
+      1.25,
+      1.971,
+      1.885
+    ],
+    "ou": [
+      3.25,
+      2.04,
+      1.806
+    ]
+  },
+  "比甲|Genk|KV Kortrijk|10-11 02:45": {
+    "id": "1637190783",
+    "home": "Genk",
+    "away": "KV Kortrijk",
+    "time": "10-11 02:45",
+    "sort_time": "2026-10-11T02:45:00",
+    "1X2": {
+      "home": 1.452,
+      "away": 6.94,
+      "draw": 4.46
+    },
+    "ah": [
+      -1.25,
+      1.971,
+      1.885
+    ],
+    "ou": [
+      3.0,
+      1.877,
+      1.962
+    ]
+  },
+  "比甲|Zulte Waregem|Gent|10-11 02:45": {
+    "id": "1637190785",
+    "home": "Zulte Waregem",
+    "away": "Gent",
+    "time": "10-11 02:45",
+    "sort_time": "2026-10-11T02:45:00",
+    "1X2": {
+      "home": 2.94,
+      "away": 2.5,
+      "draw": 3.25
+    },
+    "ah": [
+      0.0,
+      2.1,
+      1.781
+    ],
+    "ou": [
+      2.5,
+      2.02,
+      1.826
+    ]
+  },
+  "比甲|Standard Liege|Charleroi|10-11 19:30": {
+    "id": "1637193359",
+    "home": "Standard Liege",
+    "away": "Charleroi",
+    "time": "10-11 19:30",
+    "sort_time": "2026-10-11T19:30:00",
+    "1X2": {
+      "home": 2.94,
+      "away": 2.38,
+      "draw": 3.46
+    },
+    "ah": [
+      0.25,
+      1.806,
+      2.06
+    ],
+    "ou": [
+      2.5,
+      1.813,
+      2.03
+    ]
+  },
+  "比甲|Union Saint-Gilloise|Oud-Heverlee Leuven|10-11 22:00": {
+    "id": "1637193363",
+    "home": "Union Saint-Gilloise",
+    "away": "Oud-Heverlee Leuven",
+    "time": "10-11 22:00",
+    "sort_time": "2026-10-11T22:00:00",
+    "1X2": {
+      "home": 1.212,
+      "away": 11.24,
+      "draw": 6.76
+    },
+    "ah": [
+      -1.75,
+      1.813,
+      2.03
+    ],
+    "ou": [
+      3.25,
+      1.909,
+      1.909
+    ]
+  },
+  "比甲|KVC Westerlo|Royal Antwerp|10-12 00:30": {
+    "id": "1637185126",
+    "home": "KVC Westerlo",
+    "away": "Royal Antwerp",
+    "time": "10-12 00:30",
+    "sort_time": "2026-10-12T00:30:00",
+    "1X2": {
+      "home": 2.13,
+      "away": 3.03,
+      "draw": 3.98
+    },
+    "ah": [
+      -0.25,
+      1.893,
+      1.962
+    ],
+    "ou": [
+      3.25,
+      1.98,
+      1.855
+    ]
+  },
+  "比甲|Mechelen|Sint Truidense|10-12 01:15": {
+    "id": "1637193360",
+    "home": "Mechelen",
+    "away": "Sint Truidense",
+    "time": "10-12 01:15",
+    "sort_time": "2026-10-12T01:15:00",
+    "1X2": {
+      "home": 3.36,
+      "away": 2.17,
+      "draw": 3.42
+    },
+    "ah": [
+      0.25,
+      1.971,
+      1.877
+    ],
+    "ou": [
+      2.75,
+      1.84,
+      2.0
+    ]
+  },
+  "土超|Galatasaray|Kasimpasa|10-10 01:00": {
+    "id": "1637175572",
+    "home": "Galatasaray",
+    "away": "Kasimpasa",
+    "time": "10-10 01:00",
+    "sort_time": "2026-10-10T01:00:00",
+    "1X2": {
+      "home": 1.244,
+      "away": 10.39,
+      "draw": 6.14
+    },
+    "ah": [
+      -1.75,
+      1.943,
+      1.893
+    ],
+    "ou": [
+      3.25,
+      1.926,
+      1.893
+    ]
+  },
+  "土超|Genclerbirligi|Amedspor|10-10 18:30": {
+    "id": "1637178745",
+    "home": "Genclerbirligi",
+    "away": "Amedspor",
+    "time": "10-10 18:30",
+    "sort_time": "2026-10-10T18:30:00",
+    "1X2": {
+      "home": 2.5,
+      "away": 2.39,
+      "draw": 3.52
+    },
+    "ah": [
+      0.0,
+      1.893,
+      1.806
+    ],
+    "ou": [
+      2.75,
+      1.893,
+      1.787
+    ]
+  },
+  "土超|Samsunspor|Trabzonspor|10-10 21:00": {
+    "id": "1637178747",
+    "home": "Samsunspor",
+    "away": "Trabzonspor",
+    "time": "10-10 21:00",
+    "sort_time": "2026-10-10T21:00:00",
+    "1X2": {
+      "home": 3.46,
+      "away": 2.05,
+      "draw": 3.65
+    },
+    "ah": [
+      0.5,
+      1.806,
+      2.06
+    ],
+    "ou": [
+      2.75,
+      1.847,
+      1.99
+    ]
+  },
+  "土超|Alanyaspor|Erzurumspor|10-10 21:00": {
+    "id": "1637178748",
+    "home": "Alanyaspor",
+    "away": "Erzurumspor",
+    "time": "10-10 21:00",
+    "sort_time": "2026-10-10T21:00:00",
+    "1X2": {
+      "home": 1.943,
+      "away": 3.7,
+      "draw": 3.12
+    },
+    "ah": [
+      -0.5,
+      1.952,
+      1.752
+    ],
+    "ou": [
+      2.25,
+      1.901,
+      1.781
+    ]
+  },
+  "土超|Caykur Rizespor|Fenerbahce|10-11 00:00": {
+    "id": "1637178749",
+    "home": "Caykur Rizespor",
+    "away": "Fenerbahce",
+    "time": "10-11 00:00",
+    "sort_time": "2026-10-11T00:00:00",
+    "1X2": {
+      "home": 4.34,
+      "away": 1.741,
+      "draw": 4.02
+    },
+    "ah": [
+      0.75,
+      1.909,
+      1.943
+    ],
+    "ou": [
+      2.75,
+      1.847,
+      1.99
+    ]
+  },
+  "土超|Konyaspor|Istanbul Basaksehir|10-11 18:30": {
+    "id": "1637181716",
+    "home": "Konyaspor",
+    "away": "Istanbul Basaksehir",
+    "time": "10-11 18:30",
+    "sort_time": "2026-10-11T18:30:00",
+    "1X2": {
+      "home": 2.73,
+      "away": 2.53,
+      "draw": 3.48
+    },
+    "ah": [
+      0.0,
+      2.0,
+      1.855
+    ],
+    "ou": [
+      2.75,
+      1.935,
+      1.901
+    ]
+  },
+  "土超|Gaziantep|Corum Belediyespor|10-11 21:00": {
+    "id": "1637175580",
+    "home": "Gaziantep",
+    "away": "Corum Belediyespor",
+    "time": "10-11 21:00",
+    "sort_time": "2026-10-11T21:00:00",
+    "1X2": {
+      "home": 2.7,
+      "away": 2.63,
+      "draw": 3.34
+    },
+    "ah": [
+      0.0,
+      1.952,
+      1.901
+    ],
+    "ou": [
+      2.5,
+      1.862,
+      1.971
+    ]
+  },
+  "土超|Besiktas|Kocaelispor|10-12 00:00": {
+    "id": "1637181718",
+    "home": "Besiktas",
+    "away": "Kocaelispor",
+    "time": "10-12 00:00",
+    "sort_time": "2026-10-12T00:00:00",
+    "1X2": {
+      "home": 1.28,
+      "away": 9.74,
+      "draw": 5.57
+    },
+    "ah": [
+      -1.5,
+      1.855,
+      1.99
+    ],
+    "ou": [
+      2.75,
+      1.8,
+      2.03
+    ]
+  },
+  "土超|Eyupspor|Goztepe|10-13 01:00": {
+    "id": "1637181717",
+    "home": "Eyupspor",
+    "away": "Goztepe",
+    "time": "10-13 01:00",
+    "sort_time": "2026-10-13T01:00:00",
+    "1X2": {
+      "home": 3.62,
+      "away": 1.82,
+      "draw": 3.57
+    },
+    "ah": [
+      0.5,
+      1.87,
+      1.826
+    ],
+    "ou": [
+      2.75,
+      1.855,
+      1.826
+    ]
+  },
+  "欧冠|Sabah FK|Slavia Prague|10-14 00:45": {
+    "id": "1636268520",
+    "home": "Sabah FK",
+    "away": "Slavia Prague",
+    "time": "10-14 00:45",
+    "sort_time": "2026-10-14T00:45:00",
+    "1X2": {
+      "home": 3.62,
+      "away": 1.971,
+      "draw": 3.75
+    },
+    "ah": [
+      0.5,
+      1.877,
+      1.971
+    ],
+    "ou": [
+      2.75,
+      1.82,
+      2.03
+    ]
+  },
+  "欧冠|Lens|Sporting CP|10-14 00:45": {
+    "id": "1636267512",
+    "home": "Lens",
+    "away": "Sporting CP",
+    "time": "10-14 00:45",
+    "sort_time": "2026-10-14T00:45:00",
+    "1X2": {
+      "home": 2.52,
+      "away": 2.55,
+      "draw": 3.83
+    },
+    "ah": [
+      0.0,
+      1.917,
+      1.935
+    ],
+    "ou": [
+      3.0,
+      1.917,
+      1.917
+    ]
+  },
+  "欧冠|Villarreal|Napoli|10-14 03:00": {
+    "id": "1636267527",
+    "home": "Villarreal",
+    "away": "Napoli",
+    "time": "10-14 03:00",
+    "sort_time": "2026-10-14T03:00:00",
+    "1X2": {
+      "home": 2.2,
+      "away": 3.12,
+      "draw": 3.63
+    },
+    "ah": [
+      -0.25,
+      1.926,
+      1.926
+    ],
+    "ou": [
+      2.75,
+      1.893,
+      1.943
+    ]
+  },
+  "欧冠|Atletico Madrid|Manchester United|10-14 03:00": {
+    "id": "1636267516",
+    "home": "Atletico Madrid",
+    "away": "Manchester United",
+    "time": "10-14 03:00",
+    "sort_time": "2026-10-14T03:00:00",
+    "1X2": {
+      "home": 2.19,
+      "away": 3.04,
+      "draw": 3.77
+    },
+    "ah": [
+      -0.25,
+      1.926,
+      1.926
+    ],
+    "ou": [
+      3.25,
+      2.02,
+      1.826
+    ]
+  },
+  "欧冠|Viking|Bayern Munich|10-14 03:00": {
+    "id": "1636268533",
+    "home": "Viking",
+    "away": "Bayern Munich",
+    "time": "10-14 03:00",
+    "sort_time": "2026-10-14T03:00:00",
+    "1X2": {
+      "home": 14.98,
+      "away": 1.096,
+      "draw": 12.4
+    },
+    "ah": [
+      2.75,
+      1.87,
+      1.943
+    ],
+    "ou": [
+      4.25,
+      1.847,
+      1.962
+    ]
+  },
+  "欧冠|Arsenal|Lille|10-14 03:00": {
+    "id": "1636267513",
+    "home": "Arsenal",
+    "away": "Lille",
+    "time": "10-14 03:00",
+    "sort_time": "2026-10-14T03:00:00",
+    "1X2": {
+      "home": 1.247,
+      "away": 10.47,
+      "draw": 6.05
+    },
+    "ah": [
+      -1.75,
+      1.98,
+      1.855
+    ],
+    "ou": [
+      3.0,
+      1.962,
+      1.862
+    ]
+  },
+  "欧冠|RB Leipzig|PSV|10-14 03:00": {
+    "id": "1636268532",
+    "home": "RB Leipzig",
+    "away": "PSV",
+    "time": "10-14 03:00",
+    "sort_time": "2026-10-14T03:00:00",
+    "1X2": {
+      "home": 2.01,
+      "away": 3.15,
+      "draw": 4.2
+    },
+    "ah": [
+      -0.5,
+      2.02,
+      1.84
+    ],
+    "ou": [
+      3.5,
+      1.99,
+      1.847
+    ]
+  },
+  "欧冠|Internazionale|Club Brugge|10-14 03:00": {
+    "id": "1636267523",
+    "home": "Internazionale",
+    "away": "Club Brugge",
+    "time": "10-14 03:00",
+    "sort_time": "2026-10-14T03:00:00",
+    "1X2": {
+      "home": 1.265,
+      "away": 9.53,
+      "draw": 5.98
+    },
+    "ah": [
+      -1.75,
+      1.98,
+      1.855
+    ],
+    "ou": [
+      3.25,
+      1.971,
+      1.855
+    ]
+  },
+  "欧冠|Galatasaray|Barcelona|10-14 03:00": {
+    "id": "1636267517",
+    "home": "Galatasaray",
+    "away": "Barcelona",
+    "time": "10-14 03:00",
+    "sort_time": "2026-10-14T03:00:00",
+    "1X2": {
+      "home": 7.3,
+      "away": 1.295,
+      "draw": 6.48
+    },
+    "ah": [
+      1.75,
+      1.909,
+      1.926
+    ],
+    "ou": [
+      4.0,
+      1.813,
+      2.02
+    ]
+  },
+  "欧冠|LASK Linz|Liverpool|10-15 00:45": {
+    "id": "1636268333",
+    "home": "LASK Linz",
+    "away": "Liverpool",
+    "time": "10-15 00:45",
+    "sort_time": "2026-10-15T00:45:00",
+    "1X2": {
+      "home": 10.39,
+      "away": 1.216,
+      "draw": 6.99
+    },
+    "ah": [
+      1.75,
+      2.0,
+      1.84
+    ],
+    "ou": [
+      3.5,
+      1.935,
+      1.885
+    ]
+  },
+  "欧冠|Feyenoord|Como|10-15 00:45": {
+    "id": "1636268332",
+    "home": "Feyenoord",
+    "away": "Como",
+    "time": "10-15 00:45",
+    "sort_time": "2026-10-15T00:45:00",
+    "1X2": {
+      "home": 3.49,
+      "away": 1.87,
+      "draw": 4.32
+    },
+    "ah": [
+      0.5,
+      1.971,
+      1.877
+    ],
+    "ou": [
+      3.25,
+      1.877,
+      1.962
+    ]
+  },
+  "欧冠|Manchester City|Paris Saint-Germain|10-15 03:00": {
+    "id": "1636267533",
+    "home": "Manchester City",
+    "away": "Paris Saint-Germain",
+    "time": "10-15 03:00",
+    "sort_time": "2026-10-15T03:00:00",
+    "1X2": {
+      "home": 2.3,
+      "away": 2.77,
+      "draw": 3.94
+    },
+    "ah": [
+      -0.25,
+      2.03,
+      1.826
+    ],
+    "ou": [
+      3.25,
+      1.901,
+      1.935
+    ]
+  },
+  "欧联|Lyon|Crystal Palace|10-16 00:45": {
+    "id": "1636918749",
+    "home": "Lyon",
+    "away": "Crystal Palace",
+    "time": "10-16 00:45",
+    "sort_time": "2026-10-16T00:45:00",
+    "1X2": {
+      "home": 2.19,
+      "away": 3.14,
+      "draw": 3.63
+    },
+    "ah": [
+      -0.25,
+      1.917,
+      1.935
+    ],
+    "ou": [
+      2.75,
+      1.893,
+      1.943
+    ]
+  },
+  "欧联|Torreense|Sunderland|10-16 00:45": {
+    "id": "1636906812",
+    "home": "Torreense",
+    "away": "Sunderland",
+    "time": "10-16 00:45",
+    "sort_time": "2026-10-16T00:45:00",
+    "1X2": {
+      "home": 6.28,
+      "away": 1.444,
+      "draw": 4.86
+    },
+    "ah": [
+      1.25,
+      1.901,
+      1.952
+    ],
+    "ou": [
+      3.0,
+      1.806,
+      2.04
+    ]
+  },
+  "欧联|Celje|Omonia Nicosia|10-16 00:45": {
+    "id": "1636919982",
+    "home": "Celje",
+    "away": "Omonia Nicosia",
+    "time": "10-16 00:45",
+    "sort_time": "2026-10-16T00:45:00",
+    "1X2": {
+      "home": 2.41,
+      "away": 2.9,
+      "draw": 3.45
+    },
+    "ah": [
+      -0.25,
+      2.09,
+      1.781
+    ],
+    "ou": [
+      2.5,
+      1.82,
+      2.03
+    ]
+  },
+  "欧联|Salzburg|AC Milan|10-16 00:45": {
+    "id": "1636918751",
+    "home": "Salzburg",
+    "away": "AC Milan",
+    "time": "10-16 00:45",
+    "sort_time": "2026-10-16T00:45:00",
+    "1X2": {
+      "home": 4.01,
+      "away": 1.813,
+      "draw": 3.97
+    },
+    "ah": [
+      0.5,
+      2.05,
+      1.82
+    ],
+    "ou": [
+      3.0,
+      2.02,
+      1.826
+    ]
+  },
+  "欧联|Sparta Prague|Lillestrom|10-16 00:45": {
+    "id": "1636906804",
+    "home": "Sparta Prague",
+    "away": "Lillestrom",
+    "time": "10-16 00:45",
+    "sort_time": "2026-10-16T00:45:00",
+    "1X2": {
+      "home": 1.366,
+      "away": 7.72,
+      "draw": 5.11
+    },
+    "ah": [
+      -1.5,
+      2.02,
+      1.84
+    ],
+    "ou": [
+      3.0,
+      1.901,
+      1.935
+    ]
+  },
+  "欧联|Lech Poznan|Bayer Leverkusen|10-16 00:45": {
+    "id": "1636919980",
+    "home": "Lech Poznan",
+    "away": "Bayer Leverkusen",
+    "time": "10-16 00:45",
+    "sort_time": "2026-10-16T00:45:00",
+    "1X2": {
+      "home": 4.47,
+      "away": 1.662,
+      "draw": 4.35
+    },
+    "ah": [
+      0.75,
+      2.02,
+      1.833
+    ],
+    "ou": [
+      3.25,
+      2.02,
+      1.82
+    ]
+  },
+  "欧联|Union Saint-Gilloise|Real Sociedad|10-16 00:45": {
+    "id": "1636906815",
+    "home": "Union Saint-Gilloise",
+    "away": "Real Sociedad",
+    "time": "10-16 00:45",
+    "sort_time": "2026-10-16T00:45:00",
+    "1X2": {
+      "home": 2.28,
+      "away": 2.97,
+      "draw": 3.64
+    },
+    "ah": [
+      -0.25,
+      1.99,
+      1.862
+    ],
+    "ou": [
+      2.75,
+      1.909,
+      1.926
+    ]
+  },
+  "欧联|AZ Alkmaar|Hapoel Beer Sheva|10-16 00:45": {
+    "id": "1636919984",
+    "home": "AZ Alkmaar",
+    "away": "Hapoel Beer Sheva",
+    "time": "10-16 00:45",
+    "sort_time": "2026-10-16T00:45:00",
+    "1X2": {
+      "home": 1.309,
+      "away": 8.58,
+      "draw": 5.67
+    },
+    "ah": [
+      -1.5,
+      1.87,
+      1.99
+    ],
+    "ou": [
+      3.25,
+      2.01,
+      1.833
+    ]
+  },
+  "欧联|Dinamo Zagreb|Anderlecht|10-16 03:00": {
+    "id": "1636918765",
+    "home": "Dinamo Zagreb",
+    "away": "Anderlecht",
+    "time": "10-16 03:00",
+    "sort_time": "2026-10-16T03:00:00",
+    "1X2": {
+      "home": 1.84,
+      "away": 4.13,
+      "draw": 3.74
+    },
+    "ah": [
+      -0.5,
+      1.847,
+      2.01
+    ],
+    "ou": [
+      2.75,
+      1.98,
+      1.862
+    ]
+  },
+  "欧联|NEC Nijmegen|Levski Sofia|10-16 03:00": {
+    "id": "1636919977",
+    "home": "NEC Nijmegen",
+    "away": "Levski Sofia",
+    "time": "10-16 03:00",
+    "sort_time": "2026-10-16T03:00:00",
+    "1X2": {
+      "home": 1.87,
+      "away": 3.95,
+      "draw": 3.78
+    },
+    "ah": [
+      -0.5,
+      1.877,
+      1.971
+    ],
+    "ou": [
+      2.75,
+      1.952,
+      1.885
+    ]
+  },
+  "欧联|Bournemouth|Sturm Graz|10-16 03:00": {
+    "id": "1636918746",
+    "home": "Bournemouth",
+    "away": "Sturm Graz",
+    "time": "10-16 03:00",
+    "sort_time": "2026-10-16T03:00:00",
+    "1X2": {
+      "home": 1.185,
+      "away": 13.11,
+      "draw": 7.46
+    },
+    "ah": [
+      -2.0,
+      1.885,
+      1.971
+    ],
+    "ou": [
+      3.5,
+      1.971,
+      1.87
+    ]
+  },
+  "欧联|Ferencvaros|Viktoria Plzen|10-16 03:00": {
+    "id": "1636918745",
+    "home": "Ferencvaros",
+    "away": "Viktoria Plzen",
+    "time": "10-16 03:00",
+    "sort_time": "2026-10-16T03:00:00",
+    "1X2": {
+      "home": 1.952,
+      "away": 3.49,
+      "draw": 3.94
+    },
+    "ah": [
+      -0.5,
+      1.962,
+      1.893
+    ],
+    "ou": [
+      2.75,
+      1.833,
+      2.01
+    ]
+  }
+}
