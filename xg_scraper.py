@@ -14,8 +14,7 @@ LEAGUES = {
     "La Liga": "PD",
     "Bundesliga": "BL1",
     "Serie A": "SA",
-    "Ligue 1": "FL1",
-    "Championship": "ELC"
+    "Ligue 1": "FL1"
 }
 
 # 也可以配置你在 Github Secrets 里的 API Key（如果有的话）
