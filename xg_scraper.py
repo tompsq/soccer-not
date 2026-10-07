@@ -178,15 +178,23 @@ def main():
             if not home_id or not away_id:
                 continue
 
-            if home_id not in
-        teams:
-                teams[home_id] = {
-                    "League": league_name,
-                    "Team": home_team.get("name"),
-                    "Matches": 0,
-                    "xG": 0.0,
-                    "xGA": 0.0
-                }
+            if home_id not in teams:
+    teams[home_id] = {
+        "League": league_name,
+        "Team": home_team.get("name"),
+        "Matches": 0,
+        "xG": 0.0,
+        "xGA": 0.0
+    }
+
+if away_id not in teams:
+    teams[away_id] = {
+        "League": league_name,
+        "Team": away_team.get("name"),
+        "Matches": 0,
+        "xG": 0.0,
+        "xGA": 0.0
+    }
 
             if away_id not in teams:
                 teams[away_id] = {
