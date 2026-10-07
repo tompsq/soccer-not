@@ -43,7 +43,6 @@ def fetch_data(league_name, url):
         data = resp.json()
         teams_stats = {}
         
-        # 适配标准的赛果列表结构
         matches = data.get("matches", data.get("games", []))
         for m in matches:
             score = m.get("score", {})
@@ -100,13 +99,12 @@ def main():
     print("Starting Football Data Scraper...")
     all_rows = []
 
-    for league_name, url in LEAGUES_DATA.items ी if False else LEAGUES_DATA.items():
+    for league_name, url in LEAGUES_DATA.items():
         rows = fetch_data(league_name, url)
         if rows:
             all_rows.extend(rows)
 
     if not all_rows:
-        # 如果公开静态 JSON 暂未覆盖，自动生成一个基础占位表保证工作流和 TG 推送正常运行，方便后续扩展
         print("⚠️ 未能从远程拉取到实时赛果，生成基础数据表确保流程通畅...")
         all_rows.append({
             "League": "Premier League",
