@@ -2,8 +2,18 @@ name: League Odds
 
 on:
   schedule:
-    - cron: '0 2 * * *'   # 大马时间 10:00
+    - cron: '0 22 * * 1'    # 大马 周二 06:00 早盘
+    - cron: '30 18 * * 5'   # 大马 周六 02:30 临盘
   workflow_dispatch:
+    inputs:
+      mode:
+        description: '运行模式'
+        required: true
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - manual_upcoming
 
 jobs:
   run-script:
