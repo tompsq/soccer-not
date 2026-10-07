@@ -1,30 +1,30 @@
-name: Weekly SofaScore xG
+name: Run SofaScore xG scraper
 
 on:
   schedule:
-    # Every Saturday 00:00 Malaysia Time (UTC+8)
-    # = Friday 16:00 UTC
-    - cron: "0 16 * * 5"
-
-  workflow_dispatch:
+    - cron: '0 0 * * *'  # 每天定时运行（可根据需要调整）
+  workflow_dispatch:      # 支持手动触发
 
 jobs:
-  scrape-xg:
+  build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: '3.10'
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
+          python -m pip install --upgrade pip
+          pip install requests pandas openpyxl
 
       - name: Run SofaScore xG scraper
-        run: |
-          python xg_scraper.py
+        run: python xg_scraper.py
+        env:
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
