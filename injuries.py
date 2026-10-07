@@ -42,18 +42,19 @@ def send_file(path, caption=""):
         print("发送失败:", e)
 
 def get_injuries(league_id, season=2026):
-    """获取某联赛伤停（1次请求）"""
     url = "https://v3.football.api-sports.io/injuries"
     params = {"league": league_id, "season": season}
     try:
         r = requests.get(url, headers=H, params=params, timeout=20)
-        if r.status_code != 200:
-            print(f"联赛 {league_id} 状态码 {r.status_code}")
-            return []
+        print(f"  状态码: {r.status_code}")
         data = r.json()
+        # 打印关键信息
+        print(f"  results: {data.get('results')}")
+        if data.get("errors"):
+            print(f"  errors: {data.get('errors')}")
         return data.get("response", [])
     except Exception as e:
-        print(f"联赛 {league_id} 错误: {e}")
+        print(f"  错误: {e}")
         return []
 
 def main():
