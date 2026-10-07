@@ -107,7 +107,7 @@ def fetch_pinnacle(name, lid, only_upcoming_2h=False):
     if not matches:
         return []
 
-mks = get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/markets/straight")
+    mks = get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/markets/straight")
     if mks:
         for mk in mks:
             mid = mk.get("matchupId")
@@ -151,7 +151,7 @@ def main():
     ts = (datetime.utcnow() + timedelta(hours=8)).strftime("%Y-%m-%d %H:%M:%S")
     all_rows = []
 
-for name, lid in LEAGUES:
+    for name, lid in LEAGUES:
         print(f"抓取 {name}...")
         rows = fetch_pinnacle(name, lid, only_upcoming_2h=only_upcoming_2h)
         print(f"  → {len(rows)} 场")
@@ -176,7 +176,6 @@ for name, lid in LEAGUES:
 
     if not all_rows:
         print("没有抓到数据")
-        # 手动 upcoming 没数据时也可以发个提示
         if only_upcoming_2h and T and C:
             try:
                 requests.post(
@@ -187,6 +186,7 @@ for name, lid in LEAGUES:
             except:
                 pass
         return
+
     wb = Workbook()
     ws = wb.active
     ws.title = "盘口"
