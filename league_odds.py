@@ -13,6 +13,15 @@ LEAGUES = [
 ]
 MAX_PER_LEAGUE = 12
 
+XG_LEAGUES = [
+    ("ENG-Premier League", "英超"),
+    ("ESP-La Liga", "西甲"),
+    ("ITA-Serie A", "意甲"),
+    ("GER-Bundesliga", "德甲"),
+    ("FRA-Ligue 1", "法甲"),
+]
+XG_SEASONS = ["2627", "2526"]
+
 H = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     "Accept": "application/json",
@@ -143,6 +152,51 @@ def fetch_pinnacle(name, lid, only_upcoming_2h=False):
     sorted_m = sorted(matches.values(), key=lambda x: x["sort_time"])
     return sorted_m if only_upcoming_2h else sorted_m[:MAX_PER_LEAGUE]
 
+def fetch_xg_rows():
+    try:
+        import soccerdata as sd
+    except ImportError:
+        print("无 soccerdata，跳过 xG")
+        return []
+
+    all_rows = []
+    for code, name in XG_LEAGUES:
+        print(f"xG 抓取 {name}...")
+        for season in XG_SEASONS:
+            try:
+                us = sd.Understat(leagues=code, seasons=season)
+                df = us.read_team_match_stats()
+                if df is None or len(df) == 0:
+                    continue
+                team_xg, team_xga, team_n = {}, {}, {}
+                for _, r in df.iterrows():
+                    home, away = r.get("home_team"), r.get("away_team")
+                    hxg = float(r.get("home_xg") or 0)
+                    axg = float(r.get("away_xg") or 0)
+                    for team, xf, xa in [(home, hxg, axg), (away, axg, hxg)]:
+                        if not team:
+                            continue
+                        team_xg[team] = team_xg.get(team, 0) + xf
+                        team_xga[team] = team_xga.get(team, 0) + xa
+                        team_n[team] = team_n.get(team, 0) + 1
+                for team in team_xg:
+                    n = team_n[team]
+                    all_rows.append({
+                        "联赛": name, "赛季": season, "球队": team, "场次": n,
+                        "总xG": round(team_xg[team], 2),
+                        "总xGA": round(team_xga[team], 2),
+                        "场均xG": round(team_xg[team] / n, 3) if n else 0,
+                        "场均xGA": round(team_xga[team] / n, 3) if n else 0,
+                    })
+                print(f"  {name} {season}: {len(team_xg)} 队")
+                break
+            except Exception as e:
+                print(f"  {name} {season} 失败: {e}")
+                time.sleep(1)
+        time.sleep(1)
+    all_rows.sort(key=lambda x: (x["联赛"], -x["总xG"]))
+    return all_rows
+
 def main():
     mode = os.environ.get("RUN_MODE", "auto")
     only_upcoming_2h = (mode == "manual_upcoming")
@@ -169,17 +223,14 @@ def main():
             try:
                 requests.post(
                     f"https://api.telegram.org/bot{T}/sendMessage",
-                    json={"chat_id": C, "text": f"⚠️ `{ts}` 未来2小时内没有可抓的比赛（可能已开赛/完场）。", "parse_mode": "Markdown"},
+                    json={"chat_id": C, "text": f"⚠️ `{ts}` 未来2小时内没有可抓的比赛。", "parse_mode": "Markdown"},
                     timeout=30,
                 )
             except:
                 pass
         return
 
-    # 有历史就做对比（周六临盘 或 manual_upcoming）
-    # 无历史则当早盘保存
     do_compare = bool(history)
-
     wb = Workbook()
     ws = wb.active
 
@@ -211,8 +262,18 @@ def main():
                 c1.get("home"), c1.get("draw"), c1.get("away"),
                 cah[0], cah[1], cah[2], cou[0], cou[1], cou[2],
             ])
+
+        xg_rows = fetch_xg_rows()
+        if xg_rows:
+            ws2 = wb.create_sheet("球队xG")
+            xg_headers = ["联赛", "赛季", "球队", "场次", "总xG", "总xGA", "场均xG", "场均xGA"]
+            ws2.append(xg_headers)
+            for r in xg_rows:
+                ws2.append([r[h] for h in xg_headers])
+            print(f"已写入 xG: {len(xg_rows)} 条")
+
         fname = f"league_compare_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
-        caption = f"早盘 vs 临盘 对比 {ts}\n共 {len(all_rows)} 场（已开赛/完场可能不在列表）"
+        caption = f"早盘vs临盘 + xG {ts}\n对比 {len(all_rows)} 场"
     else:
         ws.title = "早盘"
         headers = ["联赛", "时间", "主队", "客队", "主胜", "平局", "客胜", "亚盘", "亚盘主", "亚盘客", "大小", "大球", "小球"]
