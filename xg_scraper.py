@@ -10,11 +10,11 @@ TG_CHAT_ID = os.environ.get("TG_CHAT_ID")
 
 # 五大联赛在 API-Football 中的 League ID (2026/2027赛季，当前赛季通常为 2026)
 LEAGUES = {
-    "Premier League": {"id": 39, "season": 2026},
-    "La Liga": {"id": 140, "season": 2026},
-    "Serie A": {"id": 135, "season": 2026},
-    "Bundesliga": {"id": 78, "season": 2026},
-    "Ligue 1": {"id": 61, "season": 2026}
+    "Premier League": {"id": 39, "season": 2025},
+    "La Liga": {"id": 140, "season": 2025},
+    "Serie A": {"id": 135, "season": 2025},
+    "Bundesliga": {"id": 78, "season": 2025},
+    "Ligue 1": {"id": 61, "season": 2025}
 }
 
 def send_telegram_document(filepath, caption):
