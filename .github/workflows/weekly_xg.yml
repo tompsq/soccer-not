@@ -23,8 +23,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests pandas openpyxl beautifulsoup4 lxml html5lib
 
-      - name: Run SofaScore xG scraper
-        run: python xg_scraper.py
+            - name: Run xg_scraper.py
         env:
+          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          run: python xg_scraper.py
