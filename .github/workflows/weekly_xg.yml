@@ -1,0 +1,41 @@
+name: Weekly SofaScore xG
+
+on:
+  schedule:
+    # Every Saturday 00:00 Malaysia Time (UTC+8)
+    # = Friday 16:00 UTC
+    - cron: "0 16 * * 5"
+
+  workflow_dispatch:
+
+jobs:
+  scrape-xg:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run SofaScore xG scraper
+        run: |
+          python xg_scraper.py
+
+      - name: Send Excel to Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s \
+            -F chat_id="$TELEGRAM_CHAT_ID" \
+            -F document="@sofascore_xg.xlsx" \
+            -F caption="📊 SofaScore Season xG / xGA" \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"
