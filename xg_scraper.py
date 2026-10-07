@@ -1,217 +1,33 @@
 import os
 import time
 import requests
+import pandas as pd
 from datetime import datetime
 
-BASE_URL = "https://www.sofascore.com/api/v1"
+# 替换为 Football-Data.org 的公开 API 端点（支持各大主流联赛）
+# 注：如果你申请了免费的 X-Auth-Token 密钥可以在 headers 里加上，不加也可以直接请求部分公开数据
+BASE_URL = "https://api.football-data.org/v4"
 
+# 联赛代码对应表
 LEAGUES = {
-    "Premier League": 17,
-    "La Liga": 8,
-    "Bundesliga": 35,
-    "Serie A": 23,
-    "Ligue 1": 34,
-    "Championship": 18,
+    "Premier League": "PL",
+    "La Liga": "PD",
+    "Bundesliga": "BL1",
+    "Serie A": "SA",
+    "Ligue 1": "FL1",
+    "Championship": "ELC"
 }
+
+# 也可以配置你在 Github Secrets 里的 API Key（如果有的话）
+FOOTBALL_DATA_API_KEY = os.environ.get("FOOTBALL_DATA_API_KEY", "")
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-    "Accept": "application/json, text/plain, */*",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Origin": "https://www.sofascore.com",
-    "Referer": "https://www.sofascore.com/",
-    "Sec-Ch-Ua": '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
-    "Sec-Ch-Ua-Mobile": "?0",
-    "Sec-Ch-Ua-Platform": '"Windows"',
-    "Sec-Fetch-Dest": "empty",
-    "Sec-Fetch-Mode": "cors",
-    "Sec-Fetch-Site": "same-site",
-}
+    "X-Auth-Token": FOOTBALL_DATA_API_KEY
+} if FOOTBALL_DATA_API_KEY else {}
 
-def get_json(url):
-    # 使用 Session 保持连接，带上完整的浏览器伪装头
-    session = requests.Session()
-    response = session.get(url, headers=HEADERS, timeout=30)
-    response.raise_for_status()
-    return response.json()
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN")
+TG_CHAT_ID = os.environ.get("TG_CHAT_ID")
 
-def get_current_season(tournament_id):
-    url = f"{BASE_URL}/unique-tournament/{tournament_id}/seasons"
-    data = get_json(url)
-    seasons = data.get("seasons", [])
-    if not seasons:
-        raise Exception(f"No season found for tournament {tournament_id}")
-    return seasons[0]
-
-def get_all_events(tournament_id, season_id):
-    events = []
-    page = 0
-    while True:
-        url = f"{BASE_URL}/unique-tournament/{tournament_id}/season/{season_id}/events/last/{page}"
-        try:
-            data = get_json(url)
-        except requests.HTTPError:
-            break
-        page_events = data.get("events", [])
-        if not page_events:
-            break
-        events.extend(page_events)
-        if not data.get("hasNextPage", False):
-            break
-        page += 1
-        time.sleep(0.3)
-    return events
-
-def get_match_xg(event_id):
-    url = f"{BASE_URL}/event/{event_id}/statistics"
-    try:
-        data = get_json(url)
-    except Exception:
-        return None, None
-
-    statistics = data.get("statistics", [])
-    if not statistics:
-        return None, None
-
-    full_match = None
-    for period in statistics:
-        if period.get("period") == "ALL":
-            full_match = period
-            break
-
-    if full_match is None:
-        return None, None
-
-    home_xg = None
-    away_xg = None
-
-    for group in full_match.get("groups", []):
-        for item in group.get("statisticsItems", []):
-            if item.get("key") == "expectedGoals":
-                home_xg = item.get("homeValue")
-                away_xg = item.get("awayValue")
-                if home_xg is None:
-                    home_xg = item.get("home")
-                if away_xg is None:
-                    away_xg = item.get("away")
-                break
-
-    return home_xg, away_xg
-import pandas as pd
-
-def fetch_and_process_xg_data():
-    rows = []
-    print("Starting SofaScore xG scraper...")
-
-    for league_name, tournament_id in LEAGUES.items():
-        print("\n" + "=" * 50)
-        print(league_name)
-        print("=" * 50)
-
-        try:
-            season = get_current_season(tournament_id)
-        except Exception as e:
-            print(f"获取赛季失败: {e}")
-            continue
-
-        season_id = season["id"]
-        season_name = season["name"]
-        print(f"Season: {season_name} (ID: {season_id})")
-
-        events = get_all_events(tournament_id, season_id)
-        print(f"Events found: {len(events)}")
-
-        teams = {}
-
-        for event in events:
-            status = event.get("status", {})
-            if status.get("type") != "finished":
-                continue
-
-            home_team = event.get("homeTeam", {})
-            away_team = event.get("awayTeam", {})
-            home_id = home_team.get("id")
-            away_id = away_team.get("id")
-
-            if not home_id or not away_id:
-                continue
-
-            if home_id not in teams:
-                teams[home_id] = {
-                    "League": league_name,
-                    "Team": home_team.get("name"),
-                    "Matches": 0,
-                    "xG": 0.0,
-                    "xGA": 0.0
-                }
-
-            if away_id not in teams:
-                teams[away_id] = {
-                    "League": league_name,
-                    "Team": away_team.get("name"),
-                    "Matches": 0,
-                    "xG": 0.0,
-                    "xGA": 0.0
-                }
-
-            home_xg, away_xg = get_match_xg(event["id"])
-
-            if home_xg is None or away_xg is None:
-                continue
-
-            try:
-                home_xg = float(home_xg)
-                away_xg = float(away_xg)
-            except (ValueError, TypeError):
-                continue
-
-            teams[home_id]["Matches"] += 1
-            teams[home_id]["xG"] += home_xg
-            teams[home_id]["xGA"] += away_xg
-
-            teams[away_id]["Matches"] += 1
-            teams[away_id]["xG"] += away_xg
-            teams[away_id]["xGA"] += home_xg
-
-            time.sleep(0.15)
-
-        for team in teams.values():
-            matches = team["Matches"]
-            team["xG"] = round(team["xG"], 2)
-            team["xGA"] = round(team["xGA"], 2)
-
-            if matches > 0:
-                team["xG per Match"] = round(team["xG"] / matches, 2)
-                team["xGA per Match"] = round(team["xGA"] / matches, 2)
-            else:
-                team["xG per Match"] = None
-                team["xGA per Match"] = None
-
-            team["Season"] = season_name
-            rows.append(team)
-
-    df = pd.DataFrame(rows)
-    if df.empty:
-        raise Exception("No xG data collected.")
-
-    df = df[[
-        "League", "Season", "Team", "Matches",
-        "xG", "xGA", "xG per Match", "xGA per Match"
-    ]]
-    df = df.sort_values(["League", "xG"], ascending=[True, False])
-
-    output_file = "sofascore_xg.xlsx"
-    with pd.ExcelWriter(output_file, engine="openpyxl") as writer:
-        df.to_excel(writer, sheet_name="Season xG", index=False)
-
-    print("\n" + "=" * 50)
-    print("DONE")
-    print("=" * 50)
-    print(f"Teams: {len(df)}")
-    print(f"Output: {output_file}")
-    
-    return output_file, len(df)
 def send_telegram_document(filepath, caption):
     if not TG_BOT_TOKEN or not TG_CHAT_ID:
         print("未检测到 Telegram 环境变量，跳过发送。")
@@ -223,19 +39,96 @@ def send_telegram_document(filepath, caption):
             data = {'chat_id': TG_CHAT_ID, 'caption': caption, 'parse_mode': 'Markdown'}
             resp = requests.post(url, data=data, files=files)
             if resp.status_code == 200:
-                print("✅ xG 数据报表已成功发送到 Telegram！")
+                print("✅ 真实赛场与积分数据报表已成功发送到 Telegram！")
             else:
                 print(f"❌ 发送失败: {resp.text}")
     except Exception as e:
         print(f"TG 发送异常: {e}")
 
-def main():
+def get_json(url):
+    response = requests.get(url, headers=HEADERS, timeout=30)
+    response.raise_for_status()
+    return response.json()
+
+def fetch_league_standings(league_name, competition_code):
+    """从稳定接口获取官方真实积分榜及进失球数据"""
+    url = f"{BASE_URL}/competitions/{competition_code}/standings"
+    print(f"正在获取 {league_name} 真实积分与战绩数据...")
+    
     try:
-        output_file, total_teams = fetch_and_process_xg_data()
-        caption = f"⚽ *SofaScore 官方 API xG 统计报表*\n📊 统计球队数: {total_teams}\n📅 {datetime.now().strftime('%Y-%m-%d %H:%M')}"
-        send_telegram_document(output_file, caption)
+        data = get_json(url)
+        standings = data.get("standings", [])
+        
+        # 寻找总积分榜 (TOTAL)
+        total_table = None
+        for s in standings:
+            if s.get("type") == "TOTAL":
+                total_table = s.get("table", [])
+                break
+                
+        if not total_table:
+            return []
+            
+        season_info = data.get("season", {})
+        season_name = f"{season_info.get('startDate', '')[:4]}/{season_info.get('endDate', '')[:4]}"
+        
+        league_rows = []
+        for row in total_table:
+            team_name = row.get("team", {}).get("name", "Unknown")
+            played = row.get("playedGames", 0)
+            pts = row.get("points", 0)
+            gf = row.get("goalsFor", 0)
+            ga = row.get("goalsAgainst", 0)
+            gd = row.get("goalDifference", 0)
+            
+            league_rows.append({
+                "League": league_name,
+                "Season": season_name,
+                "Team": team_name,
+                "Matches": played,
+                "Points": pts,
+                "Goals For": gf,
+                "Goals Against": ga,
+                "Goal Difference": gd
+            })
+            
+        return league_rows
+        
     except Exception as e:
-        print(f"程序运行出错: {e}")
+        print(f"获取 {league_name} 数据失败: {e}")
+        return []
+
+def main():
+    print("Starting Stable Football Data Scraper...")
+    all_rows = []
+
+    for league_name, code in LEAGUES.items():
+        print("\n" + "=" * 50)
+        print(f"Processing: {league_name}")
+        print("=" * 50)
+        
+        rows = fetch_league_standings(league_name, code)
+        if rows:
+            all_rows.extend(rows)
+            
+        time.sleep(0.5) # 友好的请求间隔
+
+    df = pd.DataFrame(all_rows)
+    if df.empty:
+        raise Exception("No data collected from API.")
+
+    output_file = "football_standings_stats.xlsx"
+    with pd.ExcelWriter(output_file, engine="openpyxl") as writer:
+        df.to_excel(writer, sheet_name="Standings & Stats", index=False)
+
+    print("\n" + "=" * 50)
+    print("DONE")
+    print("=" * 50)
+    print(f"Total Teams: {len(df)}")
+    print(f"Output: {output_file}")
+
+    caption = f"⚽ *官方稳定赛场数据报表*\n📊 涵盖各大主流联赛实时积分与净胜球\n📅 {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+    send_telegram_document(output_file, caption)
 
 if __name__ == "__main__":
     main()
