@@ -21,7 +21,7 @@ def send_file(path, caption=""):
         print("发送失败:", e)
 
 def main():
-    print("开始用 soccerdata 抓 Understat 球队累计 xG...")
+    print("开始用 soccerdata 抓 Understat 并汇总球队累计 xG...")
     try:
         import soccerdata as sd
         import pandas as pd
@@ -30,7 +30,7 @@ def main():
         return
 
     seasons_to_try = ["2526", "2627", "2425"]
-    rows = []
+    df = None
     used_season = None
 
     for season in seasons_to_try:
@@ -38,45 +38,67 @@ def main():
         try:
             us = sd.Understat(leagues="ENG-Premier League", seasons=season)
             df = us.read_team_match_stats()
-            print(f"  列名: {list(df.columns)}")
             print(f"  行数: {len(df)}")
-            if df is None or len(df) == 0:
-                continue
-
-            # 打印前几列方便调试
-            print(df.head(3))
-
-            # 尝试按球队汇总 xG
-            # 列名可能是 home_xg / away_xg 或类似
-            cols = [c.lower() for c in df.columns]
-            print("小写列名:", cols)
-
-            # 简单汇总策略：找含 xg 的列和 team 相关列
-            # 不同版本列名不同，先把整表存进 Excel 方便看
-            for _, r in df.iterrows():
-                rows.append({c: r.get(c) for c in df.columns})
-            used_season = season
-            break
+            if df is not None and len(df) > 0:
+                used_season = season
+                break
         except Exception as e:
             print(f"  失败: {e}")
             time.sleep(1)
 
-    if not rows:
+    if df is None or len(df) == 0:
         print("没有抓到数据")
         return
 
+    # 汇总：每队作为主队的 xG + 作为客队的 xG
+    team_xg = {}
+    team_xga = {}
+    team_matches = {}
+
+    for _, r in df.iterrows():
+        home = r.get("home_team")
+        away = r.get("away_team")
+        hxg = float(r.get("home_xg") or 0)
+        axg = float(r.get("away_xg") or 0)
+
+        for team, xg_for, xg_against in [
+            (home, hxg, axg),
+            (away, axg, hxg),
+        ]:
+            if not team:
+                continue
+            team_xg[team] = team_xg.get(team, 0) + xg_for
+            team_xga[team] = team_xga.get(team, 0) + xg_against
+            team_matches[team] = team_matches.get(team, 0) + 1
+
+    rows = []
+    for team in team_xg:
+        n = team_matches[team]
+        rows.append({
+            "联赛": "英超",
+            "赛季": used_season,
+            "球队": team,
+            "场次": n,
+            "总xG": round(team_xg[team], 2),
+            "总xGA": round(team_xga[team], 2),
+            "场均xG": round(team_xg[team] / n, 3) if n else 0,
+            "场均xGA": round(team_xga[team] / n, 3) if n else 0,
+        })
+
+    rows.sort(key=lambda x: x["总xG"], reverse=True)
+
     wb = Workbook()
     ws = wb.active
-    ws.title = "原始数据"
-    headers = list(rows[0].keys())
+    ws.title = "球队累计xG"
+    headers = ["联赛", "赛季", "球队", "场次", "总xG", "总xGA", "场均xG", "场均xGA"]
     ws.append(headers)
     for r in rows:
-        ws.append([r.get(h) for h in headers])
+        ws.append([r[h] for h in headers])
 
     ts = datetime.now().strftime("%Y-%m-%d %H:%M")
     fname = f"xg_scraper_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
     wb.save(fname)
-    send_file(fname, caption=f"Understat 原始数据 {ts}\n赛季 {used_season}\n共 {len(rows)} 行")
+    send_file(fname, caption=f"英超球队累计xG {ts}\n赛季 {used_season}\n共 {len(rows)} 队")
     print("已发送:", fname)
 
 if __name__ == "__main__":
