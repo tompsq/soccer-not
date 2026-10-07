@@ -3,7 +3,7 @@ name: League Odds
 on:
   schedule:
     - cron: '0 22 * * 1'    # 大马 周二 06:00 早盘
-    - cron: '30 18 * * 5'   # 大马 周六 02:30 临盘
+    - cron: '30 18 * * 5'   # 大马 周六 02:30 临盘+对比+xG
   workflow_dispatch:
     inputs:
       mode:
@@ -15,19 +15,36 @@ on:
           - auto
           - manual_upcoming
 
+permissions:
+  contents: write
+
 jobs:
   run-script:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      - run: |
+
+      - name: Install dependencies
+        run: |
           python -m pip install --upgrade pip
-          pip install requests openpyxl
+          pip install requests openpyxl soccerdata pandas lxml html5lib
+
       - name: Run
         env:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          RUN_MODE: ${{ github.event.inputs.mode || 'auto' }}
+          EVENT_NAME: ${{ github.event_name }}
         run: python league_odds.py
+
+      - name: Commit history
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add league_history.json || true
+          git diff --staged --quiet || git commit -m "update league_history.json"
+          git push || true
