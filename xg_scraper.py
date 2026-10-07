@@ -29,7 +29,7 @@ def main():
         print("缺少库:", e)
         return
 
-    seasons_to_try = ["2526", "2627", "2425"]
+    seasons_to_try = ["2627"]
     df = None
     used_season = None
 
