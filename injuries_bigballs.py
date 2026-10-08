@@ -1,4 +1,4 @@
-import os, requests
+import os, time, requests
 from datetime import datetime
 from openpyxl import Workbook
 
@@ -6,6 +6,7 @@ T = os.environ.get("TG_BOT_TOKEN")
 C = os.environ.get("TG_CHAT_ID")
 KEY = os.environ.get("BIGBALLS_API_KEY")
 BASE = "https://api.bigballsdata.com"
+MAX_DETAIL = 20  # 先只查明细 20 人，避免一天额度用完
 
 def send_file(path, caption=""):
     if not T or not C:
@@ -22,89 +23,88 @@ def send_file(path, caption=""):
     except Exception as e:
         print("发送失败:", e)
 
-def extract_list(data):
-    """兼容 data.injuries.value / data.injuries / data 等结构"""
-    if data is None:
-        return []
-    if isinstance(data, list):
-        return data
-    if not isinstance(data, dict):
-        return []
-    # 优先路径
-    inj = data.get("data", data)
-    if isinstance(inj, dict):
-        inj = inj.get("injuries", inj)
-    if isinstance(inj, dict) and "value" in inj:
-        inj = inj["value"]
-    if isinstance(inj, list):
-        return inj
-    if isinstance(inj, dict):
-        return list(inj.values())
-    return []
+def api_get(path):
+    r = requests.get(
+        f"{BASE}{path}",
+        headers={"Authorization": f"Bearer {KEY}", "Accept": "application/json"},
+        timeout=20,
+    )
+    print(f"{path} -> {r.status_code}")
+    if r.status_code != 200:
+        print(r.text[:200])
+        return None
+    return r.json()
 
 def main():
     if not KEY:
         print("缺少 BIGBALLS_API_KEY")
         return
 
-    headers = {
-        "Authorization": f"Bearer {KEY}",
-        "Accept": "application/json",
-    }
-    url = f"{BASE}/v1/injuries?league=premier-league"
-    print("请求:", url)
-
-    r = requests.get(url, headers=headers, timeout=20)
-    print("状态码:", r.status_code)
-    print("前300字:", r.text[:300])
-
-    if r.status_code != 200:
-        print("请求失败")
+    # 1) 名单（文档支持 EPL）
+    data = api_get("/v1/injuries?league=EPL")
+    if not data:
         return
 
-    data = r.json()
-    items = extract_list(data)
-    print(f"解析到 {len(items)} 条原始记录")
+    items = []
+    block = data.get("data", data)
+    if isinstance(block, dict):
+        inj = block.get("injuries", block)
+        if isinstance(inj, dict) and "value" in inj:
+            items = inj["value"]
+        elif isinstance(inj, list):
+            items = inj
+    elif isinstance(block, list):
+        items = block
+
+    print(f"名单 {len(items)} 人")
 
     rows = []
-    all_keys = set()
-    for it in items:
+    for i, it in enumerate(items[:MAX_DETAIL]):
         if not isinstance(it, dict):
             continue
-        all_keys.update(it.keys())
-        rows.append({
-            "id": it.get("id"),
-            "full_name": it.get("full_name") or it.get("display_name") or it.get("name"),
-            "display_name": it.get("display_name"),
-            "sport": it.get("sport"),
-            "team_id": it.get("current_team_id") or it.get("team_id"),
-            "status": it.get("status") or it.get("injury_status"),
-            "reason": it.get("reason") or it.get("injury") or it.get("description"),
-            "return": it.get("return_date") or it.get("expected_return") or it.get("until"),
-            "updated": it.get("updated_at") or it.get("as_of"),
-        })
+        pid = it.get("id")
+        name = it.get("full_name") or it.get("display_name") or ""
+        if not pid:
+            continue
 
-    print("字段示例:", sorted(all_keys)[:30])
+        detail = api_get(f"/v1/players/{pid}/injury")
+        time.sleep(0.35)
+
+        status = reason = ret = comment = team = None
+        if detail:
+            d = detail.get("data", detail)
+            status = d.get("status")
+            reason = d.get("injury_type") or d.get("reason")
+            ret = d.get("return_date")
+            comment = d.get("comment")
+            player = d.get("player") or {}
+            team_obj = player.get("team") or {}
+            team = team_obj.get("name") if isinstance(team_obj, dict) else None
+            if not name:
+                name = player.get("name") or name
+
+        rows.append({
+            "球员": name,
+            "球队": team or it.get("current_team_id"),
+            "状态": status,
+            "伤情": reason,
+            "预计回归": ret,
+            "备注": comment,
+            "player_id": pid,
+        })
+        print(f"  [{i+1}] {name} | {team} | {status} | {reason}")
 
     wb = Workbook()
     ws = wb.active
     ws.title = "英超伤停"
-    headers_row = ["id", "full_name", "display_name", "sport", "team_id", "status", "reason", "return", "updated"]
-    ws.append(headers_row)
-    for row in rows:
-        ws.append([row.get(h) for h in headers_row])
-
-    # 第二页：原始第一条方便核对
-    if items:
-        ws2 = wb.create_sheet("样例原始")
-        sample = items[0]
-        ws2.append(["key", "value"])
-        for k, v in sample.items():
-            ws2.append([k, str(v)[:500]])
+    headers = ["球员", "球队", "状态", "伤情", "预计回归", "备注", "player_id"]
+    ws.append(headers)
+    for r in rows:
+        ws.append([r.get(h) for h in headers])
 
     fname = f"injuries_bigballs_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
     wb.save(fname)
-    send_file(fname, caption=f"BigBalls 英超伤停\n共 {len(rows)} 条")
+    send_file(fname, caption=f"BigBalls 英超伤停明细\n查了前 {len(rows)} 人（省额度）")
     print("已发送:", fname)
 
 if __name__ == "__main__":
