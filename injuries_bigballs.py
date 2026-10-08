@@ -1,4 +1,4 @@
-import os, time, requests
+import os, requests
 from datetime import datetime
 from openpyxl import Workbook
 
@@ -6,6 +6,21 @@ T = os.environ.get("TG_BOT_TOKEN")
 C = os.environ.get("TG_CHAT_ID")
 KEY = os.environ.get("BIGBALLS_API_KEY")
 BASE = "https://api.bigballsdata.com"
+
+TEAM_MAP = {
+    "bb_team_6xvcggo6fhj6": "Chelsea",
+    "bb_team_6zmcfvtdqosl": "Sunderland",
+    "bb_team_bku3akfbg5he": "Arsenal",
+    "bb_team_bmnmmt2dqbek": "Aston Villa",
+    "bb_team_e724gf4htpnl": "Brentford",
+    "bb_team_efzvjqit6wuk": "Leicester",
+    "bb_team_eoiz65w56j7g": "Tottenham",
+    "bb_team_l6apkmfeheu6": "Brighton",
+    "bb_team_o7j63lsrekzf": "Bournemouth",
+    "bb_team_p6t3w2ul5sel": "Manchester United",
+    "bb_team_y5cv6htoh5hu": "Fulham",
+    "bb_team_y72vuylsqou7": "Fulham",
+}
 
 def send_file(path, caption=""):
     if not T or not C:
@@ -22,74 +37,7 @@ def send_file(path, caption=""):
     except Exception as e:
         print("发送失败:", e)
 
-def api_get(path):
-    r = requests.get(
-        f"{BASE}{path}",
-        headers={"Authorization": f"Bearer {KEY}", "Accept": "application/json"},
-        timeout=20,
-    )
-    print(f"{path} -> {r.status_code}")
-    if r.status_code != 200:
-        print(r.text[:180])
-        return None
-    return r.json()
-
-def as_list(data):
-    if data is None:
-        return []
-    if isinstance(data, list):
-        return data
-    if not isinstance(data, dict):
-        return []
-    d = data.get("data", data)
-    if isinstance(d, list):
-        return d
-    if isinstance(d, dict):
-        for k in ("teams", "value", "results", "items", "standings"):
-            v = d.get(k)
-            if isinstance(v, list):
-                return v
-            if isinstance(v, dict) and isinstance(v.get("value"), list):
-                return v["value"]
-    return []
-
-def build_team_map():
-    """尽量从多个入口拿 team_id -> 队名"""
-    paths = [
-        "/v1/teams?sport=football&league=EPL",
-        "/v1/teams?sport=football&league=premier-league",
-        "/v1/standings?sport=football&league=EPL",
-        "/v1/standings?league=EPL",
-        "/v1/leagues/EPL/teams",
-        "/v1/leagues/premier-league/teams",
-    ]
-    mapping = {}
-    for path in paths:
-        data = api_get(path)
-        time.sleep(0.3)
-        items = as_list(data)
-        print(f"  {path} -> {len(items)} items")
-        for it in items:
-            if not isinstance(it, dict):
-                continue
-            # 兼容 standings 嵌套 team
-            team = it.get("team") if isinstance(it.get("team"), dict) else it
-            tid = team.get("id") or it.get("team_id") or it.get("id")
-            name = (
-                team.get("name")
-                or team.get("full_name")
-                or team.get("display_name")
-                or it.get("team_name")
-                or it.get("name")
-            )
-            if tid and name:
-                mapping[tid] = name
-        if len(mapping) >= 15:
-            break
-    print(f"队名映射共 {len(mapping)} 个")
-    return mapping
-
-def extract_injuries(data):
+def extract_items(data):
     if not data:
         return []
     block = data.get("data", data)
@@ -108,21 +56,31 @@ def main():
         print("缺少 BIGBALLS_API_KEY")
         return
 
-    team_map = build_team_map()
+    r = requests.get(
+        f"{BASE}/v1/injuries?league=EPL",
+        headers={"Authorization": f"Bearer {KEY}", "Accept": "application/json"},
+        timeout=20,
+    )
+    print("状态码:", r.status_code)
+    if r.status_code != 200:
+        print(r.text[:200])
+        return
 
-    data = api_get("/v1/injuries?league=EPL")
-    if not data:
-        data = api_get("/v1/injuries?league=premier-league")
-    items = extract_injuries(data)
+    items = extract_items(r.json())
     print(f"伤停 {len(items)} 人")
 
     rows = []
+    unknown_ids = set()
     for it in items:
         if not isinstance(it, dict):
             continue
         player = it.get("full_name") or it.get("display_name") or ""
-        tid = it.get("current_team_id") or it.get("team_id") or ""
-        team = team_map.get(tid, tid)
+        tid = it.get("current_team_id") or ""
+        team = TEAM_MAP.get(tid)
+        if not team:
+            team = tid
+            if tid:
+                unknown_ids.add(tid)
         rows.append({"球队": team, "球员": player, "team_id": tid})
 
     rows.sort(key=lambda x: (x["球队"], x["球员"]))
@@ -130,9 +88,9 @@ def main():
     wb = Workbook()
     ws = wb.active
     ws.title = "英超伤停名单"
-    ws.append(["球队", "球员", "team_id"])
+    ws.append(["球队", "球员"])
     for r in rows:
-        ws.append([r["球队"], r["球员"], r["team_id"]])
+        ws.append([r["球队"], r["球员"]])
 
     ws2 = wb.create_sheet("按队汇总")
     ws2.append(["球队", "人数", "球员"])
@@ -143,19 +101,17 @@ def main():
         ps = by_team[team]
         ws2.append([team, len(ps), "、".join(ps)])
 
-    # 调试：映射表
-    ws3 = wb.create_sheet("队名映射")
-    ws3.append(["team_id", "name"])
-    for tid, name in sorted(team_map.items(), key=lambda x: x[1]):
-        ws3.append([tid, name])
+    if unknown_ids:
+        ws3 = wb.create_sheet("未知team_id")
+        ws3.append(["team_id", "说明"])
+        for tid in sorted(unknown_ids):
+            ws3.append([tid, "请补进 TEAM_MAP"])
 
     fname = f"injuries_epl_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
     wb.save(fname)
-    resolved = sum(1 for r in rows if not str(r["球队"]).startswith("bb_team_"))
-    send_file(
-        fname,
-        caption=f"英超伤停名单\n{len(rows)} 人，队名解析成功 {resolved} 人，映射 {len(team_map)} 队",
-    )
+    ok = sum(1 for r in rows if r["球队"] in TEAM_MAP.values())
+    send_file(fname, caption=f"英超伤停名单\n{len(rows)} 人，已识别队名约 {ok} 人")
+    print("未知 team_id:", unknown_ids)
     print("已发送:", fname)
 
 if __name__ == "__main__":
