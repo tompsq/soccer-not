@@ -34,6 +34,35 @@ def api_get(path):
         return None
     return r.json()
 
+def extract_items(data):
+    if not data:
+        return []
+    block = data.get("data", data)
+    if isinstance(block, dict):
+        inj = block.get("injuries", block)
+        if isinstance(inj, dict) and "value" in inj:
+            return inj["value"] if isinstance(inj["value"], list) else []
+        if isinstance(inj, list):
+            return inj
+    if isinstance(block, list):
+        return block
+    return []
+
+def team_name(team_id, cache):
+    if not team_id:
+        return ""
+    if team_id in cache:
+        return cache[team_id]
+    data = api_get(f"/v1/teams/{team_id}?sport=football")
+    time.sleep(0.3)
+    name = team_id
+    if data:
+        d = data.get("data", data)
+        if isinstance(d, dict):
+            name = d.get("name") or d.get("full_name") or d.get("display_name") or team_id
+    cache[team_id] = name
+    return name
+
 def main():
     if not KEY:
         print("缺少 BIGBALLS_API_KEY")
@@ -42,67 +71,41 @@ def main():
     data = api_get("/v1/injuries?league=EPL")
     if not data:
         data = api_get("/v1/injuries?league=premier-league")
-    if not data:
-        print("名单请求失败")
-        return
+    items = extract_items(data)
+    print(f"伤停名单 {len(items)} 人")
 
-    items = []
-    block = data.get("data", data)
-    if isinstance(block, dict):
-        inj = block.get("injuries", block)
-        if isinstance(inj, dict) and "value" in inj:
-            items = inj["value"]
-        elif isinstance(inj, list):
-            items = inj
-    elif isinstance(block, list):
-        items = block
-    print(f"名单 {len(items)} 人")
-
-    wb = Workbook()
-
-    ws1 = wb.active
-    ws1.title = "名单样例"
-    if items:
-        sample = items[0]
-        ws1.append(["key", "value"])
-        for k, v in sample.items():
-            ws1.append([k, str(v)[:800]])
-        print("名单样例 keys:", list(sample.keys()))
-
-    ws2 = wb.create_sheet("详情样例")
-    ws2.append(["player_id", "name", "http", "raw_json"])
-    for it in items[:3]:
+    cache = {}
+    rows = []
+    for it in items:
         if not isinstance(it, dict):
             continue
-        pid = it.get("id")
-        name = it.get("full_name") or it.get("display_name") or ""
-        path = f"/v1/players/{pid}/injury"
-        r = requests.get(
-            f"{BASE}{path}",
-            headers={"Authorization": f"Bearer {KEY}", "Accept": "application/json"},
-            timeout=20,
-        )
-        print(f"详情 {name}: {r.status_code} {r.text[:150]}")
-        ws2.append([pid, name, r.status_code, r.text[:2000]])
-        time.sleep(0.4)
+        player = it.get("full_name") or it.get("display_name") or ""
+        tid = it.get("current_team_id") or it.get("team_id") or ""
+        team = team_name(tid, cache)
+        rows.append({"球队": team, "球员": player, "team_id": tid, "player_id": it.get("id")})
 
-    ws3 = wb.create_sheet("详情展开")
-    ws3.append(["key", "value"])
-    if items:
-        pid = items[0].get("id")
-        detail = api_get(f"/v1/players/{pid}/injury")
-        if detail:
-            d = detail.get("data", detail)
-            if isinstance(d, dict):
-                for k, v in d.items():
-                    ws3.append([k, str(v)[:800]])
-                if isinstance(d.get("player"), dict):
-                    for k, v in d["player"].items():
-                        ws3.append([f"player.{k}", str(v)[:800]])
+    rows.sort(key=lambda x: (x["球队"], x["球员"]))
 
-    fname = f"injuries_debug_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "英超伤停名单"
+    ws.append(["球队", "球员"])
+    for r in rows:
+        ws.append([r["球队"], r["球员"]])
+
+    # 按队汇总一页，方便看
+    ws2 = wb.create_sheet("按队汇总")
+    ws2.append(["球队", "伤停人数", "球员列表"])
+    by_team = {}
+    for r in rows:
+        by_team.setdefault(r["球队"], []).append(r["球员"])
+    for team in sorted(by_team.keys()):
+        ps = by_team[team]
+        ws2.append([team, len(ps), "、".join(ps)])
+
+    fname = f"injuries_epl_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
     wb.save(fname)
-    send_file(fname, caption="BigBalls 伤停调试（看原始字段）")
+    send_file(fname, caption=f"英超伤停名单\n{len(rows)} 人 / {len(by_team)} 队")
     print("已发送:", fname)
 
 if __name__ == "__main__":
