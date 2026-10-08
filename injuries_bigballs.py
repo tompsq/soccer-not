@@ -6,7 +6,6 @@ T = os.environ.get("TG_BOT_TOKEN")
 C = os.environ.get("TG_CHAT_ID")
 KEY = os.environ.get("BIGBALLS_API_KEY")
 BASE = "https://api.bigballsdata.com"
-MAX_DETAIL = 20  # 先只查明细 20 人，避免一天额度用完
 
 def send_file(path, caption=""):
     if not T or not C:
@@ -40,9 +39,11 @@ def main():
         print("缺少 BIGBALLS_API_KEY")
         return
 
-    # 1) 名单（文档支持 EPL）
     data = api_get("/v1/injuries?league=EPL")
     if not data:
+        data = api_get("/v1/injuries?league=premier-league")
+    if not data:
+        print("名单请求失败")
         return
 
     items = []
@@ -55,56 +56,53 @@ def main():
             items = inj
     elif isinstance(block, list):
         items = block
-
     print(f"名单 {len(items)} 人")
 
-    rows = []
-    for i, it in enumerate(items[:MAX_DETAIL]):
+    wb = Workbook()
+
+    ws1 = wb.active
+    ws1.title = "名单样例"
+    if items:
+        sample = items[0]
+        ws1.append(["key", "value"])
+        for k, v in sample.items():
+            ws1.append([k, str(v)[:800]])
+        print("名单样例 keys:", list(sample.keys()))
+
+    ws2 = wb.create_sheet("详情样例")
+    ws2.append(["player_id", "name", "http", "raw_json"])
+    for it in items[:3]:
         if not isinstance(it, dict):
             continue
         pid = it.get("id")
         name = it.get("full_name") or it.get("display_name") or ""
-        if not pid:
-            continue
+        path = f"/v1/players/{pid}/injury"
+        r = requests.get(
+            f"{BASE}{path}",
+            headers={"Authorization": f"Bearer {KEY}", "Accept": "application/json"},
+            timeout=20,
+        )
+        print(f"详情 {name}: {r.status_code} {r.text[:150]}")
+        ws2.append([pid, name, r.status_code, r.text[:2000]])
+        time.sleep(0.4)
 
+    ws3 = wb.create_sheet("详情展开")
+    ws3.append(["key", "value"])
+    if items:
+        pid = items[0].get("id")
         detail = api_get(f"/v1/players/{pid}/injury")
-        time.sleep(0.35)
-
-        status = reason = ret = comment = team = None
         if detail:
             d = detail.get("data", detail)
-            status = d.get("status")
-            reason = d.get("injury_type") or d.get("reason")
-            ret = d.get("return_date")
-            comment = d.get("comment")
-            player = d.get("player") or {}
-            team_obj = player.get("team") or {}
-            team = team_obj.get("name") if isinstance(team_obj, dict) else None
-            if not name:
-                name = player.get("name") or name
+            if isinstance(d, dict):
+                for k, v in d.items():
+                    ws3.append([k, str(v)[:800]])
+                if isinstance(d.get("player"), dict):
+                    for k, v in d["player"].items():
+                        ws3.append([f"player.{k}", str(v)[:800]])
 
-        rows.append({
-            "球员": name,
-            "球队": team or it.get("current_team_id"),
-            "状态": status,
-            "伤情": reason,
-            "预计回归": ret,
-            "备注": comment,
-            "player_id": pid,
-        })
-        print(f"  [{i+1}] {name} | {team} | {status} | {reason}")
-
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "英超伤停"
-    headers = ["球员", "球队", "状态", "伤情", "预计回归", "备注", "player_id"]
-    ws.append(headers)
-    for r in rows:
-        ws.append([r.get(h) for h in headers])
-
-    fname = f"injuries_bigballs_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
+    fname = f"injuries_debug_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
     wb.save(fname)
-    send_file(fname, caption=f"BigBalls 英超伤停明细\n查了前 {len(rows)} 人（省额度）")
+    send_file(fname, caption="BigBalls 伤停调试（看原始字段）")
     print("已发送:", fname)
 
 if __name__ == "__main__":
