@@ -1,7 +1,7 @@
 name: Official Football Data Fetcher
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # 允许手机端手动点击运行
 
 jobs:
   build-and-run:
@@ -16,22 +16,17 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: 3. 安装网络请求库
-        run: pip install requests
+      - name: 3. 安装 Excel 编译所需的全部依赖库
+        # 🔥 核心变化：必须补齐 pandas 和 openpyxl，否则生成 Excel 脚本会直接闪退崩掉
+        run: pip install requests pandas openpyxl
 
-      - name: 4. 执行官方数据抽取
+      - name: 4. 执行官方数据抽取并生成 Excel
         env:
           API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
         run: python scraper.py
 
-      - name: 5. 把抓到的AI特征包打包成附件供手机下载
-        uses: actions/upload-artifact@v4
-        with:
-          name: AI-Football-Ready-Data
-          path: ai_football_ready_data.json
-      # 🎯 只要在你的 GitHub Action yml 最后一项改成这个名字，运行后就能在手机上直接下载到这个完美的 Excel 报表！
-      - name: 5. 打包生成的 Excel 数据表格
+      - name: 5. 把生成的 Excel 报表打包成附件供手机下载
         uses: actions/upload-artifact@v4
         with:
           name: AI-Model-Ready-Excel
-          path: Football_AI_Model_Data.xlsx
+          path: Football_AI_Model_Data.xlsx  # 必须与 Python 脚本里生成的文件名一字不差
