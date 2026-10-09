@@ -24,17 +24,17 @@ def main():
         hid, aid = item['teams']['home']['id'], item['teams']['away']['id']
         hname, aname = item['teams']['home']['name'], item['teams']['away']['name']
         title = f"{hname} VS {aname}"
+        league_id = item['league']['id']
+        season = item.get("league", {}).get("season", 2025)
         
-        # 1. 赔率抓取修复
         h_win, d_win, a_win = "", "", ""
         try:
             o_res = requests.get(f"https://{API_HOST}/odds?fixture={fid}", headers=headers).json().get("response", [])
             if o_res:
-                bookmakers = o_res[0].get("bookmakers", [])
-                for bm in bookmakers:
+                for bm in o_res[0].get("bookmakers", []):
                     if bm.get("name") in ["Bet365", "William Hill"]:
                         for bet in bm.get("bets", []):
-                            if bet.get("id") == 1 or bet.get("name") == "Match Winner":
+                            if bet.get("name") == "Match Winner":
                                 for val in bet.get("values", []):
                                     if val.get("value") == "Home": h_win = val.get("odd")
                                     elif val.get("value") == "Draw": d_win = val.get("odd")
@@ -44,44 +44,33 @@ def main():
         except: pass
         sheet1.append({"比赛ID": fid, "联赛": lname, "日期": mdate, "对阵": title, "初盘-主胜": h_win, "初盘-平局": d_win, "初盘-客胜": a_win})
         
-        # 2. 进阶统计与xG相关数据
         s_dict = {"对阵": title, "主队": hname, "客队": aname, "主队_场均进球": 0.0, "主队_场均失球": 0.0, "客队_场均进球": 0.0, "客队_场均失球": 0.0}
         try:
-            h_res = requests.get(f"https://{API_HOST}/teams/statistics?season=2026&team={hid}&league={item['league']['id']}", headers=headers).json().get("response", {})
+            h_url = f"https://{API_HOST}/teams/statistics?season={season}&team={hid}&league={league_id}"
+            h_res = requests.get(h_url, headers=headers).json().get("response", {})
             if h_res:
-                s_dict["主队_场均进球"] = h_res.get("goals", {}).get("for", {}).get("average", {}).get("total", 0.0)
-                s_dict["主队_场均失球"] = h_res.get("goals", {}).get("against", {}).get("average", {}).get("total", 0.0)
-            a_res = requests.get(f"https://{API_HOST}/teams/statistics?season=2026&team={aid}&league={item['league']['id']}", headers=headers).json().get("response", {})
+                s_dict["主队_场均进球"] = float(h_res.get("goals", {}).get("for", {}).get("average", {}).get("total", 0.0) or 0.0)
+                s_dict["主队_场均失球"] = float(h_res.get("goals", {}).get("against", {}).get("average", {}).get("total", 0.0) or 0.0)
+            
+            a_url = f"https://{API_HOST}/teams/statistics?season={season}&team={aid}&league={league_id}"
+            a_res = requests.get(a_url, headers=headers).json().get("response", {})
             if a_res:
-                s_dict["客队_场均进球"] = a_res.get("goals", {}).get("for", {}).get("average", {}).get("total", 0.0)
-                s_dict["客队_场均失球"] = a_res.get("goals", {}).get("against", {}).get("average", {}).get("total", 0.0)
+                s_dict["客队_场均进球"] = float(a_res.get("goals", {}).get("for", {}).get("average", {}).get("total", 0.0) or 0.0)
+                s_dict["客队_场均失球"] = float(a_res.get("goals", {}).get("against", {}).get("average", {}).get("total", 0.0) or 0.0)
         except: pass
         sheet2.append(s_dict)
         
-        # 3. 历史交锋 H2H
         try:
             h_res = requests.get(f"https://{API_HOST}/fixtures/headtohead?h2h={hid}-{aid}", headers=headers).json().get("response", [])
             for h_m in h_res[:5]:
-                sheet3.append({
-                    "当前对阵": title, "历史交战日期": h_m.get("fixture", {}).get("date", "")[:10],
-                    "历史主队": h_m.get("teams", {}).get("home", {}).get("name"), "历史客队": h_m.get("teams", {}).get("away", {}).get("name"),
-                    "具体比分赛果": f"{h_m.get('goals', {}).get('home')}:{h_m.get('goals', {}).get('away')}"
-                })
+                sheet3.append({"当前对阵": title, "历史交战日期": h_m.get("fixture", {}).get("date", "")[:10], "历史主队": h_m.get("teams", {}).get("home", {}).get("name"), "历史客队": h_m.get("teams", {}).get("away", {}).get("name"), "具体比分赛果": f"{h_m.get('goals', {}).get('home')}:{h_m.get('goals', {}).get('away')}"})
         except: pass
         
-        # 4. 伤停名单优化
         try:
             inj_res = requests.get(f"https://{API_HOST}/injuries?fixture={fid}", headers=headers).json().get("response", [])
-            if not inj_res:
-                sheet4.append({"对阵": title, "球队": "暂无官方数据", "伤停人员": "赛前24小时内更新", "缺阵类型": "-", "缺阵原因": "-"})
-            else:
-                for inj in inj_res:
-                    sheet4.append({
-                        "对阵": title, "球队": inj.get("team", {}).get("name"),
-                        "伤停人员": inj.get("player", {}).get("name"),
-                        "缺阵类型": inj.get("player", {}).get("type", "伤病"),
-                        "缺阵原因": inj.get("player", {}).get("reason", "未知")
-                    })
+            if not inj_res: sheet4.append({"对阵": title, "球队": "全员健康", "伤停人员": "无", "缺阵类型": "无", "缺阵原因": "无"})
+            for inj in inj_res:
+                sheet4.append({"对阵": title, "球队": inj.get("team", {}).get("name"), "伤停人员": inj.get("player", {}).get("name"), "缺阵类型": inj.get("player", {}).get("type", "伤病"), "缺阵原因": inj.get("player", {}).get("reason", "未知")})
         except: pass
 
     try:
@@ -92,5 +81,4 @@ def main():
             pd.DataFrame(sheet4).to_excel(writer, sheet_name="4_官方实战伤停名单明细", index=False)
     except: sys.exit(1)
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__main
