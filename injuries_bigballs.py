@@ -32,6 +32,13 @@ TEAM_MAP = {
     "bb_team_p6t3w2ul5sel": "Manchester United",
     "bb_team_y5cv6htoh5hu": "Leeds United",
     "bb_team_y72vuylsqou7": "Fulham",
+    "bb_team_36zsft7lmkeu": "Liverpool",
+    "bb_team_5rij6cmtyxsz": "Hull City",
+    "bb_team_cbw4c6xzwnfm": "Manchester City",
+    "bb_team_rcstmd2lcg4t": "Everton",
+    "bb_team_sgv2dwpvfeqx": "Crystal Palace",
+    "bb_team_x7xjxfep527m": "Nottingham Forest",
+    
 
     # ===== 德甲 =====
     "bb_team_2gnnxuhvfdap": "Borussia Mönchengladbach",   # E. Leopold, F. Honorat, J. Castrop, N. Kuhn
