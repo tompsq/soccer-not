@@ -33,6 +33,61 @@ TEAM_MAP = {
     "bb_team_y5cv6htoh5hu": "Fulham",
     "bb_team_y72vuylsqou7": "Fulham",
 
+    # ===== 德甲 =====
+    "bb_team_2gnnxuhvfdap": "Borussia Mönchengladbach",   # E. Leopold, F. Honorat, J. Castrop, N. Kuhn
+    "bb_team_2sw3yqyzwmig": "FC Augsburg",                # N. Banks, S. Mounie 等
+    "bb_team_37gqpop6h2p5": "Bayern Munich",              # J. Musiala, T. Buchmann
+    "bb_team_3qiyf3t7ov4b": "1. FC Köln",                 # A. Ilic, O. Burke, S. Nsoki 等
+    "bb_team_ckhmeo4qnqjm": "RB Leipzig",                 # C. Kofane, G. Doue 等
+    "bb_team_dhzsyyrl4ga3": "Werder Bremen",              # F. Agu, J. Njinmah, J. Stage, S. Lynen 等
+    "bb_team_dwqk62kpsskh": "1. FC Heidenheim",           # A. Castro-Montes, T. Dallinga 等
+    "bb_team_ei52gjbav6co": "Borussia Dortmund",          # E. Can, J. Ryerson, J. Lerma 等
+    "bb_team_hgehlxj4um7n": "1. FSV Mainz 05",            # D. Kohr, R. Zentner, S. Widmer, Silas
+    "bb_team_l3cupktvzck3": "VfB Stuttgart",              # A. Al Dakhil, D. Zagadou, T. Tomas 等
+    "bb_team_n52iwtoum7b3": "Hamburger SV",               # A. Gronbaek, P. Daka, M. Vuskovic 等
+    "bb_team_ojkxqkjwphgq": "Eintracht Frankfurt",        # F. Onyeka, L. Schnellbacher 等
+    "bb_team_qk5ujzn7fxce": "SC Freiburg",                # L. Eickel, M. Hoffmeier 等
+    "bb_team_qvvur7cxtrt3": "TSG Hoffenheim",             # F. Chaibi, J. Ngankam 等
+    "bb_team_skwa2ps7bf22": "1. FC Union Berlin",         # D. Ljubicic, T. Becker
+    "bb_team_tnvl3r6yybuy": "VfL Bochum",                 # A. Hajdari, Bernardo
+    "bb_team_vab4q7tja2fe": "Bayer Leverkusen",           # A. Ouedraogo, B. Gruda, C. Baumgartner 等
+
+    # ===== 法甲 =====
+    "bb_team_a6ibvhc2i66q": "RC Lens",                    # I. Boura, M. Ifnaoui 等
+    "bb_team_alo5gqiwyda5": "AS Monaco",                  # A. Fati, M. Coulibaly 等
+    "bb_team_e6rrvaez4fvc": "Olympique Lyonnais",         # M. Niakhate, N. Tagliafico 等
+    "bb_team_gpuh3yryegjt": "Paris Saint-Germain",        # O. Dembele, N. Mendes, W. Zaire-Emery, F. Torres 等
+    "bb_team_itgvqsrs6f3s": "Olympique Marseille",        # E. Mbemba（单人，确认后可再核）
+    "bb_team_kzowjpzcxmfd": "FC Lorient",                 # A. Mendy, L. Abergel, M. Bombito
+    "bb_team_lase654d2vrp": "OGC Nice",                   # A. Sima, J. Todibo, T. Hazard 等
+    "bb_team_lg37lh3326o4": "RC Strasbourg",              # I. Doukoure, J. Panichelli 等
+    "bb_team_nn2ydgj4qsdr": "Olympique Marseille",        # A. Gouiri, P. Hojbjerg, T. Weah, G. Kondogbia 等
+    "bb_team_pi33c6jozqt7": "Lille OSC",                  # H. Igamane
+    "bb_team_q3bqij37xmn7": "Stade Rennais",              # A. Toure, E. Jelert, S. Zagadou 等
+    "bb_team_tn46w3twdjjf": "Stade Brestois",             # B. Chardonnet, R. Le Guen 等
+    "bb_team_vb546p2vie5y": "Angers SCO",                 # A. Bourabaa, D. Sidibe 等
+    "bb_team_vbysblfbxyox": "Toulouse FC",                # B. Fadiga, N. Mbamba 等
+    "bb_team_vi3uwxplpfys": "FC Nantes",                  # A. Diousse, C. Makosso 等
+    "bb_team_z6263cwcytsh": "AJ Auxerre",                 # R. Nicolaisen
+
+    # ===== 西甲 =====
+    "bb_team_26kmji6b7z6t": "Real Betis",                 # A. Ruibal, J. Firpo, M. Bartra
+    "bb_team_4o25yzk4smri": "Rayo Vallecano",             # Buba Sangare, F. Redondo Solari 等
+    "bb_team_4zpuuo5qy4qq": "Girona",                     # Jofre, K. Garcia
+    "bb_team_5pgqtysejj6r": "Getafe",                     # F. Garces, M. Rodriguez 等
+    "bb_team_67iuwlxnpjrr": "Valencia",                   # A. Danjuma, M. Diakhaby, U. Sadiq, D. Foulquier 等
+    "bb_team_6ra4blme4gv4": "Osasuna",                    # J. Herrando, R. Moro, V. Rosier
+    "bb_team_ahioc67qdgzc": "Alavés",                     # A. Abqar, Juanmi, M. Satriano 等
+    "bb_team_b2ceb673ec6r": "Barcelona",                  # A. Christensen, F. de Jong, Raphinha 等
+    "bb_team_dz7ljw2kxxxg": "Real Sociedad",              # A. Odriozola, I. Zubeldia, O. Oskarsson 等
+    "bb_team_ep2p5qctzhyk": "Mallorca",                   # A. Ochoa, J. Cajuste, M. Diarra 等
+    "bb_team_f6ja2kviqqmi": "Espanyol",                   # A. Batalla, I. Balliu, Luiz Felipe
+    "bb_team_i35vetwr4l5e": "Real Madrid",                # D. Huijsen, Eder Militao, F. Mendy, F. Valverde, Rodrygo 等
+    "bb_team_o45hubfx6elq": "Villarreal",                 # T. Buchanan
+    "bb_team_tpo6j7zknzgc": "Athletic Club",              # A. Djalo, N. Williams, O. Sancet 等
+    "bb_team_twiultvqm7ob": "Celta Vigo",                 # S. Eriksson
+    "bb_team_yr7l27bxf4mq": "Sevilla",                    # P
+
     # ===== 下面这些是你刚发的未知 ID，先占位，跑完后根据「未知team_id」表填真实队名 =====
     # 英超剩余
     # "bb_team_36zsft7lmkeu": "",
