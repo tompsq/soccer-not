@@ -17,7 +17,6 @@ jobs:
           python-version: '3.10'
 
       - name: 3. 安装 Excel 编译所需的全部依赖库
-        # 🔥 核心变化：必须补齐 pandas 和 openpyxl，否则生成 Excel 脚本会直接闪退崩掉
         run: pip install requests pandas openpyxl
 
       - name: 4. 执行官方数据抽取并生成 Excel
@@ -29,4 +28,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: AI-Model-Ready-Excel
-          path: Football_AI_Model_Data.xlsx  # 必须与 Python 脚本里生成的文件名一字不差
+          path: Football_AI_Model_Data.xlsx
+
