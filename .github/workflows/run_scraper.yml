@@ -21,7 +21,7 @@ jobs:
 
       - name: 4. 执行官方数据抽取
         env:
-          ANTI_BOT_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
         run: python scraper.py
 
       - name: 5. 把抓到的AI特征包打包成附件供手机下载
