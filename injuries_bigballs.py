@@ -30,7 +30,7 @@ TEAM_MAP = {
     "bb_team_l6apkmfeheu6": "Brighton",
     "bb_team_o7j63lsrekzf": "Bournemouth",
     "bb_team_p6t3w2ul5sel": "Manchester United",
-    "bb_team_y5cv6htoh5hu": "Fulham",
+    "bb_team_y5cv6htoh5hu": "Leeds United",
     "bb_team_y72vuylsqou7": "Fulham",
 
     # ===== 德甲 =====
@@ -53,22 +53,22 @@ TEAM_MAP = {
     "bb_team_vab4q7tja2fe": "RB Leipzig",           # A. Ouedraogo, B. Gruda, C. Baumgartner 等
 
     # ===== 法甲 =====
-    "bb_team_a6ibvhc2i66q": "RC Lens",                    # I. Boura, M. Ifnaoui 等
+    "bb_team_a6ibvhc2i66q": "Troyes",                    # I. Boura, M. Ifnaoui 等
     "bb_team_alo5gqiwyda5": "AS Monaco",                  # A. Fati, M. Coulibaly 等
     "bb_team_e6rrvaez4fvc": "Olympique Lyonnais",         # M. Niakhate, N. Tagliafico 等
     "bb_team_gpuh3yryegjt": "Paris Saint-Germain",        # O. Dembele, N. Mendes, W. Zaire-Emery, F. Torres 等
-    "bb_team_itgvqsrs6f3s": "Olympique Marseille",        # E. Mbemba（单人，确认后可再核）
-    "bb_team_kzowjpzcxmfd": "FC Lorient",                 # A. Mendy, L. Abergel, M. Bombito
-    "bb_team_lase654d2vrp": "OGC Nice",                   # A. Sima, J. Todibo, T. Hazard 等
+    "bb_team_itgvqsrs6f3s": "Paris FC",        # E. Mbemba（单人，确认后可再核）
+    "bb_team_kzowjpzcxmfd": "Nice",                 # A. Mendy, L. Abergel, M. Bombito
+    "bb_team_lase654d2vrp": "Lens",                   # A. Sima, J. Todibo, T. Hazard 等
     "bb_team_lg37lh3326o4": "RC Strasbourg",              # I. Doukoure, J. Panichelli 等
     "bb_team_nn2ydgj4qsdr": "Olympique Marseille",        # A. Gouiri, P. Hojbjerg, T. Weah, G. Kondogbia 等
     "bb_team_pi33c6jozqt7": "Lille OSC",                  # H. Igamane
-    "bb_team_q3bqij37xmn7": "Stade Rennais",              # A. Toure, E. Jelert, S. Zagadou 等
+    "bb_team_q3bqij37xmn7": "Le Havre",              # A. Toure, E. Jelert, S. Zagadou 等
     "bb_team_tn46w3twdjjf": "Stade Brestois",             # B. Chardonnet, R. Le Guen 等
-    "bb_team_vb546p2vie5y": "Angers SCO",                 # A. Bourabaa, D. Sidibe 等
-    "bb_team_vbysblfbxyox": "Toulouse FC",                # B. Fadiga, N. Mbamba 等
-    "bb_team_vi3uwxplpfys": "FC Nantes",                  # A. Diousse, C. Makosso 等
-    "bb_team_z6263cwcytsh": "AJ Auxerre",                 # R. Nicolaisen
+    "bb_team_vb546p2vie5y": "Le Mans",                 # A. Bourabaa, D. Sidibe 等
+    "bb_team_vbysblfbxyox": "Lorient",                # B. Fadiga, N. Mbamba 等
+    "bb_team_vi3uwxplpfys": "Auxerre",                  # A. Diousse, C. Makosso 等
+    "bb_team_z6263cwcytsh": "Toulouse",                 # R. Nicolaisen
 
     # ===== 西甲 =====
     "bb_team_26kmji6b7z6t": "Real Betis",                 # A. Ruibal, J. Firpo, M. Bartra
