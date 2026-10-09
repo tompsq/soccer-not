@@ -72,21 +72,21 @@ TEAM_MAP = {
 
     # ===== 西甲 =====
     "bb_team_26kmji6b7z6t": "Real Betis",                 # A. Ruibal, J. Firpo, M. Bartra
-    "bb_team_4o25yzk4smri": "Rayo Vallecano",             # Buba Sangare, F. Redondo Solari 等
-    "bb_team_4zpuuo5qy4qq": "Girona",                     # Jofre, K. Garcia
-    "bb_team_5pgqtysejj6r": "Getafe",                     # F. Garces, M. Rodriguez 等
+    "bb_team_4o25yzk4smri": "Elche",             # Buba Sangare, F. Redondo Solari 等
+    "bb_team_4zpuuo5qy4qq": "Espanyol",                     # Jofre, K. Garcia
+    "bb_team_5pgqtysejj6r": "Alaves",                     # F. Garces, M. Rodriguez 等
     "bb_team_67iuwlxnpjrr": "Valencia",                   # A. Danjuma, M. Diakhaby, U. Sadiq, D. Foulquier 等
     "bb_team_6ra4blme4gv4": "Osasuna",                    # J. Herrando, R. Moro, V. Rosier
-    "bb_team_ahioc67qdgzc": "Alavés",                     # A. Abqar, Juanmi, M. Satriano 等
+    "bb_team_ahioc67qdgzc": "Getafe",                     # A. Abqar, Juanmi, M. Satriano 等
     "bb_team_b2ceb673ec6r": "Barcelona",                  # A. Christensen, F. de Jong, Raphinha 等
     "bb_team_dz7ljw2kxxxg": "Real Sociedad",              # A. Odriozola, I. Zubeldia, O. Oskarsson 等
-    "bb_team_ep2p5qctzhyk": "Mallorca",                   # A. Ochoa, J. Cajuste, M. Diarra 等
-    "bb_team_f6ja2kviqqmi": "Espanyol",                   # A. Batalla, I. Balliu, Luiz Felipe
+    "bb_team_ep2p5qctzhyk": "Malaga",                   # A. Ochoa, J. Cajuste, M. Diarra 等
+    "bb_team_f6ja2kviqqmi": "Rayo Vallocano",                   # A. Batalla, I. Balliu, Luiz Felipe
     "bb_team_i35vetwr4l5e": "Real Madrid",                # D. Huijsen, Eder Militao, F. Mendy, F. Valverde, Rodrygo 等
     "bb_team_o45hubfx6elq": "Villarreal",                 # T. Buchanan
     "bb_team_tpo6j7zknzgc": "Athletic Club",              # A. Djalo, N. Williams, O. Sancet 等
-    "bb_team_twiultvqm7ob": "Celta Vigo",                 # S. Eriksson
-    "bb_team_yr7l27bxf4mq": "Sevilla",                    # P
+    "bb_team_twiultvqm7ob": "Racing Santander",                 # S. Eriksson
+    "bb_team_yr7l27bxf4mq": "Deportivo Coruña",                    # P
 
     # ===== 下面这些是你刚发的未知 ID，先占位，跑完后根据「未知team_id」表填真实队名 =====
     # 英超剩余
