@@ -1,0 +1,32 @@
+name: SofaScore Football Data Fetcher
+
+on:
+  workflow_dispatch: # 允许你用手机在 GitHub 网页或 App 上手动点击按钮运行
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. 拉取仓库代码
+        uses: actions/checkout@v4
+
+      - name: 2. 安装 Python 环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: 3. 安装依赖库
+        run: pip install requests
+
+      - name: 4. 强行执行抓取脚本
+        # 这里把你的反爬代理 Key 传入环境变量，如果没有，脚本会自动尝试强冲
+        env:
+          ANTI_BOT_KEY: ${{ secrets.ANTI_BOT_KEY }}
+        run: python scraper.py
+
+      - name: 5. 把抓到的数据打包成附件供手机下载
+        uses: actions/upload-artifact@v4
+        with:
+          name: sofascore-today-json
+          path: today_matches.json
