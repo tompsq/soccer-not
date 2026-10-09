@@ -1,98 +1,90 @@
 import os
 import sys
 import json
-import time
+import requests
 from datetime import datetime
 
 # 自动获取今天的日期 (格式: 2026-10-10)
 TODAY_STR = datetime.today().strftime('%Y-%m-%d')
-BASE_API = "https://api.sofascore.com/api/v1"
+API_HOST = "v3.football.api-sports.io"
 
-def fetch_sofascore_data():
-    # 🎯 核心绝杀 1：使用专门绕过高级反爬的 tls_client 库（需要在yml里安装）
-    import tls_client
-    
-    # 模拟苹果手机 iPhone 15 的 Safari 浏览器底层安全指纹，彻底穿透 Cloudflare
-    session = tls_client.Session(
-        client_identifier="safari_ios_17", # 🔥 关键：注入苹果手机原生TLS指纹
-        random_tls_extension_order=True
-    )
-    
-    # 🎯 核心绝杀 2：完全伪造手机移动端微信/Safari 的请求头，让安全防火墙彻底信任
+def main():
+    # 读取你刚刚绑定的 API-Football 官方密钥
+    API_KEY = os.environ.get("API_FOOTBALL_KEY", "")
+    if not API_KEY:
+        print("❌ 错误：未在 GitHub Secrets 中检测到密钥！")
+        sys.exit(1)
+        
+    print(f"🚀 开始通过官方开放 API 抓取日期 {TODAY_STR} 的 AI 足球核心特征库...")
+
+    # 官方标准请求头，直接通行
     headers = {
-        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1",
-        "Accept": "application/json, text/plain, */*",
-        "Accept-Language": "zh-CN,zh;q=0.9",
-        "Origin": "https://www.sofascore.com",
-        "Referer": "https://www.sofascore.com/",
-        "Sec-Fetch-Dest": "empty",
-        "Sec-Fetch-Mode": "cors",
-        "Sec-Fetch-Site": "same-site",
-        "Connection": "keep-alive"
+        'x-rapidapi-host': API_HOST,
+        'x-rapidapi-key': API_KEY
     }
-    
-    # 1. 先抓今日赛程列表
-    schedule_url = f"{BASE_API}/sport/football/scheduled-events/{TODAY_STR}"
-    print(f"🚀 正在以手机端指纹模式请求今日赛程...")
+
+    # 1. 抓取今日赛程列表 (以英超联赛 League ID: 39 为例，你可以换成任意你想分析的联赛)
+    # 英超 39, 西甲 140, 意甲 135, 欧冠 2
+    schedule_url = f"https://{API_HOST}/fixtures?date={TODAY_STR}&league=39&season=2026"
     
     try:
-        response = session.get(schedule_url, headers=headers, timeout_seconds=15)
-        print(f"📡 [网关回应] 状态码: {response.status_code}")
+        response = requests.get(schedule_url, headers=headers, timeout=15)
+        print(f"📡 [官方数据网关] 状态码: {response.status_code}")
         
         if response.status_code != 200:
-            print(f"❌ 依然被拦截，状态码: {response.status_code}")
-            return False
+            print("❌ 密钥错误或今日无赛程")
+            sys.exit(1)
             
-        schedule_data = response.json()
-        events = schedule_data.get("events", [])
-        print(f"🎉 绝杀成功！成功解锁赛程，今日共发现 {len(events)} 场足球比赛。")
+        res_data = response.json()
+        fixtures = res_data.get("response", [])
+        print(f"🎉 成功！今日该联赛共发现 {len(fixtures)} 场足球赛事。")
         
-        # 批量抓取前 3 场比赛的完整 AI 特征模型数据（赔率+交锋+首发）
-        test_limit = min(3, len(events))
-        print(f"⚡ 正在深度解析前 {test_limit} 场比赛的【赔率 + 交锋 + 伤停】数据...")
         ai_dataset = []
         
-        for idx, event in enumerate(events[:test_limit]):
-            event_id = event.get("id")
-            home_name = event.get("homeTeam", {}).get("name")
-            away_name = event.get("awayTeam", {}).get("name")
-            print(f" ⏳ [{idx+1}/{test_limit}] 穿透分析中: {home_name} vs {away_name}")
+        # 批量抓取前 3 场比赛的完整 AI 建模特征
+        test_limit = min(3, len(fixtures))
+        for idx, item in enumerate(fixtures[:test_limit]):
+            fixture_id = item.get("fixture", {}).get("id")
+            home_name = item.get("teams", {}).get("home", {}).get("name")
+            away_name = item.get("teams", {}).get("away", {}).get("name")
+            print(f" ⏳ [{idx+1}/{test_limit}] 正在获取官方特征数据: {home_name} vs {away_name}")
             
             match_dict = {
-                "match_id": event_id, "date": TODAY_STR,
-                "tournament": event.get("tournament", {}).get("name"),
-                "home_team": home_name, "away_team": away_name,
-                "odds_data": {}, "h2h_data": {}, "lineups_data": {}
+                "match_id": fixture_id,
+                "date": TODAY_STR,
+                "home_team": home_name,
+                "away_team": away_name,
+                "odds_data": {},
+                "h2h_data": {},
+                "lineups_data": {}
             }
             
-            time.sleep(2) # 礼貌防封延迟
+            # 2. 获取本场比赛的盘口赔率 (Odds)
+            odds_url = f"https://{API_HOST}/odds?fixture={fixture_id}"
+            o_res = requests.get(odds_url, headers=headers).json()
+            match_dict["odds_data"] = o_res.get("response", [])
             
-            # 抓取子项数据
-            try:
-                odds_res = session.get(f"{BASE_API}/event/{event_id}/odds/1/all", headers=headers)
-                if odds_res.status_code == 200: match_dict["odds_data"] = odds_res.json()
-                
-                h2h_res = session.get(f"{BASE_API}/event/{event_id}/h2h", headers=headers)
-                if h2h_res.status_code == 200: match_dict["h2h_data"] = h2h_res.json()
-                
-                lineups_res = session.get(f"{BASE_API}/event/{event_id}/lineups", headers=headers)
-                if lineups_res.status_code == 200: match_dict["lineups_data"] = lineups_res.json()
-            except Exception as inner_e:
-                print(f" ⚠️ 某项子数据抓取微小跳过: {inner_e}")
-                
+            # 3. 获取两队历史交锋 (H2H)
+            h2h_url = f"https://{API_HOST}/fixtures/headtohead?h2h={item['teams']['home']['id']}-{item['teams']['away']['id']}"
+            h_res = requests.get(h2h_url, headers=headers).json()
+            match_dict["h2h_data"] = h_res.get("response", [])
+            
+            # 4. 获取首发阵型与伤停名单 (Lineups)
+            lineups_url = f"https://{API_HOST}/fixtures/lineups?fixture={fixture_id}"
+            l_res = requests.get(lineups_url, headers=headers).json()
+            match_dict["lineups_data"] = l_res.get("response", [])
+            
             ai_dataset.append(match_dict)
             
-        # 打包保存
+        # 写入附件文件
         output_file = "ai_football_ready_data.json"
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(ai_dataset, f, ensure_ascii=False, indent=4)
-        print(f"🎯 终极特征包构建成功！已成功保存为 {output_file}")
-        return True
+        print(f"🎯 官方终极特征包构建成功！已保存为 {output_file}")
         
     except Exception as e:
-        print(f"❌ 发生未知异常: {e}")
-        return False
+        print(f"❌ 运行异常: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
-    if not fetch_sofascore_data():
-        sys.exit(1)
+    main()
