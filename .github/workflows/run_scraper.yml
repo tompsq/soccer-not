@@ -1,7 +1,7 @@
 name: SofaScore Football Data Fetcher
 
 on:
-  workflow_dispatch: # 手机端手动触发按钮
+  workflow_dispatch: # 允许手机端手动触发
 
 jobs:
   build-and-run:
@@ -16,16 +16,15 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: 3. 安装依赖库
-        run: pip install requests
+      - name: 3. 安装终极防封依赖库
+        # 🔥 核心：用下面这行命令同时安装 requests 和 tls_client 两个库
+        run: pip install requests tls_client
 
-      - name: 4. 强行执行抓取脚本
-        env:
-          ANTI_BOT_KEY: ${{ secrets.ANTI_BOT_KEY }} # 自动注入你的防封密钥
+      - name: 4. 执行指纹伪造抓取脚本
         run: python scraper.py
 
       - name: 5. 把抓到的AI特征包打包成附件供手机下载
         uses: actions/upload-artifact@v4
         with:
-          name: AI-Football-Ready-Data       # 手机下载时的压缩包名字
-          path: ai_football_ready_data.json  # 必须和 Python 代码生成的文件名一字不差
+          name: AI-Football-Ready-Data
+          path: ai_football_ready_data.json
