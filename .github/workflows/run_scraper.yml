@@ -29,3 +29,9 @@ jobs:
         with:
           name: AI-Football-Ready-Data
           path: ai_football_ready_data.json
+      # 🎯 只要在你的 GitHub Action yml 最后一项改成这个名字，运行后就能在手机上直接下载到这个完美的 Excel 报表！
+      - name: 5. 打包生成的 Excel 数据表格
+        uses: actions/upload-artifact@v4
+        with:
+          name: AI-Model-Ready-Excel
+          path: Football_AI_Model_Data.xlsx
