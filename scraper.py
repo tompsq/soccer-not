@@ -1,20 +1,16 @@
-import os, sys, json, requests
+import os, sys, requests
 import pandas as pd
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone, timedelta
 API_HOST = "v3.football.api-sports.io"
 def main():
     API_KEY = os.environ.get("API_FOOTBALL_KEY", "")
     if not API_KEY: sys.exit(1)
     headers = {'x-rapidapi-host': API_HOST, 'x-rapidapi-key': API_KEY}
-    SHA_TZ = timezone(timedelta(hours=8))
-    TODAY_STR = datetime.now(SHA_TZ).strftime('%Y-%m-%d')
-    url = f"https://{API_HOST}/fixtures?date={TODAY_STR}"
+    TODAY_STR = datetime.now(timezone(timedelta(hours=8))).strftime('%Y-%m-%d')
     try:
-        all_fixtures = requests.get(url, headers=headers, timeout=20).json().get("response", [])
-    except:
-        sys.exit(1)
-    # 🎯 这一次老老实实焊死了五大联赛ID列表，绝对没有半截和遗漏！
-    fixtures = [f for f in all_fixtures if f.get("league", {}).get("id") in]
+        all_fixtures = requests.get(f"https://{API_HOST}/fixtures?date={TODAY_STR}", headers=headers, timeout=20).json().get("response", [])
+    except: sys.exit(1)
+    fixtures = [f for f in all_fixtures if f.get("league", {}).get("id") in [39, 140, 135, 78, 61]]
     if not fixtures: fixtures = all_fixtures[:3]
     if not fixtures: sys.exit(1)
     sheet1, sheet2, sheet3, sheet4 = [], [], [], []
@@ -29,7 +25,7 @@ def main():
         try:
             o_res = requests.get(f"https://{API_HOST}/odds?fixture={fid}", headers=headers).json().get("response", [])
             if o_res:
-                for bm in o_res.get("bookmakers", []):
+                for bm in o_res[0].get("bookmakers", []):
                     if bm.get("name") in ["William Hill", "Bet365"]:
                         for bet in bm.get("bets", []):
                             if bet.get("name") == "Match Winner":
@@ -51,29 +47,19 @@ def main():
         try:
             h_res = requests.get(f"https://{API_HOST}/fixtures/headtohead?h2h={hid}-{aid}", headers=headers).json().get("response", [])
             for h_m in h_res[:5]:
-                sheet3.append({
-                    "当前对阵": title, "历史交战日期": h_m.get("fixture", {}).get("date", "")[:10],
-                    "历史主队": h_m.get("teams", {}).get("home", {}).get("name"), "历史客队": h_m.get("teams", {}).get("away", {}).get("name"),
-                    "具体比分赛果": f"{h_m.get('goals', {}).get('home')}:{h_m.get('goals', {}).get('away')}"
-                })
+                sheet3.append({"当前对阵": title, "历史交战日期": h_m.get("fixture", {}).get("date", "")[:10], "历史主队": h_m.get("teams", {}).get("home", {}).get("name"), "历史客队": h_m.get("teams", {}).get("away", {}).get("name"), "具体比分赛果": f"{h_m.get('goals', {}).get('home')}:{h_m.get('goals', {}).get('away')}"})
         except: pass
         try:
             inj_res = requests.get(f"https://{API_HOST}/injuries?fixture={fid}", headers=headers).json().get("response", [])
-            if not inj_res:
-                sheet4.append({"对阵": title, "球队": "全员健康", "伤停人员": "无", "缺阵类型": "无", "缺阵原因": "无"})
+            if not inj_res: sheet4.append({"对阵": title, "球队": "全员健康", "伤停人员": "无", "缺阵类型": "无", "缺阵原因": "无"})
             for inj in inj_res:
-                sheet4.append({
-                    "对阵": title, "球队": inj.get("team", {}).get("name"), "伤停人员": inj.get("player", {}).get("name"),
-                    "缺阵类型": inj.get("player", {}).get("type", "伤病"), "缺阵原因": inj.get("player", {}).get("reason", "未知")
-                })
+                sheet4.append({"对阵": title, "球队": inj.get("team", {}).get("name"), "伤停人员": inj.get("player", {}).get("name"), "缺阵类型": inj.get("player", {}).get("type", "伤病"), "缺阵原因": inj.get("player", {}).get("reason", "未知")})
         except: pass
     try:
-        out_name = "Football_AI_Model_Data.xlsx"
-        with pd.ExcelWriter(out_name, engine="openpyxl") as writer:
+        with pd.ExcelWriter("Football_AI_Model_Data.xlsx", engine="openpyxl") as writer:
             pd.DataFrame(sheet1).to_excel(writer, sheet_name="1_五大联赛概要与赔率", index=False)
             pd.DataFrame(sheet2).to_excel(writer, sheet_name="2_大样本进阶场均统计", index=False)
             pd.DataFrame(sheet3).to_excel(writer, sheet_name="3_历史交锋H2H具体赛果", index=False)
             pd.DataFrame(sheet4).to_excel(writer, sheet_name="4_官方实战伤停名单明细", index=False)
     except: sys.exit(1)
-if __name__ == "__main__":
-    main()
+if __name__ == "__main__": main()
