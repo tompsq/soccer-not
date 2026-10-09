@@ -16,9 +16,9 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: 3. 安装终极防封依赖库
-        # 🔥 核心：用下面这行命令同时安装 requests 和 tls_client 两个库
-        run: pip install requests tls_client
+      - name: 3. 安装终极防封及全部底层依赖库
+        # 🔥 核心修复：一口气把 requests、tls_client 和缺少的 typing_extensions 全部装齐
+        run: pip install requests tls_client typing_extensions
 
       - name: 4. 执行指纹伪造抓取脚本
         run: python scraper.py
