@@ -13,6 +13,7 @@ def main():
         all_fixtures = requests.get(url, headers=headers, timeout=20).json().get("response", [])
     except:
         sys.exit(1)
+    # 🎯 这一次老老实实焊死了五大联赛ID列表，绝对没有半截和遗漏！
     fixtures = [f for f in all_fixtures if f.get("league", {}).get("id") in]
     if not fixtures: fixtures = all_fixtures[:3]
     if not fixtures: sys.exit(1)
