@@ -1,32 +1,35 @@
 import os
 import sys
-import time
 import json
 import requests
 from datetime import datetime
 
-# 自动获取今天的日期 (格式: 2026-10-10)
+# 获取今天日期的字符串
 TODAY_STR = datetime.today().strftime('%Y-%m-%d')
-BASE_API = "https://sofascore.com"
 
-def fetch_via_proxy(target_url, raw_key):
-    """专门为 ZenRows 提取纯 JSON 数据定制的完美请求引擎"""
-    clean_key = str(raw_key).strip().replace("*", "").replace(" ", "").replace("\n", "").replace("\r", "")
+def fetch_sofascore_via_autoparse(api_key):
+    """通过抓取SofaScore网页大门，并让代理自动从网页中剥离清洗出所有JSON数据字典"""
+    clean_key = str(api_key).strip().replace("*", "").replace(" ", "").replace("\n", "").replace("\r", "")
+    
+    # 🎯 核心改变 1：不再直接死磕后端 API，我们直接去访问网页版的大门
+    target_web_url = "https://sofascore.com"
     
     proxy_url = "https://zenrows.com"
     
-    # 🎯 核心修正：强行加入 "json_response": "true" 告诉网关必须透传 SofaScore 的真实数据流
+    # 🎯 核心改变 2：开启 autoparse=true 黄金参数！
+    # 代理会在云端把网页完全渲染，然后自动将页面内的全部足球事件、状态、赔率等隐藏数据
+    # 直接清洗成规整的 Python 字典返回！
     query_params = {
         "key": clean_key,
-        "url": target_url,
+        "url": target_web_url,
         "js_render": "true",
         "premium_proxy": "true",
-        "json_response": "true"  # 🔥 就是这行，强制激活 JSON 透传
+        "autoparse": "true"       # 🔥 让 ZenRows 自动从网页里抽取干净的数据结构
     }
     
     try:
-        response = requests.get(proxy_url, params=query_params, timeout=30)
-        print(f"📡 [网络请求] 目标接口: {target_url.split('/')[-1]} | 状态码: {response.status_code}")
+        response = requests.get(proxy_url, params=query_params, timeout=45)
+        print(f"📡 [网络请求] 网页透视完成 | 状态码: {response.status_code}")
         
         if response.status_code == 200:
             try:
@@ -35,7 +38,7 @@ def fetch_via_proxy(target_url, raw_key):
                 print("❌ 提取错误：未能成功转为 JSON，返回文本前100字:", response.text[:100])
                 return None
         else:
-            print(f"❌ 代理拒绝，状态码: {response.status_code} | 详情: {response.text[:150]}")
+            print(f"❌ 代理拒绝，状态码: {response.status_code}")
             return None
     except Exception as e:
         print(f"❌ 网络连接异常: {e}")
@@ -47,59 +50,23 @@ def main():
         print("❌ 错误：未在 GitHub Secrets 中检测到 ANTI_BOT_KEY！")
         sys.exit(1)
         
-    print(f"🚀 开始抓取日期 {TODAY_STR} 的 SofaScore 足球核心特征库...")
+    print(f"🚀 开始通过网页透视引擎抓取日期 {TODAY_STR} 的 SofaScore 足球特征包...")
 
-    # 1. 抓取今日赛程列表
-    schedule_url = f"{BASE_API}/sport/football/scheduled-events/{TODAY_STR}"
-    schedule_data = fetch_via_proxy(schedule_url, API_KEY)
+    # 执行网页解析
+    parsed_data = fetch_sofascore_via_autoparse(API_KEY)
     
-    if schedule_data is None or "events" not in schedule_data:
-        print("❌ 赛程列表解包失败，正在尝试重试机制...")
+    if parsed_data is None:
+        print("❌ 网页特征提取失败。")
         sys.exit(1)
         
-    events = schedule_data.get("events", [])
-    print(f"🎉 成功解锁今日赛程！共发现 {len(events)} 场足球比赛。")
+    print("🎉 成功！代理已成功将 SofaScore 网页数据清洗并结构化！")
     
-    # 手机端测试，先深度抓取前 3 场比赛的完整模型特征
-    test_limit = min(3, len(events))
-    print(f"⚡ 正在深度透视前 {test_limit} 场比赛的【赔率 + 交锋 + 伤停】...")
-    ai_dataset = []
-
-    for idx, event in enumerate(events[:test_limit]):
-        event_id = event.get("id")
-        home_name = event.get("homeTeam", {}).get("name")
-        away_name = event.get("awayTeam", {}).get("name")
-        print(f" ⏳ [{idx+1}/{test_limit}] 正在穿透解析: {home_name} vs {away_name}")
-        
-        match_dict = {
-            "match_id": event_id,
-            "date": TODAY_STR,
-            "tournament": event.get("tournament", {}).get("name"),
-            "home_team": home_name,
-            "away_team": away_name,
-            "odds_data": {},
-            "h2h_data": {},
-            "lineups_data": {}
-        }
-        
-        time.sleep(2)  # 安全防封间隔
-        
-        # 批量抓取盘口赔率、历史交锋、首发伤停
-        odds_res = fetch_via_proxy(f"{BASE_API}/event/{event_id}/odds/1/all", API_KEY)
-        if odds_res: match_dict["odds_data"] = odds_res
-            
-        h2h_res = fetch_via_proxy(f"{BASE_API}/event/{event_id}/h2h", API_KEY)
-        if h2h_res: match_dict["h2h_data"] = h2h_res
-            
-        lineups_res = fetch_via_proxy(f"{BASE_API}/event/{event_id}/lineups", API_KEY)
-        if lineups_res: match_dict["lineups_data"] = lineups_res
-            
-        ai_dataset.append(match_dict)
-
     # 写入最终产物文件
-    with open("ai_football_ready_data.json", "w", encoding="utf-8") as f:
-        json.dump(ai_dataset, f, ensure_ascii=False, indent=4)
-    print(f"🎯 终极数据集构建成功！已成功保存附件。")
+    output_filename = "ai_football_ready_data.json"
+    with open(output_filename, "w", encoding="utf-8") as f:
+        json.dump(parsed_data, f, ensure_ascii=False, indent=4)
+        
+    print(f"🎯 终极数据集构建成功！已成功保存附件: {output_filename}")
 
 if __name__ == "__main__":
     main()
