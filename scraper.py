@@ -9,18 +9,32 @@ from datetime import datetime
 TODAY_STR = datetime.today().strftime('%Y-%m-%d')
 BASE_API = "https://sofascore.com"
 
-def fetch_via_proxy(target_url, api_key):
-    """通用代理请求函数，带自动清洗 Token 功能，防止手机复制出错"""
-    # 🧼 关键修复：自动把密钥里可能混入的空格、回车或不小心打的星号全删掉
-    clean_key = str(api_key).strip().replace("*", "").replace(" ", "")
+def fetch_via_proxy(target_url, raw_key):
+    """超级容错请求函数：无论手机复制了什么杂质，都在这里强行洗净"""
     
-    # 构建完美的绝对路径，确保没有字符污染
-    proxy_url = f"https://zenrows.com{clean_key}&url={target_url}&js_render=true&premium_proxy=true"
+    # 🧼 【核心修复】：强行将密钥转为字符串，并剔除所有星号、空格、换行符
+    clean_key = str(raw_key).strip().replace("*", "").replace(" ", "").replace("\n", "").replace("\r", "")
+    
+    # 🎯 极其严格地拼装标准的 ZenRows 官方请求网关
+    proxy_url = "https://zenrows.com"
+    
+    # 使用 requests 官方推荐的 params 字典传参，彻底避免字符串拼接导致的网址变形
+    query_params = {
+        "key": clean_key,
+        "url": target_url,
+        "js_render": "true",
+        "premium_proxy": "true"
+    }
     
     try:
-        response = requests.get(proxy_url, timeout=30)
+        # 使用 params 传参，Python 会自动把 clean_key 安全地塞进 URL 中，绝不会再出现 zenrows.com*** 这样的致命错误！
+        response = requests.get(proxy_url, params=query_params, timeout=30)
+        
         if response.status_code == 200:
             return response.json()
+        elif response.status_code == 401 or response.status_code == 403:
+            print(f"❌ 代理网关拒绝访问(状态码 {response.status_code})。说明洗干净后的 Key 依然不对，请确认您在 ZenRows 复制的是完整的 API Key，而不是带星号的预览图。")
+            return None
         else:
             print(f"API 请求失败，状态码: {response.status_code}")
             return None
@@ -71,7 +85,7 @@ def main():
             "lineups_data": {}
         }
         
-        time.sleep(1.5) # 稍微延长间隔，更稳定
+        time.sleep(1.5) # 缓冲间隔
         
         # 3. 抓取赔率 (Odds)
         odds_url = f"{BASE_API}/event/{event_id}/odds/1/all"
