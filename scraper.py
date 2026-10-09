@@ -81,4 +81,5 @@ def main():
             pd.DataFrame(sheet4).to_excel(writer, sheet_name="4_官方实战伤停名单明细", index=False)
     except: sys.exit(1)
 
-if __name__ == "__main
+if __name__ == "__main__":
+    main()
