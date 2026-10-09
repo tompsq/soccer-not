@@ -5,88 +5,97 @@ import json
 import requests
 from datetime import datetime
 
-def get_sofascore_data():
-    # 1. 自动获取今天的日期 (格式: 2026-10-10)
-    today_str = datetime.today().strftime('%Y-%m-%d')
-    print(f"准备抓取日期: {today_str} 的足球赛事数据...")
-    
-    # 2. SofaScore 真实的今日赛事 API 接口
-    target_url = f"https://sofascore.com{today_str}"
-    
-    # 3. ⚠️ 解决被封的关键：如果你有 ScraperAPI 或 ZenRows 的免费 Key，填在下面
-    # 如果没有，我们先尝试用“超级伪造请求头”强冲一次！
-    API_KEY = os.environ.get("ANTI_BOT_KEY", "")
-    
-    if API_KEY:
-        print("检测到抗反爬密钥，正在通过云端住宅代理绕过 Cloudflare...")
-        # 使用 ZenRows 代理示例（强行开启 JS 渲染与防封）
-        proxy_url = f"https://zenrows.com{API_KEY}&url={target_url}&js_render=true&premium_proxy=true"
-        try:
-            response = requests.get(proxy_url, timeout=30)
-        except Exception as e:
-            print(f"代理请求异常: {e}")
-            return
-    else:
-        print("未检测到密钥，正在使用硬核浏览器指纹强行请求...")
-        # 大模型写不出的高级伪造头：包含特定的缓存与安全协议，冒充真实高版本 Chrome
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-            "Accept": "*/*",
-            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
-            "Cache-Control": "max-age=0",
-            "Origin": "https://sofascore.com",
-            "Referer": "https://sofascore.com/",
-            "Sec-Ch-Ua": '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
-            "Sec-Ch-Ua-Mobile": "?0",
-            "Sec-Ch-Ua-Platform": '"Windows"',
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "same-site"
-        }
-        try:
-            response = requests.get(target_url, headers=headers, timeout=15)
-        except Exception as e:
-            print(f"请求超时或断开联接: {e}")
-            return
+# 获取今天日期的字符串 (例如: 2026-10-10)
+TODAY_STR = datetime.today().strftime('%Y-%m-%d')
+BASE_API = "https://sofascore.com"
 
-    # 4. 判断并处理结果
-    print(f"服务器返回状态码: {response.status_code}")
+def fetch_via_proxy(target_url, api_key):
+    """通用代理请求函数，专门破解 Cloudflare 403 拦截"""
+    proxy_url = f"https://zenrows.com{api_key}&url={target_url}&js_render=true&premium_proxy=true"
+    try:
+        response = requests.get(proxy_url, timeout=30)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"API 请求失败，状态码: {response.status_code}，链接: {target_url}")
+            return None
+    except Exception as e:
+        print(f"请求发生异常: {e}")
+        return None
+
+def main():
+    # 1. 从 GitHub 变量中读取你刚刚绑定的密钥
+    API_KEY = os.environ.get("ANTI_BOT_KEY", "")
+    if not API_KEY:
+        print("❌ 错误：未在 GitHub Secrets 中检测到 ANTI_BOT_KEY！请检查绑定是否成功。")
+        sys.exit(1)
+        
+    print(f"🚀 开始抓取日期 {TODAY_STR} 的 SofaScore 足球核心特征库...")
+
+    # 2. 抓取今日赛程列表，获取 event_id
+    schedule_url = f"{BASE_API}/sport/football/scheduled-events/{TODAY_STR}"
+    schedule_data = fetch_via_proxy(schedule_url, API_KEY)
     
-    if response.status_code == 200:
-        try:
-            raw_data = response.json()
-            events = raw_data.get("events", [])
-            print(f"🎉 成功！今天共有 {len(events)} 场足球比赛。")
-            
-            # 清洗出你的 AI 最需要的核心索引字典：event_id -> 比赛对阵
-            cleaned_list = []
-            for event in events:
-                match_info = {
-                    "event_id": event.get("id"),
-                    "tournament": event.get("tournament", {}).get("name"),
-                    "homeTeam": event.get("homeTeam", {}).get("name"),
-                    "awayTeam": event.get("awayTeam", {}).get("name"),
-                    "homeScore": event.get("homeScore", {}).get("current"),
-                    "awayScore": event.get("awayScore", {}).get("current"),
-                    "status": event.get("status", {}).get("type")
-                }
-                cleaned_list.append(match_info)
-            
-            # 保存为本地 JSON 文件
-            output_file = "today_matches.json"
-            with open(output_file, "w", encoding="utf-8") as f:
-                json.dump(cleaned_list, f, ensure_ascii=False, indent=4)
-            print(f"数据已成功写入 {output_file}，准备导出为 Action 附件。")
-            
-        except Exception as parse_error:
-            print(f"解析 JSON 失败，可能抓取到了防护墙的 HTML 警告页面。错误: {parse_error}")
-            print("返回的文本前300个字符为:", response.text[:300])
+    if not schedule_data or "events" not in schedule_data:
+        print("❌ 无法获取今日赛程列表，请检查网络或 ZenRows 额度。")
+        sys.exit(1)
+        
+    events = schedule_data.get("events", [])
+    print(f"🎉 成功解锁今日赛程！共发现 {len(events)} 场足球比赛。")
     
-    elif response.status_code == 403:
-        print("❌ 触发了 403 Forbidden！Cloudflare 机房 IP 拦截生效。")
-        print("【破局提示】：请前往 zenrows.com 或 scraperapi.com 注册一个免费账号，拿到 API Key 并在 GitHub Settings -> Secrets 中配置 ANTI_BOT_KEY 即可完美绝杀此封锁。")
-    else:
-        print(f"未知的错误状态码: {response.status_code}")
+    # 为了防止单次运行时间过长导致被 GitHub 强制中断，手机端测试先默认精选前 5 场核心比赛进行深度抓取
+    test_limit = min(5, len(events))
+    print(f"⚡ 正在深度透视前 {test_limit} 场比赛的【赔率 + 交锋 + 伤停】数据...")
+    
+    ai_dataset = []
+
+    for idx, event in enumerate(events[:test_limit]):
+        event_id = event.get("id")
+        home_name = event.get("homeTeam", {}).get("name")
+        away_name = event.get("awayTeam", {}).get("name")
+        print(f" ⏳ [{idx+1}/{test_limit}] 正在穿透解析: {home_name} vs {away_name} (ID: {event_id})")
+        
+        # 基础比赛字典（作为 AI 模型的行数据）
+        match_dict = {
+            "match_id": event_id,
+            "date": TODAY_STR,
+            "tournament": event.get("tournament", {}).get("name"),
+            "home_team": home_name,
+            "away_team": away_name,
+            "odds_data": {},
+            "h2h_data": {},
+            "lineups_data": {}
+        }
+        
+        # 防止请求太快被 ZenRows 限制速度，每场比赛稍微缓冲 1 秒
+        time.sleep(1)
+        
+        # 3. 顺藤摸瓜抓取数据：盘口赔率 (Odds)
+        odds_url = f"{BASE_API}/event/{event_id}/odds/1/all"
+        odds_res = fetch_via_proxy(odds_url, API_KEY)
+        if odds_res:
+            match_dict["odds_data"] = odds_res
+            
+        # 4. 顺藤摸瓜抓取数据：历史交锋 (H2H)
+        h2h_url = f"{BASE_API}/event/{event_id}/h2h"
+        h2h_res = fetch_via_proxy(h2h_url, API_KEY)
+        if h2h_res:
+            match_dict["h2h_data"] = h2h_res
+            
+        # 5. 顺藤摸瓜抓取数据：首发阵型与伤停名单 (Lineups)
+        lineups_url = f"{BASE_API}/event/{event_id}/lineups"
+        lineups_res = fetch_via_proxy(lineups_url, API_KEY)
+        if lineups_res:
+            match_dict["lineups_data"] = lineups_res
+            
+        ai_dataset.append(match_dict)
+
+    # 6. 将所有大拼图组合好的数据写入文件
+    output_filename = "ai_football_ready_data.json"
+    with open(output_filename, "w", encoding="utf-8") as f:
+        json.dump(ai_dataset, f, ensure_ascii=False, indent=4)
+        
+    print(f"🎯 终极数据集构建成功！已保存为: {output_filename}")
 
 if __name__ == "__main__":
-    get_sofascore_data()
+    main()
