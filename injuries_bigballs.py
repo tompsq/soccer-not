@@ -93,7 +93,8 @@ TEAM_MAP = {
     "bb_team_o45hubfx6elq": "Villarreal",                 # T. Buchanan
     "bb_team_tpo6j7zknzgc": "Athletic Club",              # A. Djalo, N. Williams, O. Sancet 等
     "bb_team_twiultvqm7ob": "Racing Santander",                 # S. Eriksson
-    "bb_team_yr7l27bxf4mq": "Deportivo Coruña",                    # P
+    "bb_team_yr7l27bxf4mq": "Deportivo Coruña",    # P
+    "bb_team_zwtckgok3y5i": "Celta Vigo",
 
     # ===== 下面这些是你刚发的未知 ID，先占位，跑完后根据「未知team_id」表填真实队名 =====
     # 英超剩余
