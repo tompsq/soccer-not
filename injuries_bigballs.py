@@ -37,20 +37,20 @@ TEAM_MAP = {
     "bb_team_2gnnxuhvfdap": "Borussia Mönchengladbach",   # E. Leopold, F. Honorat, J. Castrop, N. Kuhn
     "bb_team_2sw3yqyzwmig": "FC Augsburg",                # N. Banks, S. Mounie 等
     "bb_team_37gqpop6h2p5": "Bayern Munich",              # J. Musiala, T. Buchmann
-    "bb_team_3qiyf3t7ov4b": "1. FC Köln",                 # A. Ilic, O. Burke, S. Nsoki 等
-    "bb_team_ckhmeo4qnqjm": "RB Leipzig",                 # C. Kofane, G. Doue 等
+    "bb_team_3qiyf3t7ov4b": "FC Union Berlin",                 # A. Ilic, O. Burke, S. Nsoki 等
+    "bb_team_ckhmeo4qnqjm": "Bayer Leverkusen",                 # C. Kofane, G. Doue 等
     "bb_team_dhzsyyrl4ga3": "Werder Bremen",              # F. Agu, J. Njinmah, J. Stage, S. Lynen 等
-    "bb_team_dwqk62kpsskh": "1. FC Heidenheim",           # A. Castro-Montes, T. Dallinga 等
+    "bb_team_dwqk62kpsskh": "FC Koln",           # A. Castro-Montes, T. Dallinga 等
     "bb_team_ei52gjbav6co": "Borussia Dortmund",          # E. Can, J. Ryerson, J. Lerma 等
-    "bb_team_hgehlxj4um7n": "1. FSV Mainz 05",            # D. Kohr, R. Zentner, S. Widmer, Silas
+    "bb_team_hgehlxj4um7n": "FSV Mainz 05",            # D. Kohr, R. Zentner, S. Widmer, Silas
     "bb_team_l3cupktvzck3": "VfB Stuttgart",              # A. Al Dakhil, D. Zagadou, T. Tomas 等
     "bb_team_n52iwtoum7b3": "Hamburger SV",               # A. Gronbaek, P. Daka, M. Vuskovic 等
-    "bb_team_ojkxqkjwphgq": "Eintracht Frankfurt",        # F. Onyeka, L. Schnellbacher 等
-    "bb_team_qk5ujzn7fxce": "SC Freiburg",                # L. Eickel, M. Hoffmeier 等
-    "bb_team_qvvur7cxtrt3": "TSG Hoffenheim",             # F. Chaibi, J. Ngankam 等
-    "bb_team_skwa2ps7bf22": "1. FC Union Berlin",         # D. Ljubicic, T. Becker
-    "bb_team_tnvl3r6yybuy": "VfL Bochum",                 # A. Hajdari, Bernardo
-    "bb_team_vab4q7tja2fe": "Bayer Leverkusen",           # A. Ouedraogo, B. Gruda, C. Baumgartner 等
+    "bb_team_ojkxqkjwphgq": "Elversberg",        # F. Onyeka, L. Schnellbacher 等
+    "bb_team_qk5ujzn7fxce": "Paderborn",                # L. Eickel, M. Hoffmeier 等
+    "bb_team_qvvur7cxtrt3": "Eintracht Frankfurt",             # F. Chaibi, J. Ngankam 等
+    "bb_team_skwa2ps7bf22": "Schalke 04",         # D. Ljubicic, T. Becker
+    "bb_team_tnvl3r6yybuy": "TSG Hoffenheim",                 # A. Hajdari, Bernardo
+    "bb_team_vab4q7tja2fe": "RB Leipzig",           # A. Ouedraogo, B. Gruda, C. Baumgartner 等
 
     # ===== 法甲 =====
     "bb_team_a6ibvhc2i66q": "RC Lens",                    # I. Boura, M. Ifnaoui 等
