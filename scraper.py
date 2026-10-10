@@ -1,85 +1,56 @@
-import os, sys, requests
-import pandas as pd
-from datetime import datetime, timezone, timedelta
-API_HOST = "v3.football.api-sports.io"
+import csv
+import os
+from playwright.sync_api import sync_playwright
 
-def main():
-    API_KEY = os.environ.get("API_FOOTBALL_KEY", "")
-    if not API_KEY: sys.exit(1)
-    headers = {'x-rapidapi-host': API_HOST, 'x-rapidapi-key': API_KEY}
-    TODAY_STR = datetime.now(timezone(timedelta(hours=8))).strftime('%Y-%m-%d')
-    try:
-        all_fixtures = requests.get(f"https://{API_HOST}/fixtures?date={TODAY_STR}", headers=headers, timeout=20).json().get("response", [])
-    except: sys.exit(1)
+def scrape_footystats():
+    # 目标页面：以英超 xG 数据页面为例（你可以根据需要修改网址）
+    url = "https://footystats.org/england/premier-league/xg"
     
-    fixtures = [f for f in all_fixtures if f.get("league", {}).get("id") in [39, 140, 135, 78, 61]]
-    if not fixtures: fixtures = all_fixtures[:3]
-    if not fixtures: sys.exit(1)
+    print(f"正在访问目标网页: {url}")
     
-    sheet1, sheet2, sheet3, sheet4 = [], [], [], []
-    for item in fixtures[:5]:
-        fid = item.get("fixture", {}).get("id")
-        lname = item.get("league", {}).get("name")
-        mdate = item.get("fixture", {}).get("date", "")[:10]
-        hid, aid = item['teams']['home']['id'], item['teams']['away']['id']
-        hname, aname = item['teams']['home']['name'], item['teams']['away']['name']
-        title = f"{hname} VS {aname}"
-        league_id = item['league']['id']
-        season = item.get("league", {}).get("season", 2025)
+    with sync_playwright() as p:
+        # 启动浏览器（headless=True 表示无头模式，在 GitHub Actions 中必须开启）
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        )
+        page = context.new_page()
         
-        h_win, d_win, a_win = "", "", ""
         try:
-            o_res = requests.get(f"https://{API_HOST}/odds?fixture={fid}", headers=headers).json().get("response", [])
-            if o_res:
-                for bm in o_res[0].get("bookmakers", []):
-                    if bm.get("name") in ["Bet365", "William Hill"]:
-                        for bet in bm.get("bets", []):
-                            if bet.get("name") == "Match Winner":
-                                for val in bet.get("values", []):
-                                    if val.get("value") == "Home": h_win = val.get("odd")
-                                    elif val.get("value") == "Draw": d_win = val.get("odd")
-                                    elif val.get("value") == "Away": a_win = val.get("odd")
-                                break
-                        if h_win: break
-        except: pass
-        sheet1.append({"比赛ID": fid, "联赛": lname, "日期": mdate, "对阵": title, "初盘-主胜": h_win, "初盘-平局": d_win, "初盘-客胜": a_win})
-        
-        s_dict = {"对阵": title, "主队": hname, "客队": aname, "主队_场均进球": 0.0, "主队_场均失球": 0.0, "客队_场均进球": 0.0, "客队_场均失球": 0.0}
-        try:
-            h_url = f"https://{API_HOST}/teams/statistics?season={season}&team={hid}&league={league_id}"
-            h_res = requests.get(h_url, headers=headers).json().get("response", {})
-            if h_res:
-                s_dict["主队_场均进球"] = float(h_res.get("goals", {}).get("for", {}).get("average", {}).get("total", 0.0) or 0.0)
-                s_dict["主队_场均失球"] = float(h_res.get("goals", {}).get("against", {}).get("average", {}).get("total", 0.0) or 0.0)
+            # 打开网页并等待加载
+            page.goto(url, timeout=60000)
             
-            a_url = f"https://{API_HOST}/teams/statistics?season={season}&team={aid}&league={league_id}"
-            a_res = requests.get(a_url, headers=headers).json().get("response", {})
-            if a_res:
-                s_dict["客队_场均进球"] = float(a_res.get("goals", {}).get("for", {}).get("average", {}).get("total", 0.0) or 0.0)
-                s_dict["客队_场均失球"] = float(a_res.get("goals", {}).get("against", {}).get("average", {}).get("total", 0.0) or 0.0)
-        except: pass
-        sheet2.append(s_dict)
-        
-        try:
-            h_res = requests.get(f"https://{API_HOST}/fixtures/headtohead?h2h={hid}-{aid}", headers=headers).json().get("response", [])
-            for h_m in h_res[:5]:
-                sheet3.append({"当前对阵": title, "历史交战日期": h_m.get("fixture", {}).get("date", "")[:10], "历史主队": h_m.get("teams", {}).get("home", {}).get("name"), "历史客队": h_m.get("teams", {}).get("away", {}).get("name"), "具体比分赛果": f"{h_m.get('goals', {}).get('home')}:{h_m.get('goals', {}).get('away')}"})
-        except: pass
-        
-        try:
-            inj_res = requests.get(f"https://{API_HOST}/injuries?fixture={fid}", headers=headers).json().get("response", [])
-            if not inj_res: sheet4.append({"对阵": title, "球队": "全员健康", "伤停人员": "无", "缺阵类型": "无", "缺阵原因": "无"})
-            for inj in inj_res:
-                sheet4.append({"对阵": title, "球队": inj.get("team", {}).get("name"), "伤停人员": inj.get("player", {}).get("name"), "缺阵类型": inj.get("player", {}).get("type", "伤病"), "缺阵原因": inj.get("player", {}).get("reason", "未知")})
-        except: pass
+            # 等待表格加载（根据网页实际的表格元素调整选择器）
+            page.wait_for_selector("table", timeout=30000)
+            
+            # 提取表格数据
+            # 假设网页上有我们需要的统计表格
+            data = []
+            rows = page.query_selector_all("table tr")
+            
+            for row in rows:
+                cols = row.query_selector_all("th, td")
+                cols_text = [col.inner_text().strip() for col in cols]
+                if cols_text:
+                    data.append(cols_text)
+            
+            if not data:
+                print("警告：未抓取到任何表格数据，可能触发了反爬或选择器需调整。")
+                return
 
-    try:
-        with pd.ExcelWriter("Football_AI_Model_Data.xlsx", engine="openpyxl") as writer:
-            pd.DataFrame(sheet1).to_excel(writer, sheet_name="1_五大联赛概要与赔率", index=False)
-            pd.DataFrame(sheet2).to_excel(writer, sheet_name="2_大样本进阶场均统计", index=False)
-            pd.DataFrame(sheet3).to_excel(writer, sheet_name="3_历史交锋H2H具体赛果", index=False)
-            pd.DataFrame(sheet4).to_excel(writer, sheet_name="4_官方实战伤停名单明细", index=False)
-    except: sys.exit(1)
+            # 将数据保存为 CSV 文件，方便 GitHub Actions 提交
+            output_file = "footystats_xg_data.csv"
+            with open(output_file, "w", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                writer.writerows(data)
+                
+            print(f"数据抓取成功，已保存至 {output_file}，共抓取到 {len(data)} 行数据。")
+            
+        except Exception as e:
+            print(f"抓取过程发生错误: {e}")
+            raise e
+        finally:
+            browser.close()
 
 if __name__ == "__main__":
-    main()
+    scrape_footystats()
