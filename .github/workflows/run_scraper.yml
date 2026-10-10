@@ -1,7 +1,7 @@
 name: Run FootyStats Scraper
 
 on:
-  workflow_dispatch: # 允许你随时在网页上点击手动运行
+  workflow_dispatch: # 允许你随时在网页上手动点击运行
   schedule:
     - cron: '0 0 * * *' # 每天北京时间早上 8 点（UTC 0点）自动运行一次
 
@@ -36,12 +36,16 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           
-          # 将所有更改（包括根目录 CSV 和 history/ 文件夹）添加到暂存区
+          # 容灾保护：确保文件或目录存在，防止 git 找不到路径而中断流程
+          touch footystats_epl_xg.csv
+          mkdir -p history
+          
+          # 将所有更改添加到暂存区
           git add footystats_epl_xg.csv history/
           
           # 检查是否有文件改动，有改动才提交
           git status
           git diff --staged --quiet || git commit -m "Auto-update FootyStats xG data [skip ci]"
           
-          # 推送到 main 分支
+          # 推送到主分支
           git push
