@@ -5,6 +5,10 @@ on:
     - cron: '0 2 * * *'  # 每天定时自动运行（UTC时间）
   workflow_dispatch:     # 允许在 GitHub 界面手动点击运行
 
+# 关键：赋予 GITHUB_TOKEN 读写仓库的权限
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
