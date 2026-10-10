@@ -1,12 +1,15 @@
 import csv
 from playwright.sync_api import sync_playwright
 
-def scrape_footystats():
-    url = "https://footystats.org/england/premier-league/xg"
+def scrape_xgscore():
+    # 目标网址：以 xGscore 网站的西甲或其他联赛 xG 数据页面为例
+    # 如果你有具体的链接，可以把这里替换掉
+    url = "https://xgscore.io/"
+    
     print(f"正在访问目标网页: {url}")
     
     with sync_playwright() as p:
-        # 使用非无头模式的参数或添加伪装，防止被识别为机器人
+        # 启动浏览器（采用无头模式，并加入反检测参数，防止被 Cloudflare 或反爬机制拦截）
         browser = p.chromium.launch(
             headless=True,
             args=[
@@ -16,8 +19,9 @@ def scrape_footystats():
             ]
         )
         
+        # 模拟真实浏览器的上下文环境（UA、视口大小等）
         context = browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
             viewport={"width": 1920, "height": 1080}
         )
         
@@ -27,15 +31,14 @@ def scrape_footystats():
             # 访问网页，等待网络空闲
             page.goto(url, timeout=60000, wait_until="networkidle")
             
-            # 打印当前标题，看看是否成功绕过或被拦截
-            print(f"页面标题: {page.title()}")
+            print(f"页面加载成功，标题为: {page.title()}")
             
-            # 延长等待时间，或者等待页面中更通用的容器加载
-            # 如果网站用了 div 布局而不是 table，这里尝试等待任意表格或主要数据区域
-            page.wait_for_timeout(5000) # 额外等待 5 秒让 JS 渲染
+            # 给 JavaScript 额外渲染留出几秒钟时间
+            page.wait_for_timeout(5000)
             
-            # 尝试抓取所有行（兼容 table 或通用标签）
+            # 尝试抓取表格或页面中的统计行数据
             data = []
+            # 兼容表格标签 (table tr) 或者通用的行容器
             rows = page.query_selector_all("table tr, div.row, tr")
             
             for row in rows:
@@ -45,21 +48,22 @@ def scrape_footystats():
                     data.append(cols_text)
             
             if not data:
-                print("警告：未抓取到有效数据，可能被 Cloudflare 拦截。")
+                print("警告：未抓取到有效数据，页面可能结构复杂或被拦截。")
                 return
 
-            output_file = "footystats_xg_data.csv"
+            # 保存为 CSV 文件，GitHub Actions 随后会自动将其提交到仓库
+            output_file = "xgscore_data.csv"
             with open(output_file, "w", newline="", encoding="utf-8") as f:
                 writer = csv.writer(f)
                 writer.writerows(data)
                 
-            print(f"数据抓取成功，已保存至 {output_file}，共抓取到 {len(data)} 行数据。")
+            print(f"数据抓取成功，已保存至 {output_file}，共获取到 {len(data)} 行数据。")
             
         except Exception as e:
-            print(f"抓取过程发生错误: {e}")
+            print(f"抓取过程中发生错误: {e}")
             raise e
         finally:
             browser.close()
 
 if __name__ == "__main__":
-    scrape_footystats()
+    scrape_xgscore()
