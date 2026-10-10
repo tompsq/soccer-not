@@ -1,4 +1,6 @@
-ERROR,"Page.goto: Timeout 90000ms exceeded.
-Call log:
-  - navigating to ""https://footystats.org/england/premier-league/xg"", waiting until ""networkidle""
-"
+footystats.org
+Performing security verification
+This website uses a security service to protect against malicious bots. This page is displayed while the website verifies you are not a bot.
+Ray ID: a482b87cb913fc26
+Performance and Security by Cloudflare
+Privacy
