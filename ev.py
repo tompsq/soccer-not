@@ -26,6 +26,7 @@ def norm(name):
 
 def load_xg():
     xg_map = {}
+    league_avg = {}
     for sheet in XG_SHEETS:
         try:
             df = pd.read_excel(XG_FILE, sheet_name=sheet)
@@ -33,6 +34,7 @@ def load_xg():
             print(f"[跳过] sheet {sheet}: {e}")
             continue
         latest_season = None
+        teams = []
         for _, row in df.iterrows():
             season = row.get("Season")
             team = row.get("Team")
@@ -47,7 +49,12 @@ def load_xg():
             if pd.isna(xg) or pd.isna(xga):
                 continue
             xg_map[(sheet, norm(team))] = {"xG": float(xg), "xGA": float(xga), "team": team}
-    return xg_map
+            teams.append((float(xg), float(xga)))
+        if teams:
+            avg_xg = sum(t[0] for t in teams) / len(teams)
+            avg_xga = sum(t[1] for t in teams) / len(teams)
+            league_avg[sheet] = {"avg_xg": avg_xg, "avg_xga": avg_xga, "avg_goals": (avg_xg + avg_xga) / 2}
+    return xg_map, league_avg
 
 def find_xg(xg_map, league, team):
     n = norm(team)
@@ -60,9 +67,18 @@ def find_xg(xg_map, league, team):
             return v
     return None
 
-def calc_ev(row, xg_h, xg_a):
-    lam_h = (xg_h["xG"] + xg_a["xGA"]) / 2
-    lam_a = (xg_a["xG"] + xg_h["xGA"]) / 2
+def calc_ev(row, xg_h, xg_a, league, league_avg):
+    avg = league_avg.get(league)
+    if not avg:
+        return None
+    avg_goals = avg["avg_goals"]
+    home_attack = xg_h["xG"] / avg["avg_xg"]
+    home_defense = xg_h["xGA"] / avg["avg_xga"]
+    away_attack = xg_a["xG"] / avg["avg_xg"]
+    away_defense = xg_a["xGA"] / avg["avg_xga"]
+    lam_h = home_attack * away_defense * avg_goals
+    lam_a = away_attack * home_defense * avg_goals
+
     max_g = 10
     p_home = p_draw = p_away = p_over = 0.0
     p_ah_win = p_ah_half = p_ah_lose = 0.0
@@ -114,8 +130,8 @@ def calc_ev(row, xg_h, xg_a):
 
 def main():
     print("读取 xG 表...")
-    xg_map = load_xg()
-    print(f"  加载 {len(xg_map)} 支球队")
+    xg_map, league_avg = load_xg()
+    print(f"  加载 {len(xg_map)} 支球队，{len(league_avg)} 个联赛均值")
     print("读取比赛表...")
     df = pd.read_excel(MATCH_FILE, sheet_name=0)
     results = []
@@ -131,15 +147,14 @@ def main():
         if not xg_h or not xg_a:
             skipped.append(f"{league} | {home} vs {away} | 主{'Y' if xg_h else 'N'} 客{'Y' if xg_a else 'N'}")
             continue
-        evs = calc_ev(row, xg_h, xg_a)
+        evs = calc_ev(row, xg_h, xg_a, league, league_avg)
+        if not evs:
+            skipped.append(f"{league} | {home} vs {away} | 无联赛均值")
+            continue
         rec = {
-            "联赛": league,
-            "主队": home,
-            "客队": away,
-            "主xG": round(xg_h["xG"],3),
-            "客xG": round(xg_a["xG"],3),
-            "主xGA": round(xg_h["xGA"],3),
-            "客xGA": round(xg_a["xGA"],3),
+            "联赛": league, "主队": home, "客队": away,
+            "主xG": round(xg_h["xG"],3), "客xG": round(xg_a["xG"],3),
+            "主xGA": round(xg_h["xGA"],3), "客xGA": round(xg_a["xGA"],3),
         }
         rec.update({k: (round(v,4) if isinstance(v,float) else v) for k,v in evs.items()})
         recs = [k for k,v in evs.items() if isinstance(v,float) and v > EV_RECOMMEND]
