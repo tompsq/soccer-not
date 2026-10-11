@@ -93,14 +93,17 @@ def find_xg(xg_map, league, team):
 
 
 def calc_ev(row, xg_h, xg_a, league, league_avg):
+def calc_ev(row, xg_h, xg_a, league, league_avg):
     avg = league_avg.get(league)
     if not avg:
         return None
+
     avg_goals = avg["avg_goals"]
     home_attack = xg_h["xG"] / avg["avg_xg"]
     home_defense = xg_h["xGA"] / avg["avg_xga"]
     away_attack = xg_a["xG"] / avg["avg_xg"]
     away_defense = xg_a["xGA"] / avg["avg_xga"]
+
     lam_h = home_attack * away_defense * avg_goals
     lam_a = away_attack * home_defense * avg_goals
     print(f"[{league}] {row.get('主队')} vs {row.get('客队')} | lam_h={lam_h:.2f} lam_a={lam_a:.2f}")
@@ -108,14 +111,17 @@ def calc_ev(row, xg_h, xg_a, league, league_avg):
     max_g = 10
     p_home = p_draw = p_away = p_over = 0.0
     p_ah_win = p_ah_half = p_ah_lose = 0.0
+
+    # 解析让球盘口
     try:
         ah_line = float(row.get("临_亚盘"))
     except:
-        ah_line = 0
+        ah_line = None
     try:
         ou_line = float(row.get("临_大小"))
     except:
         ou_line = 0
+
     for i in range(max_g+1):
         for j in range(max_g+1):
             p = poisson(i, lam_h) * poisson(j, lam_a)
@@ -124,11 +130,12 @@ def calc_ev(row, xg_h, xg_a, league, league_avg):
             if i < j: p_away += p
             if i + j > ou_line: p_over += p
             diff = i - j
-            if ah_line < 0:
+            if ah_line is not None and ah_line < 0:
                 need = -ah_line
                 if diff > need: p_ah_win += p
                 elif abs(diff - need) < 1e-9: p_ah_half += p
                 else: p_ah_lose += p
+
     p_under = 1 - p_over
 
     def ev(prob, odds):
@@ -161,21 +168,27 @@ def calc_ev(row, xg_h, xg_a, league, league_avg):
             res[name] = None
             print(f"  [分歧过滤] {name} 模型{prob:.2%} vs 市场{mkt(row.get(odds_key)):.2%}")
 
+    # 让球 EV：只有 ah_line 有效且不为 0 时才算
     res["主让EV"] = None
     res["客受让EV"] = None
-    try:
-        hw = float(row.get("临_亚盘主"))
-        aw = float(row.get("临_亚盘客"))
-        res["主让EV"] = p_ah_win * hw + p_ah_half * (hw+1)/2 - 1
-        res["客受让EV"] = p_ah_lose * aw + p_ah_half * (aw+1)/2 - 1
-    except:
-        pass
+    if ah_line is not None and ah_line != 0:
+        try:
+            hw = float(row.get("临_亚盘主"))
+            aw = float(row.get("临_亚盘客"))
+            res["主让EV"] = p_ah_win * hw + p_ah_half * (hw+1)/2 - 1
+            res["客受让EV"] = p_ah_lose * aw + p_ah_half * (aw+1)/2 - 1
+        except Exception as e:
+            print(f"  [让球异常] {e}")
+    else:
+        print(f"  [让球跳过] ah_line={ah_line}")
 
+    # 大小球
     res["大球EV"] = ev(p_over, row.get("临_大球")) if ok(p_over, row.get("临_大球")) else None
     res["小球EV"] = ev(p_under, row.get("临_小球")) if ok(p_under, row.get("临_小球")) else None
+
     return res
 
-
+    
 def main():
     print("读取 xG 表...")
     xg_map, league_avg = load_xg()
