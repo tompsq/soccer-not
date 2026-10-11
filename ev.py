@@ -5,7 +5,7 @@ import unicodedata
 
 MATCH_FILE = "matches.xlsx"
 XG_FILE = "xg.xlsx"
-OUTPUT = "results.xlsx"
+OUTPUT = "results.csv"
 XG_SHEETS = ["英超","西甲","意甲","德甲","法甲","葡超","比甲","苏超","英冠"]
 EV_RECOMMEND = 0.05
 EV_WATCH = 0.0
@@ -78,6 +78,7 @@ def calc_ev(row, xg_h, xg_a, league, league_avg):
     away_defense = xg_a["xGA"] / avg["avg_xga"]
     lam_h = home_attack * away_defense * avg_goals
     lam_a = away_attack * home_defense * avg_goals
+    print(f"[{league}] {row.get('主队')} vs {row.get('客队')} | lam_h={lam_h:.2f} lam_a={lam_a:.2f}")
 
     max_g = 10
     p_home = p_draw = p_away = p_over = 0.0
@@ -132,6 +133,8 @@ def main():
     print("读取 xG 表...")
     xg_map, league_avg = load_xg()
     print(f"  加载 {len(xg_map)} 支球队，{len(league_avg)} 个联赛均值")
+    for lg, v in league_avg.items():
+        print(f"    {lg}: avg_xg={v['avg_xg']:.2f}, avg_xga={v['avg_xga']:.2f}")
     print("读取比赛表...")
     df = pd.read_excel(MATCH_FILE, sheet_name=0)
     results = []
