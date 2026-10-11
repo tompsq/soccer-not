@@ -9,6 +9,7 @@ OUTPUT = "results.xlsx"
 XG_SHEETS = ["英超","西甲","意甲","德甲","法甲","葡超","比甲","苏超","英冠"]
 EV_RECOMMEND = 0.05
 EV_WATCH = 0.0
+DIVERGENCE_LIMIT = 0.15
 
 def poisson(k, lam):
     return math.exp(-lam) * lam**k / math.factorial(k)
@@ -33,27 +34,45 @@ def load_xg():
         except Exception as e:
             print(f"[跳过] sheet {sheet}: {e}")
             continue
-        latest_season = None
-        teams = []
+        seasons_order = []
+        season_teams = {}
         for _, row in df.iterrows():
             season = row.get("Season")
             team = row.get("Team")
             if pd.isna(season) or pd.isna(team):
                 continue
-            if latest_season is None:
-                latest_season = season
-            if season != latest_season:
-                break
+            season = str(season)
+            if season not in season_teams:
+                season_teams[season] = []
+                seasons_order.append(season)
             xg = row.get("xG")
             xga = row.get("xGA")
             if pd.isna(xg) or pd.isna(xga):
                 continue
-            xg_map[(sheet, norm(team))] = {"xG": float(xg), "xGA": float(xga), "team": team}
-            teams.append((float(xg), float(xga)))
-        if teams:
-            avg_xg = sum(t[0] for t in teams) / len(teams)
-            avg_xga = sum(t[1] for t in teams) / len(teams)
-            league_avg[sheet] = {"avg_xg": avg_xg, "avg_xga": avg_xga, "avg_goals": (avg_xg + avg_xga) / 2}
+            season_teams[season].append({
+                "team": team, "norm": norm(team),
+                "xG": float(xg), "xGA": float(xga)
+            })
+        weights = [0.5, 0.3, 0.2]
+        recent = seasons_order[:3]
+        team_weighted = {}
+        for w, s in zip(weights, recent):
+            for t in season_teams[s]:
+                key = (sheet, t["norm"])
+                if key not in team_weighted:
+                    team_weighted[key] = {"xG": 0.0, "xGA": 0.0, "team": t["team"], "wsum": 0.0}
+                team_weighted[key]["xG"] += w * t["xG"]
+                team_weighted[key]["xGA"] += w * t["xGA"]
+                team_weighted[key]["wsum"] += w
+        for key, v in team_weighted.items():
+            if v["wsum"] > 0:
+                v["xG"] /= v["wsum"]
+                v["xGA"] /= v["wsum"]
+                xg_map[key] = v
+        if team_weighted:
+            avg_xg = sum(v["xG"] for v in team_weighted.values()) / len(team_weighted)
+            avg_xga = sum(v["xGA"] for v in team_weighted.values()) / len(team_weighted)
+            league_avg[sheet] = {"avg_xg": avg_xg, "avg_xga": avg_xga, "avg_goals": (avg_xg + avg_xga)/2}
     return xg_map, league_avg
 
 def find_xg(xg_map, league, team):
@@ -105,20 +124,39 @@ def calc_ev(row, xg_h, xg_a, league, league_avg):
                 elif abs(diff - need) < 1e-9: p_ah_half += p
                 else: p_ah_lose += p
     p_under = 1 - p_over
+
     def ev(prob, odds):
         try:
             return prob * float(odds) - 1
         except:
             return None
-    res = {
-        "主胜EV": ev(p_home, row.get("临_主胜")),
-        "平局EV": ev(p_draw, row.get("临_平局")),
-        "客胜EV": ev(p_away, row.get("临_客胜")),
-        "主让EV": None,
-        "客受让EV": None,
-        "大球EV": ev(p_over, row.get("临_大球")),
-        "小球EV": ev(p_under, row.get("临_小球")),
-    }
+
+    def mkt(odds):
+        try:
+            return 1 / float(odds)
+        except:
+            return None
+
+    def ok(prob, odds):
+        mp = mkt(odds)
+        if mp is None or prob is None:
+            return True
+        return abs(prob - mp) < DIVERGENCE_LIMIT
+
+    res = {}
+    for name, prob, odds_key in [
+        ("主胜EV", p_home, "临_主胜"),
+        ("平局EV", p_draw, "临_平局"),
+        ("客胜EV", p_away, "临_客胜"),
+    ]:
+        if ok(prob, row.get(odds_key)):
+            res[name] = ev(prob, row.get(odds_key))
+        else:
+            res[name] = None
+            print(f"  [分歧过滤] {name} 模型{prob:.2%} vs 市场{mkt(row.get(odds_key)):.2%}")
+
+    res["主让EV"] = None
+    res["客受让EV"] = None
     try:
         hw = float(row.get("临_亚盘主"))
         aw = float(row.get("临_亚盘客"))
@@ -126,6 +164,9 @@ def calc_ev(row, xg_h, xg_a, league, league_avg):
         res["客受让EV"] = p_ah_lose * aw + p_ah_half * (aw+1)/2 - 1
     except:
         pass
+
+    res["大球EV"] = ev(p_over, row.get("临_大球")) if ok(p_over, row.get("临_大球")) else None
+    res["小球EV"] = ev(p_under, row.get("临_小球")) if ok(p_under, row.get("临_小球")) else None
     return res
 
 
