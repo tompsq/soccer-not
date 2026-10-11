@@ -3,10 +3,10 @@ import csv
 from datetime import datetime, timedelta
 import requests
 
-# 从 GitHub Secrets 读取配置
+# 直接对齐你 GitHub 里现有的 Secret 名字
 API_FOOTBALL_KEY = os.getenv("API_FOOTBALL_KEY")
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+TELEGRAM_BOT_TOKEN = os.getenv("TG_BOT_TOKEN")     # 对应你截图中的 TG_BOT_TOKEN
+TELEGRAM_CHAT_ID = os.getenv("TG_CHAT_ID")         # 对应你截图中的 TG_CHAT_ID
 
 # 定义你需要监控的联赛字典 { 联赛名称: 联赛ID }
 LEAGUES = {
