@@ -188,7 +188,6 @@ def calc_ev(row, xg_h, xg_a, league, league_avg):
 
     return res
 
-    
 def main():
     print("读取 xG 表...")
     xg_map, league_avg = load_xg()
