@@ -5,7 +5,7 @@ import unicodedata
 
 MATCH_FILE = "matches.xlsx"
 XG_FILE = "xg.xlsx"
-OUTPUT = "results.csv"
+OUTPUT = "results.xlsx"
 XG_SHEETS = ["英超","西甲","意甲","德甲","法甲","葡超","比甲","苏超","英冠"]
 EV_RECOMMEND = 0.05
 EV_WATCH = 0.0
