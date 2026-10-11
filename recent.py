@@ -1,133 +1,151 @@
-import os
-import csv
-from datetime import datetime, timedelta, timezone
-import requests
+import os, io, csv, requests
+from datetime import datetime, timedelta
+from openpyxl import Workbook
 
-TELEGRAM_BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
-TELEGRAM_CHAT_ID = os.getenv("TG_CHAT_ID")
+T = os.environ.get("TG_BOT_TOKEN")
+C = os.environ.get("TG_CHAT_ID")
+FD_TOKEN = os.environ.get("FOOTBALL_DATA_TOKEN")
 
-# football-data.co.uk 针对当前 2025/26 赛季（路径为 mmz4281/2526/）的联赛代号映射
-LEAGUES_CONFIG = {
-    "Premier League": "E0",
-    "Championship": "E1",
-    "La Liga": "SP1",
-    "Serie A": "I1",
-    "Bundesliga": "D1",
-    "Ligue 1": "F1",
-    "Primeira Liga": "P1",
-    "Pro League": "B1",
-    "Premiership": "SC0",
-    "Super Lig": "T1",
-    "Super League Greece": "G1"
-}
+COUK = [
+    ("E0", "英超"), ("SP1", "西甲"), ("I1", "意甲"), ("D1", "德甲"),
+    ("F1", "法甲"), ("B1", "比甲"), ("N1", "荷甲"), ("T1", "土超"),
+    ("G1", "希超"), ("E1", "英冠"),
+]
+ORG = [("CL", "欧冠"), ("EL", "欧足协")]
 
-def fetch_and_save_matches():
-    utc_plus_8 = timezone(timedelta(hours=8))
-    now_bj = datetime.now(utc_plus_8)
-    three_days_ago = now_bj - timedelta(days=3)
-    
-    start_date = three_days_ago.date()
-    end_date = now_bj.date()
-    
-    print(f"【公开CSV抓取】目标日期范围: {start_date} 至 {end_date}")
-    
-    rows = [["Season", "Date", "League_Name", "Source", "Home_Team", "Away_Team", "Home_Goals", "Away_Goals", "Status"]]
-    total_matches = 0
-    season_code = "2526"
-    
-    for league_name, code in LEAGUES_CONFIG.items():
-        csv_url = f"https://www.football-data.co.uk/mmz4281/{season_code}/{code}.csv"
-        try:
-            res = requests.get(csv_url, timeout=15)
-            if res.status_code == 200:
-                content = res.content.decode('utf-8', errors='ignore')
-                lines = content.splitlines()
-                reader = csv.reader(lines)
-                
-                header = next(reader, None)
-                if not header:
-                    continue
-                
-                date_idx = header.index("Date") if "Date" in header else 1
-                home_idx = header.index("HomeTeam") if "HomeTeam" in header else 2
-                away_idx = header.index("AwayTeam") if "AwayTeam" in header else 3
-                hg_idx = header.index("FTHG") if "FTHG" in header else 4
-                ag_idx = header.index("FTAG") if "FTAG" in header else 5
-                
-                league_count = 0
-                for row in reader:
-                    if len(row) <= max(date_idx, home_idx, away_idx, hg_idx, ag_idx):
-                        continue
-                    
-                    date_str = row[date_idx].strip()
-                    if not date_str:
-                        continue
-                    
-                    match_date = None
-                    for fmt in ("%d/%m/%Y", "%d/%m/%y"):
-                        try:
-                            match_date = datetime.strptime(date_str, fmt).date()
-                            break
-                        except ValueError:
-                            continue
-                    
-                    if match_date and start_date <= match_date <= end_date:
-                        home_team = row[home_idx].strip()
-                        away_team = row[away_idx].strip()
-                        try:
-                            hg = int(row[hg_idx].strip())
-                            ag = int(row[ag_idx].strip())
-                        except ValueError:
-                            continue
-                        
-                        rows.append([
-                            "2025/26", 
-                            match_date.strftime("%Y-%m-%d"), 
-                            league_name, 
-                            "Public-CSV", 
-                            home_team, 
-                            away_team, 
-                            hg, 
-                            ag, 
-                            "FINISHED"
-                        ])
-                        total_matches += 1
-                        league_count += 1
-                
-                print(f"[{league_name}] 抓取成功，命中目标时间段比赛: {league_count} 场")
-            else:
-                print(f"[{league_name}] CSV下载失败，状态码: {res.status_code}")
-        except Exception as e:
-            print(f"[{league_name}] 异常: {e}")
-
-    output_file = "recent_finished_matches.csv"
-    with open(output_file, "w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerows(rows)
-        
-    print(f"所有公开 CSV 联赛解析完毕，共计有效比赛 {total_matches} 场。")
-    return output_file
-
-def send_to_telegram(file_path):
-    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+def send_file(path, caption=""):
+    if not T or not C:
+        print("文件:", path)
         return
-        
-    token = TELEGRAM_BOT_TOKEN.strip()
-    chat_id = TELEGRAM_CHAT_ID.strip()
-    
-    text_url = f"https://api.telegram.org/bot{token}/sendMessage"
-    requests.post(text_url, data={
-        "chat_id": chat_id,
-        "text": "⚽ GitHub Actions: 11个目标联赛（基于公开 CSV 宝库）过去三天赛果已全部同步完毕，请查收档案："
-    })
-    
-    doc_url = f"https://api.telegram.org/bot{token}/sendDocument"
-    with open(file_path, "rb") as f:
-        files = {"document": f}
-        data = {"chat_id": chat_id}
-        requests.post(doc_url, data=data, files=files)
+    try:
+        with open(path, "rb") as f:
+            requests.post(
+                f"https://api.telegram.org/bot{T}/sendDocument",
+                data={"chat_id": C, "caption": caption},
+                files={"document": f},
+                timeout=60,
+            )
+    except Exception as e:
+        print("发送失败:", e)
+
+def parse_date(s):
+    s = (s or "").strip()
+    for fmt in ("%d/%m/%Y", "%d/%m/%y", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(s, fmt).date()
+        except Exception:
+            pass
+    return None
+
+def season_folders():
+    y, m = datetime.utcnow().year, datetime.utcnow().month
+    start = y if m >= 7 else y - 1
+    a = f"{str(start)[2:]}{str(start+1)[2:]}"
+    b = f"{str(start-1)[2:]}{str(start)[2:]}"
+    return [a, b]
+
+def fetch_couk(code, name, d0, d1):
+    rows = []
+    for season in season_folders():
+        url = f"https://www.football-data.co.uk/mmz4281/{season}/{code}.csv"
+        try:
+            r = requests.get(url, timeout=25)
+            if r.status_code != 200 or "HomeTeam" not in r.text[:500]:
+                print(f"  {name} {season}: HTTP {r.status_code}")
+                continue
+            reader = csv.DictReader(io.StringIO(r.text))
+            n = 0
+            for row in reader:
+                dt = parse_date(row.get("Date") or "")
+                if not dt or not (d0 <= dt <= d1):
+                    continue
+                home = row.get("HomeTeam") or ""
+                away = row.get("AwayTeam") or ""
+                hg = row.get("FTHG") or ""
+                ag = row.get("FTAG") or ""
+                if home and away and hg != "" and ag != "":
+                    rows.append({
+                        "联赛": name, "日期": dt.isoformat(),
+                        "主队": home, "客队": away,
+                        "比分": f"{hg}-{ag}", "主进球": hg, "客进球": ag,
+                    })
+                    n += 1
+            print(f"  {name} {season}: 命中 {n} 场")
+            if n or rows:
+                break
+        except Exception as e:
+            print(f"  {name} 错误: {e}")
+    return rows
+
+def fetch_org(code, name, d0, d1):
+    if not FD_TOKEN:
+        print(f"  {name}: 无 FOOTBALL_DATA_TOKEN，跳过")
+        return []
+    try:
+        r = requests.get(
+            f"https://api.football-data.org/v4/competitions/{code}/matches",
+            headers={"X-Auth-Token": FD_TOKEN},
+            params={"dateFrom": d0.isoformat(), "dateTo": d1.isoformat(), "status": "FINISHED"},
+            timeout=25,
+        )
+        print(f"  {name}: HTTP {r.status_code}")
+        if r.status_code != 200:
+            print(r.text[:150])
+            return []
+        rows = []
+        for m in (r.json().get("matches") or []):
+            ft = ((m.get("score") or {}).get("fullTime") or {})
+            hg, ag = ft.get("home"), ft.get("away")
+            if hg is None or ag is None:
+                continue
+            rows.append({
+                "联赛": name,
+                "日期": (m.get("utcDate") or "")[:10],
+                "主队": (m.get("homeTeam") or {}).get("name") or "",
+                "客队": (m.get("awayTeam") or {}).get("name") or "",
+                "比分": f"{hg}-{ag}",
+                "主进球": hg,
+                "客进球": ag,
+            })
+        print(f"  {name}: {len(rows)} 场")
+        return rows
+    except Exception as e:
+        print(f"  {name} 错误: {e}")
+        return []
+
+def main():
+    now = datetime.utcnow()
+    d1, d0 = now.date(), now.date() - timedelta(days=3)
+    print(f"窗口(UTC): {d0} \~ {d1}")
+
+    all_rows = []
+    for code, name in COUK:
+        all_rows.extend(fetch_couk(code, name, d0, d1))
+    for code, name in ORG:
+        all_rows.extend(fetch_org(code, name, d0, d1))
+
+    all_rows.sort(key=lambda x: (x["日期"], x["联赛"], x["主队"]))
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "近3天完场"
+    ws.append(["联赛", "日期", "主队", "客队", "比分", "主进球", "客进球"])
+    for r in all_rows:
+        ws.append([r["联赛"], r["日期"], r["主队"], r["客队"], r["比分"], r["主进球"], r["客进球"]])
+
+    by_l = {}
+    for r in all_rows:
+        by_l.setdefault(r["联赛"], []).append(r)
+    for league, rows in by_l.items():
+        w = wb.create_sheet(league[:28])
+        w.append(["日期", "主队", "客队", "比分"])
+        for r in rows:
+            w.append([r["日期"], r["主队"], r["客队"], r["比分"]])
+
+    fname = f"recent_results_{now.strftime('%Y%m%d_%H%M')}.xlsx"
+    wb.save(fname)
+    send_file(fname, caption=f"近3天完场比分\n{d0} \~ {d1} (UTC)\n共 {len(all_rows)} 场 / {len(by_l)} 联赛")
+    print("已发送:", fname, "场次:", len(all_rows))
 
 if __name__ == "__main__":
-    file_name = fetch_and_save_matches()
-    if file_name:
-        send_to_telegram(file_name)
+    main()
