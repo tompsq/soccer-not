@@ -5,7 +5,7 @@ import unicodedata
 
 MATCH_FILE = "matches.xlsx"
 XG_FILE = "xg.xlsx"
-OUTPUT = "results.csv"
+OUTPUT = "results.xlsx"
 XG_SHEETS = ["英超","西甲","意甲","德甲","法甲","葡超","比甲","苏超","英冠"]
 EV_RECOMMEND = 0.05
 EV_WATCH = 0.0
@@ -164,7 +164,7 @@ def main():
         rec["推荐"] = ", ".join(recs) if recs else ""
         results.append(rec)
     out = pd.DataFrame(results)
-    out.to_csv(OUTPUT, index=False, encoding="utf-8-sig")
+    out.to_excel(OUTPUT, index=False)
     print(f"\n计算完成：{len(results)} 场成功，{len(skipped)} 场跳过")
     print(f"结果已存 {OUTPUT}\n")
     if skipped:
