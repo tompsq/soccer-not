@@ -1,5 +1,4 @@
-name: Run FootyStats Scraper
-
+name: last 3 days matches
 on:
   workflow_dispatch: # 允许你随时在网页上手动点击运行
   schedule:
