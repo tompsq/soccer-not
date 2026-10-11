@@ -1,6 +1,6 @@
 import os
 import csv
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import requests
 
 # 从 GitHub Secrets 读取配置
@@ -8,7 +8,7 @@ FOOTBALL_DATA_API_KEY = os.getenv("FOOTBALL_DATA_API_KEY")
 TELEGRAM_BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TG_CHAT_ID")
 
-# Football-Data.org 的竞赛代码映射字典 { 联赛名称: 竞赛代码 }
+# 联赛代码映射字典
 LEAGUES = {
     "Premier League": "PL",       # 英超
     "La Liga": "PD",              # 西甲
@@ -17,21 +17,25 @@ LEAGUES = {
     "Ligue 1": "FL1",             # 法甲
     "Championship": "EL",         # 英冠
     "Primeira Liga": "PPL",       # 葡超
-    "Pro League": "D1",           # 比甲 (比利时)
-    "Premiership": "SCO",         # 苏超 (苏格兰)
-    "Super Lig": "TSL",           # 土超 (土耳其)
-    # 注：Football-Data 免费版可能未包含希腊超级联赛(Super League Greece)，若报错可暂注释，此处保留映射
+    "Pro League": "D1",           # 比甲
+    "Premiership": "SCO",         # 苏超
+    "Super Lig": "TSL",           # 土超
     "Super League Greece": "GRC"  # 希超
 }
 
 def fetch_and_save_matches():
-    today = datetime.now()
-    three_days_ago = today - timedelta(days=3)
+    # 强制使用北京时间 (UTC+8) 计算当前时间，避免 GitHub 默认的 UTC 时区导致时间偏差
+    utc_plus_8 = timezone(timedelta(hours=8))
+    now_bj = datetime.now(utc_plus_8)
+    
+    # 过去三天到今天：例如今天是周一，则计算从上周五到今天周一的比赛
+    three_days_ago = now_bj - timedelta(days=3)
     
     from_date = three_days_ago.strftime("%Y-%m-%d")
-    to_date = (today - timedelta(days=1)).strftime("%Y-%m-%d")
+    to_date = now_bj.strftime("%Y-%m-%d")
     
-    print(f"正在通过 Football-Data 获取 {from_date} 至 {to_date} 期间的赛事...")
+    print(f"【北京时间】当前时间: {now_bj.strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"正在获取从 {from_date} 至 {to_date} 期间的赛事...")
     
     headers = {
         "X-Auth-Token": FOOTBALL_DATA_API_KEY.strip() if FOOTBALL_DATA_API_KEY else ""
@@ -41,7 +45,6 @@ def fetch_and_save_matches():
     total_matches = 0
     
     for league_name, league_code in LEAGUES.items():
-        # Football-Data 的赛程按日期查询接口
         url = f"https://api.football-data.org/v4/competitions/{league_code}/matches"
         params = {
             "dateFrom": from_date,
@@ -66,13 +69,12 @@ def fetch_and_save_matches():
                     a_goals = score.get("away") if score.get("away") is not None else 0
                     status = match.get("status", "")
                     
-                    # 确定赛季年份标识（可根据当前月份动态或默认 2025/26）
                     season_str = "2025/26"
                     
                     rows.append([season_str, match_date, league_name, league_code, home_team, away_team, h_goals, a_goals, status])
                     total_matches += 1
             else:
-                print(f"[{league_name}] 请求失败，状态码: {response.status_code}, 响应内容: {response.text}")
+                print(f"[{league_name}] 请求失败，状态码: {response.status_code}")
         except Exception as e:
             print(f"[{league_name}] 请求异常: {e}")
 
@@ -87,34 +89,24 @@ def fetch_and_save_matches():
 
 def send_to_telegram(file_path):
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
-        print("未检测到 Telegram 配置，跳过推送。")
         return
         
-    if not os.path.exists(file_path):
-        print("未找到需要发送的文件。")
-        return
-        
-    print("正在通过 Telegram 推送结果...")
-    
     token = TELEGRAM_BOT_TOKEN.strip()
     chat_id = TELEGRAM_CHAT_ID.strip()
     
-    # 1. 发送文字提示
+    # 1. 发送提示文字
     text_url = f"https://api.telegram.org/bot{token}/sendMessage"
-    res_text = requests.post(text_url, data={
+    requests.post(text_url, data={
         "chat_id": chat_id,
-        "text": "⚽ GitHub Actions (Football-Data): 过去三天赛果已抓取完毕，请查收 CSV 档案："
+        "text": "⚽ GitHub Actions: 过去三天（含周末完整赛果）已成功抓取，请查收 CSV 档案："
     })
-    print(f"Telegram 文本消息响应状态: {res_text.status_code}")
     
     # 2. 发送 CSV 文件
     doc_url = f"https://api.telegram.org/bot{token}/sendDocument"
     with open(file_path, "rb") as f:
         files = {"document": f}
         data = {"chat_id": chat_id}
-        res_doc = requests.post(doc_url, data=data, files=files)
-        
-    print(f"Telegram 文件发送响应状态: {res_doc.status_code}")
+        requests.post(doc_url, data=data, files=files)
 
 if __name__ == "__main__":
     file_name = fetch_and_save_matches()
