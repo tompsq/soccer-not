@@ -3,20 +3,23 @@ import csv
 from datetime import datetime, timedelta, timezone
 import requests
 
-FOOTBALL_DATA_API_KEY = os.getenv("FOOTBALL_DATA_API_KEY")
-ODDS_API_KEY = os.getenv("ODDS_API_KEY")
 TELEGRAM_BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TG_CHAT_ID")
 
-FD_LEAGUES = {
-    "Premier League": "PL", "La Liga": "PD", "Serie A": "SA",
-    "Bundesliga": "BL1", "Ligue 1": "FL1", "Primeira Liga": "PPL"
-}
-
-ODDS_LEAGUES = {
-    "Championship": "soccer_efl_champ", "Pro League": "soccer_belgium_first_div",
-    "Premiership": "soccer_spl", "Super Lig": "soccer_turkey_super_league",
-    "Super League Greece": "soccer_greece_super_league"
+# football-data.co.uk 针对当前 2025/26 赛季（路径通常为 mmz4281/2526/）的联赛代号映射
+# E0: 英超, E1: 英冠, SP1: 西甲, I1: 意甲, D1: 德甲, F1: 法甲, P1: 葡超, B1: 比利时甲, SC0: 苏超, T1: 土超, G1: 希超（部分可能略有不同，我们采用标准公开代号）
+LEAGUES_CONFIG = {
+    "Premier League": "E0",
+    "Championship": "E1",
+    "La Liga": "SP1",
+    "Serie A": "I1",
+    "Bundesliga": "D1",
+    "Ligue 1": "F1",
+    "Primeira Liga": "P1",
+    "Pro League": "B1",
+    "Premiership": "SC0",
+    "Super Lig": "T1",
+    "Super League Greece": "G1"
 }
 
 def fetch_and_save_matches():
@@ -24,61 +27,120 @@ def fetch_and_save_matches():
     now_bj = datetime.now(utc_plus_8)
     three_days_ago = now_bj - timedelta(days=3)
     
-    from_date_str = three_days_ago.strftime("%Y-%m-%d")
-    to_date_str = now_bj.strftime("%Y-%m-%d")
+    # 目标日期范围
+    start_date = three_days_ago.date()
+    end_date = now_bj.date()
+    
+    print(f"【公开CSV抓取】目标日期范围: {start_date} 至 {end_date}")
     
     rows = [["Season", "Date", "League_Name", "Source", "Home_Team", "Away_Team", "Home_Goals", "Away_Goals", "Status"]]
     total_matches = 0
     
-    if FOOTBALL_DATA_API_KEY:
-        fd_headers = {"X-Auth-Token": FOOTBALL_DATA_API_KEY.strip()}
-        for name, code in FD_LEAGUES.items():
-            url = f"https://api.football-data.org/v4/competitions/{code}/matches"
-            try:
-                res = requests.get(url, headers=fd_headers, params={"dateFrom": from_date_str, "dateTo": to_date_str, "status": "FINISHED"}, timeout=15)
-                if res.status_code == 200:
-                    for m in res.json().get("matches", []):
-                        score = m.get("score", {}).get("fullTime", {})
-                        rows.append(["2025/26", m.get("utcDate", "")[:10], name, "FD", m.get("homeTeam", {}).get("name"), m.get("awayTeam", {}).get("name"), score.get("home", 0) or 0, score.get("away", 0) or 0, m.get("status")])
+    # 2025/26 赛季在 football-data.co.uk 上的目录通常是 2526
+    season_code = "2526"
+    
+    for league_name, code in LEAGUES_CONFIG.items():
+        csv_url = f"https://www.football-data.co.uk/mmz4281/{season_code}/{code}.csv"
+        try:
+            res = requests.get(csv_url, timeout=15)
+            if res.status_code == 200:
+                # 兼容不同的文本编码
+                content = res.content.decode('utf-8', errors='ignore')
+                lines = content.splitlines()
+                reader = csv.reader(lines)
+                
+                header = next(reader, None)
+                if not header:
+                    continue
+                
+                # 寻找关键列的索引（通常 Date 在第2或3列，HomeTeam, AwayTeam, FTHG, FTAG）
+                # football-data.co.uk 标准列名: Date, HomeTeam, AwayTeam, FTHG, FTAG, FTR
+                date_idx = header.index("Date") if "Date" in header else 1
+                home_idx = header.index("HomeTeam") if "HomeTeam" in header else 2
+                away_idx = header.index("AwayTeam") if "AwayTeam" in header else 3
+                hg_idx = header.index("FTHG") if "FTHG" in header else 4
+                ag_idx = header.index("FTAG") if "FTAG" in header else 5
+                
+                league_count = 0
+                for row in reader:
+                    if len(row) <= max(date_idx, home_idx, away_idx, hg_idx, ag_idx):
+                        continue
+                    
+                    date_str = row[date_idx].strip()
+                    if not date_str:
+                        continue
+                    
+                    # 尝试解析日期（football-data 常见格式为 DD/MM/YYYY 或 DD/MM/YY）
+                    match_date = None
+                    for fmt in ("%d/%m/%Y", "%d/%m/%y"):
+                        try:
+                            match_date = datetime.strptime(date_str, fmt).date()
+                            break
+                        except ValueError:
+                            continue
+                    
+                    if match_date and start_date <= match_date <= end_date:
+                        home_team = row[home_idx].strip()
+                        away_team = row[away_idx].strip()
+                        try:
+                            hg = int(row[hg_idx].strip())
+                            ag = int(row[ag_idx].strip())
+                        except ValueError:
+                            continue
+                        
+                        rows.append([
+                            "2025/26", 
+                            match_date.strftime("%Y-%m-%d"), 
+                            league_name, 
+                            "Public-CSV", 
+                            home_team, 
+                            away_team, 
+                            hg, 
+                            ag, 
+                            "FINISHED"
+                        ])
                         total_matches += 1
-            except: pass
-
-    if ODDS_API_KEY:
-        for name, key in ODDS_LEAGUES.items():
-            url = f"https://api.the-odds-api.com/v4/sports/{key}/scores/"
-            try:
-                res = requests.get(url, params={"apiKey": ODDS_API_KEY.strip(), "daysFrom": 3, "dateFormat": "iso"}, timeout=15)
-                print(f"[OddsAPI - {name}] 状态码: {res.status_code}")
-                if res.status_code == 200:
-                    data = res.json()
-                    finished_list = [x for x in data if x.get("completed")]
-                    print(f"[OddsAPI - {name}] 已完成比赛数: {len(finished_list)}")
-                    for m in finished_list:
-                        home, away = m.get("home_team"), m.get("away_team")
-                        hg, ag = 0, 0
-                        for s in m.get("scores", []):
-                            if s.get("name") == home: hg = int(s.get("score", 0))
-                            elif s.get("name") == away: ag = int(s.get("score", 0))
-                        rows.append(["2025/26", m.get("commence_time", "")[:10], name, "Odds", home, away, hg, ag, "FINISHED"])
-                        total_matches += 1
-                else:
-                    print(f"[OddsAPI - {name}] 错误: {res.text}")
-            except Exception as e:
-                print(f"[OddsAPI - {name}] 异常: {e}")
-
-    output_file = "recent_finished_matches.csv"
+                        league_count += 1
+                
+                print(f"[{league_name}] 抓取成功，命中目标时间段比赛: {league_count} 场")
+            else:
+                print(f"[{league_name}] CSV下载失败，状态码: {res.status_code}")
+        except Exception as e:
+            print(f"[{league_name}] 异常: {e}")
+                output_file = "recent_finished_matches.csv"
     with open(output_file, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerows(rows)
+            output_file = "recent_finished_matches.csv"
+    with open(output_file, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerows(rows)
+        
+    print(f"所有公开 CSV 联赛解析完毕，共计有效比赛 {total_matches} 场。")
     return output_file
 
 def send_to_telegram(file_path):
-    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID: return
-    token, chat_id = TELEGRAM_BOT_TOKEN.strip(), TELEGRAM_CHAT_ID.strip()
-    requests.post(f"https://api.telegram.org/bot{token}/sendMessage", data={"chat_id": chat_id, "text": "⚽ 11个联赛周末赛果已多源聚合完毕，请查收 CSV档案："})
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        return
+        
+    token = TELEGRAM_BOT_TOKEN.strip()
+    chat_id = TELEGRAM_CHAT_ID.strip()
+    
+    text_url = f"https://api.telegram.org/bot{token}/sendMessage"
+    requests.post(text_url, data={
+        "chat_id": chat_id,
+        "text": "⚽ GitHub Actions: 11个目标联赛（基于公开 CSV 宝库）过去三天赛果已全部同步完毕，请查收档案："
+    })
+    
+    doc_url = f"https://api.telegram.org/bot{token}/sendDocument"
     with open(file_path, "rb") as f:
-        requests.post(f"https://api.telegram.org/bot{token}/sendDocument", data={"chat_id": chat_id}, files={"document": f})
+        files = {"document": f}
+        data = {"chat_id": chat_id}
+        requests.post(doc_url, data=data, files=files)
 
 if __name__ == "__main__":
     file_name = fetch_and_save_matches()
-    if file_name: send_to_telegram(file_name)
+    if file_name:
+        send_to_telegram(file_name)
+
+    
