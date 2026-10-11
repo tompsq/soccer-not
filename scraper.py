@@ -6,8 +6,7 @@ import requests
 TELEGRAM_BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TG_CHAT_ID")
 
-# football-data.co.uk 针对当前 2025/26 赛季（路径通常为 mmz4281/2526/）的联赛代号映射
-# E0: 英超, E1: 英冠, SP1: 西甲, I1: 意甲, D1: 德甲, F1: 法甲, P1: 葡超, B1: 比利时甲, SC0: 苏超, T1: 土超, G1: 希超（部分可能略有不同，我们采用标准公开代号）
+# football-data.co.uk 针对当前 2025/26 赛季（路径为 mmz4281/2526/）的联赛代号映射
 LEAGUES_CONFIG = {
     "Premier League": "E0",
     "Championship": "E1",
@@ -27,7 +26,6 @@ def fetch_and_save_matches():
     now_bj = datetime.now(utc_plus_8)
     three_days_ago = now_bj - timedelta(days=3)
     
-    # 目标日期范围
     start_date = three_days_ago.date()
     end_date = now_bj.date()
     
@@ -35,8 +33,6 @@ def fetch_and_save_matches():
     
     rows = [["Season", "Date", "League_Name", "Source", "Home_Team", "Away_Team", "Home_Goals", "Away_Goals", "Status"]]
     total_matches = 0
-    
-    # 2025/26 赛季在 football-data.co.uk 上的目录通常是 2526
     season_code = "2526"
     
     for league_name, code in LEAGUES_CONFIG.items():
@@ -44,7 +40,6 @@ def fetch_and_save_matches():
         try:
             res = requests.get(csv_url, timeout=15)
             if res.status_code == 200:
-                # 兼容不同的文本编码
                 content = res.content.decode('utf-8', errors='ignore')
                 lines = content.splitlines()
                 reader = csv.reader(lines)
@@ -53,8 +48,6 @@ def fetch_and_save_matches():
                 if not header:
                     continue
                 
-                # 寻找关键列的索引（通常 Date 在第2或3列，HomeTeam, AwayTeam, FTHG, FTAG）
-                # football-data.co.uk 标准列名: Date, HomeTeam, AwayTeam, FTHG, FTAG, FTR
                 date_idx = header.index("Date") if "Date" in header else 1
                 home_idx = header.index("HomeTeam") if "HomeTeam" in header else 2
                 away_idx = header.index("AwayTeam") if "AwayTeam" in header else 3
@@ -70,7 +63,6 @@ def fetch_and_save_matches():
                     if not date_str:
                         continue
                     
-                    # 尝试解析日期（football-data 常见格式为 DD/MM/YYYY 或 DD/MM/YY）
                     match_date = None
                     for fmt in ("%d/%m/%Y", "%d/%m/%y"):
                         try:
@@ -107,11 +99,8 @@ def fetch_and_save_matches():
                 print(f"[{league_name}] CSV下载失败，状态码: {res.status_code}")
         except Exception as e:
             print(f"[{league_name}] 异常: {e}")
-                output_file = "recent_finished_matches.csv"
-    with open(output_file, "w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerows(rows)
-            output_file = "recent_finished_matches.csv"
+
+    output_file = "recent_finished_matches.csv"
     with open(output_file, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerows(rows)
@@ -142,5 +131,3 @@ if __name__ == "__main__":
     file_name = fetch_and_save_matches()
     if file_name:
         send_to_telegram(file_name)
-
-    
