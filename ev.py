@@ -93,7 +93,6 @@ def find_xg(xg_map, league, team):
 
 
 def calc_ev(row, xg_h, xg_a, league, league_avg):
-def calc_ev(row, xg_h, xg_a, league, league_avg):
     avg = league_avg.get(league)
     if not avg:
         return None
@@ -112,7 +111,6 @@ def calc_ev(row, xg_h, xg_a, league, league_avg):
     p_home = p_draw = p_away = p_over = 0.0
     p_ah_win = p_ah_half = p_ah_lose = 0.0
 
-    # 解析让球盘口
     try:
         ah_line = float(row.get("临_亚盘"))
     except:
@@ -168,7 +166,6 @@ def calc_ev(row, xg_h, xg_a, league, league_avg):
             res[name] = None
             print(f"  [分歧过滤] {name} 模型{prob:.2%} vs 市场{mkt(row.get(odds_key)):.2%}")
 
-    # 让球 EV：只有 ah_line 有效且不为 0 时才算
     res["主让EV"] = None
     res["客受让EV"] = None
     if ah_line is not None and ah_line != 0:
@@ -182,11 +179,11 @@ def calc_ev(row, xg_h, xg_a, league, league_avg):
     else:
         print(f"  [让球跳过] ah_line={ah_line}")
 
-    # 大小球
     res["大球EV"] = ev(p_over, row.get("临_大球")) if ok(p_over, row.get("临_大球")) else None
     res["小球EV"] = ev(p_under, row.get("临_小球")) if ok(p_under, row.get("临_小球")) else None
 
     return res
+
 
 def main():
     print("读取 xG 表...")
