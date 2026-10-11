@@ -1,89 +1,94 @@
-import csv
 import os
-from datetime import datetime
-from playwright.sync_api import sync_playwright
+import csv
+from datetime import datetime, timedelta
+import requests
 
-def scrape_footystats_native():
-    url = "https://footystats.org/england/premier-league/xg"
-    print(f"正在访问: {url}")
+# 直接从 GitHub Repository Secrets (环境变量) 中读取
+API_FOOTBALL_KEY = os.getenv("API_FOOTBALL_KEY")
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+
+def fetch_and_save_matches():
+    today = datetime.now()
+    three_days_ago = today - timedelta(days=3)
     
-    data = []
-
-    with sync_playwright() as p:
-        browser = p.chromium.launch(
-            headless=True,
-            args=[
-                "--disable-blink-features=AutomationControlled",
-                "--no-sandbox",
-                "--disable-dev-shm-usage"
-            ]
-        )
+    from_date = three_days_ago.strftime("%Y-%m-%d")
+    to_date = (today - timedelta(days=1)).strftime("%Y-%m-%d")
+    
+    print(f"正在通过 API 获取 {from_date} 至 {to_date} 的已结束赛事...")
+    
+    url = "https://v3.football.api-sports.io/fixtures"
+    headers = {
+        "x-rapidapi-host": "v3.football.api-sports.io",
+        "x-rapidapi-key": API_FOOTBALL_KEY
+    }
+    params = {
+        "league": 39,      # 英超联赛 ID
+        "season": 2026,    # 当前赛季年份
+        "from": from_date,
+        "to": to_date,
+        "status": "FT"     # 已结束比赛
+    }
+    
+    response = requests.get(url, headers=headers, params=params)
+    if response.status_code != 200:
+        print(f"API 请求失败: {response.text}")
+        return None
         
-        context = browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-            viewport={"width": 1920, "height": 1080}
-        )
+    fixtures = response.json().get("response", [])
+    print(f"成功获取到 {len(fixtures)} 场比赛。")
+    
+    # 组装竖向长表 (Tidy Data) 结构
+    rows = [["Season", "Date", "League_ID", "Home_Team", "Away_Team", "Home_Goals", "Away_Goals", "Status"]]
+    
+    for match in fixtures:
+        fixture_info = match.get("fixture", {})
+        teams_info = match.get("teams", {})
+        goals_info = match.get("goals", {})
         
-        page = context.new_page()
+        match_date = fixture_info.get("date", "")[:10]
+        home_team = teams_info.get("home", {}).get("name", "")
+        away_team = teams_info.get("away", {}).get("name", "")
+        home_goals = goals_info.get("home", 0)
+        away_goals = goals_info.get("away", 0)
+        status = fixture_info.get("status", {}).get("short", "")
         
-        # 原生抹除自动化特征，完美绕过基础风控
-        page.add_init_script("""
-            Object.defineProperty(navigator, 'webdriver', {
-                get: () => undefined
-            });
-        """)
+        rows.append(["2026/27", match_date, 39, home_team, away_team, home_goals, away_goals, status])
         
-        try:
-            page.goto(url, timeout=60000, wait_until="domcontentloaded")
-            print("页面打开成功，等待渲染...")
-            page.wait_for_timeout(8000)
-            
-            # 抓取表格
-            tables = page.query_selector_all("table")
-            print(f"检测到 {len(tables)} 个表格。")
-            
-            target_table = None
-            for tbl in tables:
-                text = tbl.inner_text()
-                if "xG" in text or "Team" in text:
-                    target_table = tbl
-                    break
-            
-            if not target_table and tables:
-                target_table = tables[0]
-
-            if target_table:
-                rows = target_table.query_selector_all("tr")
-                for row in rows:
-                    cols = row.query_selector_all("th, td")
-                    cols_text = [col.inner_text().strip().replace("\n", " ") for col in cols]
-                    if cols_text and any(cols_text):
-                        data.append(cols_text)
-            
-            if not data:
-                body_text = page.inner_text("body")
-                data = [[line] for line in body_text.split("\n") if line.strip()]
-
-        except Exception as e:
-            print(f"抓取异常: {e}")
-            data = [["ERROR", str(e)]]
-        finally:
-            browser.close()
-
-    # 写入文件
-    latest_file = "footystats_epl_xg.csv"
-    with open(latest_file, "w", newline="", encoding="utf-8") as f:
+    output_file = "recent_finished_matches.csv"
+    with open(output_file, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerows(data)
-
-    os.makedirs("history", exist_ok=True)
-    today_str = datetime.now().strftime("%Y%m%d")
-    history_file = f"history/footystats_epl_{today_str}.csv"
-    with open(history_file, "w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerows(data)
+        writer.writerows(rows)
         
-    print(f"处理完成，共写入 {len(data)} 行数据。")
+    return output_file
+
+def send_to_telegram(file_path):
+    if not os.path.exists(file_path):
+        print("未找到文件，取消推送。")
+        return
+        
+    print("正在通过 Telegram 推送结果...")
+    
+    # 1. 发送提示消息
+    text_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    requests.post(text_url, data={
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": "⚽ GitHub Actions: 过去三天的赛事数据已抓取完毕，请查收 CSV 档案："
+    })
+    
+    # 2. 发送 CSV 文件
+    doc_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendDocument"
+    with open(file_path, "rb") as f:
+        files = {"document": f}
+        data = {"chat_id": TELEGRAM_CHAT_ID}
+        response = requests.post(doc_url, data=data, files=files)
+        
+    if response.status_code == 200:
+        print("Telegram 推送成功！")
+    else:
+        print(f"Telegram 推送失败: {response.text}")
 
 if __name__ == "__main__":
-    scrape_footystats_native()
+    file_name = fetch_and_save_matches()
+    if file_name:
+        send_to_telegram(file_name)
