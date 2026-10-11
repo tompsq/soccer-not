@@ -43,18 +43,16 @@ def fetch_and_save_matches():
                         total_matches += 1
             except: pass
 
-        if ODDS_API_KEY:
+    if ODDS_API_KEY:
         for name, key in ODDS_LEAGUES.items():
             url = f"https://api.the-odds-api.com/v4/sports/{key}/scores/"
             try:
                 res = requests.get(url, params={"apiKey": ODDS_API_KEY.strip(), "daysFrom": 3, "dateFormat": "iso"}, timeout=15)
-                print(f"[OddsAPI 调试 - {name}] 状态码: {res.status_code}")
+                print(f"[OddsAPI - {name}] 状态码: {res.status_code}")
                 if res.status_code == 200:
                     data = res.json()
-                    print(f"[OddsAPI 调试 - {name}] 返回原始数据条数: {len(data)}")
                     finished_list = [x for x in data if x.get("completed")]
-                    print(f"[OddsAPI 调试 - {name}] 已完成比赛条数: {len(finished_list)}")
-                    
+                    print(f"[OddsAPI - {name}] 已完成比赛数: {len(finished_list)}")
                     for m in finished_list:
                         home, away = m.get("home_team"), m.get("away_team")
                         hg, ag = 0, 0
@@ -64,9 +62,9 @@ def fetch_and_save_matches():
                         rows.append(["2025/26", m.get("commence_time", "")[:10], name, "Odds", home, away, hg, ag, "FINISHED"])
                         total_matches += 1
                 else:
-                    print(f"[OddsAPI 调试 - {name}] 错误内容: {res.text}")
+                    print(f"[OddsAPI - {name}] 错误: {res.text}")
             except Exception as e:
-                print(f"[OddsAPI 调试 - {name}] 异常: {e}")
+                print(f"[OddsAPI - {name}] 异常: {e}")
 
     output_file = "recent_finished_matches.csv"
     with open(output_file, "w", newline="", encoding="utf-8") as f:
