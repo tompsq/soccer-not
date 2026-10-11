@@ -41,17 +41,22 @@ def load_xg():
             team = row.get("Team")
             if pd.isna(season) or pd.isna(team):
                 continue
-            season = str(season)
-            if season not in season_teams:
-                season_teams[season] = []
-                seasons_order.append(season)
             xg = row.get("xG")
             xga = row.get("xGA")
             if pd.isna(xg) or pd.isna(xga):
                 continue
+            try:
+                xg = float(xg)
+                xga = float(xga)
+            except (ValueError, TypeError):
+                continue
+            season = str(season)
+            if season not in season_teams:
+                season_teams[season] = []
+                seasons_order.append(season)
             season_teams[season].append({
                 "team": team, "norm": norm(team),
-                "xG": float(xg), "xGA": float(xga)
+                "xG": xg, "xGA": xga
             })
         weights = [0.5, 0.3, 0.2]
         recent = seasons_order[:3]
@@ -85,6 +90,7 @@ def find_xg(xg_map, league, team):
         if n and (n in k or k in n) and abs(len(n)-len(k)) <= 6:
             return v
     return None
+
 
 def calc_ev(row, xg_h, xg_a, league, league_avg):
     avg = league_avg.get(league)
