@@ -13,15 +13,6 @@ LEAGUES = [
 ]
 MAX_PER_LEAGUE = 12
 
-XG_LEAGUES = [
-    ("ENG-Premier League", "英超"),
-    ("ESP-La Liga", "西甲"),
-    ("ITA-Serie A", "意甲"),
-    ("GER-Bundesliga", "德甲"),
-    ("FRA-Ligue 1", "法甲"),
-]
-XG_SEASONS = ["2627", "2526"]
-
 H = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     "Accept": "application/json",
@@ -75,9 +66,17 @@ def save_history(data):
     with open(HISTORY_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-def is_saturday_close():
+def is_close_run(mode):
+    # 手动指定 close，或 大马周六约 02:30 = 周五 UTC 18:30 附近
+    if mode in ("close", "manual_close"):
+        return True
+    if mode == "early":
+        return False
     now = datetime.utcnow()
     return now.weekday() == 4 and now.hour >= 17
+
+def make_key(name, home, away):
+    return f"{name}|{home.strip().lower()}|{away.strip().lower()}"
 
 def fetch_pinnacle(name, lid, only_upcoming_2h=False):
     ms = get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/matchups")
@@ -152,58 +151,14 @@ def fetch_pinnacle(name, lid, only_upcoming_2h=False):
     sorted_m = sorted(matches.values(), key=lambda x: x["sort_time"])
     return sorted_m if only_upcoming_2h else sorted_m[:MAX_PER_LEAGUE]
 
-def fetch_xg_rows():
-    try:
-        import soccerdata as sd
-    except ImportError:
-        print("无 soccerdata，跳过 xG")
-        return []
-
-    all_rows = []
-    for code, name in XG_LEAGUES:
-        print(f"xG 抓取 {name}...")
-        for season in XG_SEASONS:
-            try:
-                us = sd.Understat(leagues=code, seasons=season)
-                df = us.read_team_match_stats()
-                if df is None or len(df) == 0:
-                    continue
-                team_xg, team_xga, team_n = {}, {}, {}
-                for _, r in df.iterrows():
-                    home, away = r.get("home_team"), r.get("away_team")
-                    hxg = float(r.get("home_xg") or 0)
-                    axg = float(r.get("away_xg") or 0)
-                    for team, xf, xa in [(home, hxg, axg), (away, axg, hxg)]:
-                        if not team:
-                            continue
-                        team_xg[team] = team_xg.get(team, 0) + xf
-                        team_xga[team] = team_xga.get(team, 0) + xa
-                        team_n[team] = team_n.get(team, 0) + 1
-                for team in team_xg:
-                    n = team_n[team]
-                    all_rows.append({
-                        "联赛": name, "赛季": season, "球队": team, "场次": n,
-                        "总xG": round(team_xg[team], 2),
-                        "总xGA": round(team_xga[team], 2),
-                        "场均xG": round(team_xg[team] / n, 3) if n else 0,
-                        "场均xGA": round(team_xga[team] / n, 3) if n else 0,
-                    })
-                print(f"  {name} {season}: {len(team_xg)} 队")
-                break
-            except Exception as e:
-                print(f"  {name} {season} 失败: {e}")
-                time.sleep(1)
-        time.sleep(1)
-    all_rows.sort(key=lambda x: (x["联赛"], -x["总xG"]))
-    return all_rows
-
 def main():
     mode = os.environ.get("RUN_MODE", "auto")
     only_upcoming_2h = (mode == "manual_upcoming")
-    print(f"运行模式: {mode} | 只抓2小时: {only_upcoming_2h}")
+    do_compare = is_close_run(mode) and not only_upcoming_2h
+    print(f"模式: {mode} | 临盘对比: {do_compare} | 仅2小时: {only_upcoming_2h}")
 
     ts = (datetime.utcnow() + timedelta(hours=8)).strftime("%Y-%m-%d %H:%M:%S")
-    history = load_history()
+    history = load_history() if do_compare else {}
     current = {}
     all_rows = []
 
@@ -212,7 +167,7 @@ def main():
         rows = fetch_pinnacle(name, lid, only_upcoming_2h=only_upcoming_2h)
         print(f"  → {len(rows)} 场")
         for m in rows:
-            key = f"{name}|{m['home']}|{m['away']}|{m['time']}"
+            key = make_key(name, m["home"], m["away"])
             current[key] = m
             all_rows.append((name, m, key))
         time.sleep(0.5)
@@ -230,24 +185,24 @@ def main():
                 pass
         return
 
-    do_compare = bool(history)
     wb = Workbook()
     ws = wb.active
 
     if do_compare:
         ws.title = "早盘vs临盘"
-        headers = [
+        ws.append([
             "联赛", "时间", "主队", "客队", "状态",
             "早_主胜", "早_平局", "早_客胜", "早_亚盘", "早_亚盘主", "早_亚盘客", "早_大小", "早_大球", "早_小球",
             "临_主胜", "临_平局", "临_客胜", "临_亚盘", "临_亚盘主", "临_亚盘客", "临_大小", "临_大球", "临_小球",
-        ]
-        ws.append(headers)
+        ])
+        matched = 0
         for name, m, key in all_rows:
             early = history.get(key)
             c1 = m.get("1X2", {})
             cah = m.get("ah") or [None, None, None]
             cou = m.get("ou") or [None, None, None]
             if early:
+                matched += 1
                 e1 = early.get("1X2", {})
                 eah = early.get("ah") or [None, None, None]
                 eou = early.get("ou") or [None, None, None]
@@ -262,22 +217,12 @@ def main():
                 c1.get("home"), c1.get("draw"), c1.get("away"),
                 cah[0], cah[1], cah[2], cou[0], cou[1], cou[2],
             ])
-
-        xg_rows = fetch_xg_rows()
-        if xg_rows:
-            ws2 = wb.create_sheet("球队xG")
-            xg_headers = ["联赛", "赛季", "球队", "场次", "总xG", "总xGA", "场均xG", "场均xGA"]
-            ws2.append(xg_headers)
-            for r in xg_rows:
-                ws2.append([r[h] for h in xg_headers])
-            print(f"已写入 xG: {len(xg_rows)} 条")
-
         fname = f"league_compare_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
-        caption = f"早盘vs临盘 + xG {ts}\n对比 {len(all_rows)} 场"
+        caption = f"早盘vs临盘 {ts}\n{len(all_rows)} 场，匹配早盘 {matched} 场"
+        print(f"对比完成: 匹配 {matched}/{len(all_rows)}")
     else:
         ws.title = "早盘"
-        headers = ["联赛", "时间", "主队", "客队", "主胜", "平局", "客胜", "亚盘", "亚盘主", "亚盘客", "大小", "大球", "小球"]
-        ws.append(headers)
+        ws.append(["联赛", "时间", "主队", "客队", "主胜", "平局", "客胜", "亚盘", "亚盘主", "亚盘客", "大小", "大球", "小球"])
         for name, m, key in all_rows:
             c1 = m.get("1X2", {})
             cah = m.get("ah") or [None, None, None]
@@ -289,7 +234,7 @@ def main():
             ])
         if not only_upcoming_2h:
             save_history(current)
-            print("已保存早盘到 league_history.json")
+            print(f"已保存早盘 {len(current)} 场 → {HISTORY_FILE}")
         fname = f"league_odds_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
         caption = f"各大联赛早盘 {ts}\n共 {len(all_rows)} 场"
 
