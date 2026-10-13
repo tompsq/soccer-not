@@ -170,6 +170,9 @@ def update_history(history, league, m, mode, ts):
         "mid": None,
         "close": None,
     }
+    rec["league"] = league
+    rec["home"] = m["home"]
+    rec["away"] = m["away"]
     rec["kickoff"] = m.get("kickoff") or rec.get("kickoff")
     rec["time"] = m.get("time") or rec.get("time")
     snap = snap_from_match(m, ts)
