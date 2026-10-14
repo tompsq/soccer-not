@@ -44,7 +44,7 @@ def to_dec(a):
     try:
         a = float(a)
         return round(a / 100 + 1, 3) if a > 0 else round(100 / abs(a) + 1, 3)
-    except:
+    except Exception:
         return None
 
 def get(url):
@@ -53,7 +53,7 @@ def get(url):
             r = requests.get(url, headers=H, timeout=15)
             if r.status_code == 200:
                 return r.json()
-        except:
+        except Exception:
             time.sleep(1)
     return None
 
@@ -62,7 +62,7 @@ def load_history():
         try:
             with open(HISTORY_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
-        except:
+        except Exception:
             pass
     return {}
 
@@ -97,7 +97,7 @@ def fetch_pinnacle(name, lid, days_ahead=16):
             continue
         try:
             mt = datetime.strptime(st[:19], "%Y-%m-%dT%H:%M:%S") + timedelta(hours=8)
-        except:
+        except Exception:
             continue
         if mt < now or mt > end:
             continue
@@ -151,11 +151,27 @@ def fetch_pinnacle(name, lid, days_ahead=16):
                         matches[mid]["ou"] = [line, to_dec(op["price"]), to_dec(up["price"])]
     return sorted(matches.values(), key=lambda x: x["sort_time"])
 
+def filter_kickoff_within_hours(rows, hours=2):
+    now = now_my()
+    end = now + timedelta(hours=hours)
+    out = []
+    for m in rows:
+        ko = m.get("kickoff")
+        if not ko:
+            continue
+        try:
+            kt = datetime.fromisoformat(ko)
+        except Exception:
+            continue
+        if now <= kt <= end:
+            out.append(m)
+    return out
+
 def days_to_kick(kickoff_iso):
     try:
         kt = datetime.fromisoformat(kickoff_iso)
         return (kt.date() - now_my().date()).days
-    except:
+    except Exception:
         return 999
 
 def update_history(history, league, m, mode, ts):
@@ -219,7 +235,7 @@ def build_workbook(history):
 
     ws = wb.active
     ws.title = "早盘"
-    items = [(k, v) for k, v in history.items() if v.get("early")]
+    items = [(k, v) for k, v in history.items() if isinstance(v, dict) and v.get("early")]
     items.sort(key=lambda x: (x[1].get("league", ""), x[1].get("kickoff") or ""))
     early_dates = sorted({v["early"].get("ts", "")[:10] for _, v in items if v.get("early")})
     note = "早盘：各场首次入库赔率 | 记录日期: " + (", ".join(early_dates) if early_dates else "无")
@@ -229,7 +245,7 @@ def build_workbook(history):
         ws.append([v.get("league"), v.get("time"), v.get("home"), v.get("away"), e.get("ts")] + row_odds(e))
 
     ws2 = wb.create_sheet("中盘")
-    items2 = [(k, v) for k, v in history.items() if v.get("mid")]
+    items2 = [(k, v) for k, v in history.items() if isinstance(v, dict) and v.get("mid")]
     items2.sort(key=lambda x: (x[1].get("league", ""), x[1].get("kickoff") or ""))
     mid_dates = sorted({v["mid"].get("ts", "")[:10] for _, v in items2 if v.get("mid")})
     note2 = "中盘：开赛前约2\~5天（周四任务）| 抓取日期: " + (", ".join(mid_dates) if mid_dates else "无")
@@ -239,18 +255,21 @@ def build_workbook(history):
         ws2.append([v.get("league"), v.get("time"), v.get("home"), v.get("away"), e.get("ts")] + row_odds(e))
 
     ws3 = wb.create_sheet("临盘")
-    items3 = [(k, v) for k, v in history.items() if v.get("close")]
+    items3 = [(k, v) for k, v in history.items() if isinstance(v, dict) and v.get("close")]
     items3.sort(key=lambda x: (x[1].get("league", ""), x[1].get("kickoff") or ""))
     close_dates = sorted({v["close"].get("ts", "")[:10] for _, v in items3 if v.get("close")})
-    note3 = "临盘：手动 RUN_MODE=close | 抓取日期: " + (", ".join(close_dates) if close_dates else "无")
+    note3 = "临盘：未来2小时内开赛 | 手动close | 抓取日期: " + (", ".join(close_dates) if close_dates else "无")
     sheet_note(ws3, ["联赛", "时间", "主队", "客队", "抓取时间"] + ODDS_HEADERS, note3)
     for _, v in items3:
         e = v["close"]
         ws3.append([v.get("league"), v.get("time"), v.get("home"), v.get("away"), e.get("ts")] + row_odds(e))
 
     ws4 = wb.create_sheet("对比")
-    all_items = sorted(history.values(), key=lambda v: (v.get("league", ""), v.get("kickoff") or ""))
-    note4 = f"导出时间: {now_my().strftime('%Y-%m-%d %H:%M')} | 早=首次 中=赛前2\~5天 临=manual"
+    all_items = sorted(
+        [v for v in history.values() if isinstance(v, dict)],
+        key=lambda v: (v.get("league", ""), v.get("kickoff") or ""),
+    )
+    note4 = f"导出时间: {now_my().strftime('%Y-%m-%d %H:%M')} | 早=首次 中=赛前2\~5天 临=2h内手动"
     sheet_note(
         ws4,
         ["联赛", "时间", "主队", "客队",
@@ -262,7 +281,9 @@ def build_workbook(history):
     for v in all_items:
         if not (v.get("early") or v.get("mid") or v.get("close")):
             continue
-        e, m, c = v.get("early") or {}, v.get("mid") or {}, v.get("close") or {}
+        e = v.get("early") or {}
+        m = v.get("mid") or {}
+        c = v.get("close") or {}
         ws4.append(
             [v.get("league"), v.get("time"), v.get("home"), v.get("away"),
              e.get("ts")] + row_odds(v.get("early")) +
@@ -290,12 +311,23 @@ def main():
     print(f"模式: {mode} | 时间: {ts}")
 
     history = load_history()
-    n_new_early = n_mid = n_close = 0
+    for k, v in history.items():
+        if isinstance(v, dict) and not v.get("league") and "|" in k:
+            v["league"] = k.split("|")[0]
+
+    n_new_early = 0
+    n_mid = 0
+    n_close = 0
 
     for name, lid in LEAGUES:
         print(f"抓取 {name}...")
-        rows = fetch_pinnacle(name, lid, days_ahead=16)
-        print(f"  → {len(rows)} 场")
+        days = 2 if mode == "close" else 16
+        rows = fetch_pinnacle(name, lid, days_ahead=days)
+        if mode == "close":
+            rows = filter_kickoff_within_hours(rows, hours=2)
+            print(f"  → 未来2小时内 {len(rows)} 场")
+        else:
+            print(f"  → {len(rows)} 场")
         for m in rows:
             key = make_key(name, m["home"], m["away"])
             before = history.get(key) or {}
@@ -316,10 +348,12 @@ def main():
     wb = build_workbook(history)
     fname = f"league_odds_{mode}_{now_my().strftime('%Y%m%d_%H%M')}.xlsx"
     wb.save(fname)
-    send_file(
-        fname,
-        caption=f"盘口 {mode} | {ts}\nhistory {len(history)} 场 | 新早{n_new_early} 中{n_mid} 临{n_close}",
-    )
+
+    if mode == "close":
+        caption = f"临盘(未来2h) | {ts}\n更新 {n_close} 场 | history 共 {len(history)} 场"
+    else:
+        caption = f"盘口 {mode} | {ts}\nhistory {len(history)} 场 | 新早{n_new_early} 中{n_mid} 临{n_close}"
+    send_file(fname, caption=caption)
     print("已保存并尝试发送:", fname)
 
 if __name__ == "__main__":
