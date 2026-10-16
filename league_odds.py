@@ -6,6 +6,7 @@ from openpyxl.styles import Font
 T = os.environ.get("TG_BOT_TOKEN")
 C = os.environ.get("TG_CHAT_ID")
 HISTORY_FILE = "league_history.json"
+CLEAR_OLD_CLOSE = os.environ.get("CLEAR_OLD_CLOSE", "").strip() == "1"
 
 LEAGUES = [
     ("英超", 1980), ("西甲", 2196), ("意甲", 2436), ("德甲", 1842),
@@ -81,6 +82,15 @@ def snap_from_match(m, ts):
         "ah": m.get("ah"),
         "ou": m.get("ou"),
     }
+
+def clear_all_close(history):
+    n = 0
+    for k, v in history.items():
+        if isinstance(v, dict) and v.get("close"):
+            v["close"] = None
+            n += 1
+    print(f"已清空旧临盘: {n} 场")
+    return history
 
 def fetch_pinnacle(name, lid, days_ahead=16):
     ms = get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/matchups")
@@ -230,7 +240,7 @@ def row_odds(snap):
 
 ODDS_HEADERS = ["主胜", "平局", "客胜", "亚盘", "亚盘主", "亚盘客", "大小", "大球", "小球"]
 
-def build_workbook(history):
+def build_workbook(history, close_ts=None):
     wb = Workbook()
 
     ws = wb.active
@@ -256,6 +266,8 @@ def build_workbook(history):
 
     ws3 = wb.create_sheet("临盘")
     items3 = [(k, v) for k, v in history.items() if isinstance(v, dict) and v.get("close")]
+    if close_ts:
+        items3 = [(k, v) for k, v in items3 if (v.get("close") or {}).get("ts") == close_ts]
     items3.sort(key=lambda x: (x[1].get("league", ""), x[1].get("kickoff") or ""))
     close_dates = sorted({v["close"].get("ts", "")[:10] for _, v in items3 if v.get("close")})
     note3 = "临盘：未来2小时内开赛 | 手动close | 抓取日期: " + (", ".join(close_dates) if close_dates else "无")
@@ -308,12 +320,16 @@ def resolve_mode():
 def main():
     mode = resolve_mode()
     ts = now_my().strftime("%Y-%m-%d %H:%M:%S")
-    print(f"模式: {mode} | 时间: {ts}")
+    print(f"模式: {mode} | 时间: {ts} | CLEAR_OLD_CLOSE={CLEAR_OLD_CLOSE}")
 
     history = load_history()
     for k, v in history.items():
         if isinstance(v, dict) and not v.get("league") and "|" in k:
             v["league"] = k.split("|")[0]
+
+    if CLEAR_OLD_CLOSE:
+        history = clear_all_close(history)
+        save_history(history)
 
     n_new_early = 0
     n_mid = 0
@@ -345,7 +361,7 @@ def main():
     save_history(history)
     print(f"history 场次: {len(history)} | 新早盘 {n_new_early} | 中盘更新 {n_mid} | 临盘更新 {n_close}")
 
-    wb = build_workbook(history)
+    wb = build_workbook(history, close_ts=ts if mode == "close" else None)
     fname = f"league_odds_{mode}_{now_my().strftime('%Y%m%d_%H%M')}.xlsx"
     wb.save(fname)
 
