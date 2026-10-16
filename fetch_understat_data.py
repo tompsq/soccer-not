@@ -8,7 +8,7 @@ async def main():
         understat = Understat(session)
         
         # 获取 2024 赛季英超 (EPL) 的积分与高阶数据表
-        raw_table = await understat.get_league_table("EPL", 2024)
+        raw_table = await understat.get_league_table("EPL", 2026)
         
         if not raw_table or len(raw_table) < 2:
             print("❌ 未抓取到有效数据，请检查网络或赛季参数！")
