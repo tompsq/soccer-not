@@ -1,9 +1,9 @@
-name: Auto Fetch Advanced Football Data
+name: Auto Fetch All Leagues Advanced Data
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # 每天UTC 00:00 自动触发运行
-  workflow_dispatch:      # 支持手动一键点击运行
+    - cron: '0 0 * * *'  # 每天 UTC 00:00 自动触发
+  workflow_dispatch:      # 支持手动一键运行
 
 jobs:
   fetch-data:
@@ -22,13 +22,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install understat aiohttp pandas openpyxl
 
-      - name: 运行数据抓取脚本
-        run: python fetch_understat_data.py
+      - name: 运行全量联赛数据抓取脚本
+        run: python fetch_all_leagues.py
 
-      - name: 将更新后的 Excel 自动提交保存到仓库
+      - name: 将更新后的多联赛 Excel 自动提交保存到仓库
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add understat_epl_advanced.xlsx
-          git commit -m "Auto update advanced stats [skip ci]" || exit 0
+          git add understat_all_leagues_advanced.xlsx
+          git commit -m "Auto update all leagues advanced stats [skip ci]" || exit 0
           git push
