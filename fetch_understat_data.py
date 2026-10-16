@@ -7,49 +7,53 @@ async def main():
     async with aiohttp.ClientSession() as session:
         understat = Understat(session)
         
-        # 抓取 2024 赛季英超（EPL）所有球队的高阶统计数据
-        # 包含：PPDA (压迫强度)、OPPDA (对手压迫强度)、xG、xGA、xPTS 等
-        teams_data = await understat.get_league_teams("EPL", 2024)
+        # 获取 2024 赛季英超 (EPL) 的积分与高阶数据表
+        raw_table = await understat.get_league_table("EPL", 2024)
+        
+        if not raw_table or len(raw_table) < 2:
+            print("❌ 未抓取到有效数据，请检查网络或赛季参数！")
+            return
+            
+        # 第一行为表头，后续行为球队数据
+        headers = raw_table[0]
+        data_rows = raw_table[1:]
         
         parsed_list = []
-        for team in teams_data:
-            t_name = team['title']
-            history = team['history']
+        for row in data_rows:
+            # 将表头与每行数据映射为字典
+            row_dict = dict(zip(headers, row))
             
-            # 汇总全季/近期的 PPDA 与 xG/xA
-            total_ppda_att = sum(item['ppda']['att'] for item in history)
-            total_ppda_def = sum(item['ppda']['def'] for item in history)
-            ppda_val = round(total_ppda_att / total_ppda_def, 2) if total_ppda_def > 0 else 0
-            
-            total_xg = round(sum(item['xG'] for item in history), 2)
-            total_xga = round(sum(item['xGA'] for item in history), 2)
-            total_npxg = round(sum(item['npxG'] for item in history), 2)
-            total_xpts = round(sum(item['xpts'] for item in history), 2)
-            matches_played = len(history)
+            team_name = row_dict.get("Team", "")
+            matches = int(row_dict.get("M", 0))
+            pts = int(row_dict.get("PTS", 0))
+            xg = float(row_dict.get("xG", 0.0))
+            xga = float(row_dict.get("xGA", 0.0))
+            xpts = float(row_dict.get("xPTS", 0.0))
             
             parsed_list.append({
-                "球队": t_name,
-                "已赛场次": matches_played,
-                "PPDA(压迫指数)": ppda_val,  # 数值越小，代表高位逼抢越凶猛
-                "总xG": total_xg,
-                "场均xG": round(total_xg / matches_played, 2),
-                "总xGA": total_xga,
-                "场均xGA": round(total_xga / matches_played, 2),
-                "非点球xG": total_npxg,
-                "预期积分(xPTS)": total_xpts
+                "球队": team_name,
+                "已赛场次": matches,
+                "实际积分": pts,
+                "预期积分(xPTS)": round(xpts, 2),
+                "总xG": round(xg, 2),
+                "场均xG": round(xg / matches, 2) if matches > 0 else 0,
+                "总xGA": round(xga, 2),
+                "场均xGA": round(xga / matches, 2) if matches > 0 else 0,
+                "xG净胜差": round(xg - xga, 2)
             })
             
-        # 转换为 DataFrame 并按预期积分排序
+        # 转为 DataFrame 并按预期积分(xPTS)降序排列
         df = pd.DataFrame(parsed_list)
         df = df.sort_values(by="预期积分(xPTS)", ascending=False).reset_index(drop=True)
         
-        print("=== Understat 抓取成功！数据预览 ===")
+        print("\n=== Understat 英超高阶数据抓取成功 ===")
         print(df.to_string())
         
-        # 导出为 Excel 档案
-        df.to_excel("understat_epl_advanced.xlsx", index=False)
-        print("\n✅ 数据已成功保存至 understat_epl_advanced.xlsx！")
+        # 导出保存为 Excel 文件
+        excel_name = "understat_epl_advanced.xlsx"
+        df.to_excel(excel_name, index=False)
+        print(f"\n✅ 数据已成功保存至 {excel_name}！")
 
 if __name__ == "__main__":
-    # 依赖库安装指令: pip install understat aiohttp pandas openpyxl
+    # 依赖库: pip install understat aiohttp pandas openpyxl
     asyncio.run(main())
