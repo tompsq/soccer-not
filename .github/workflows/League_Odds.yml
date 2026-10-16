@@ -2,7 +2,7 @@ name: League Odds
 
 on:
   schedule:
-    # 每周一 大马 06:00 = UTC 22:00 周日 → 扫新场补早盘
+    # 每周一 大马 06:00 = UTC 22:00 周日 → 扫早盘
     - cron: "0 22 * * 0"
     # 每周四 大马 10:00 = UTC 02:00 周四 → 中盘
     - cron: "0 2 * * 4"
@@ -44,6 +44,7 @@ jobs:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
           RUN_MODE: ${{ github.event.inputs.mode || 'auto' }}
+          CLEAR_OLD_CLOSE: "1"
         run: python league_odds.py
 
       - name: Commit history
