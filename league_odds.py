@@ -92,6 +92,31 @@ def clear_all_close(history):
     print(f"已清空旧临盘: {n} 场")
     return history
 
+def prune_history(history, keep_past_days=2):
+    valid = {name for name, _ in LEAGUES}
+    cutoff = now_my() - timedelta(days=keep_past_days)
+    drop = []
+    for k, v in history.items():
+        if not isinstance(v, dict):
+            drop.append(k)
+            continue
+        league = v.get("league") or (k.split("|")[0] if "|" in k else "")
+        if league not in valid:
+            drop.append(k)
+            continue
+        ko = v.get("kickoff")
+        if ko:
+            try:
+                kt = datetime.fromisoformat(ko)
+                if kt < cutoff:
+                    drop.append(k)
+            except Exception:
+                pass
+    for k in drop:
+        del history[k]
+    print(f"已清理 history: 删除 {len(drop)} 场，剩余 {len(history)} 场")
+    return history
+
 def fetch_pinnacle(name, lid, days_ahead=16):
     ms = get(f"https://guest.api.arcadia.pinnacle.com/0.1/leagues/{lid}/matchups")
     if not ms:
@@ -161,8 +186,9 @@ def fetch_pinnacle(name, lid, days_ahead=16):
                         matches[mid]["ou"] = [line, to_dec(op["price"]), to_dec(up["price"])]
     return sorted(matches.values(), key=lambda x: x["sort_time"])
 
-def filter_kickoff_within_hours(rows, hours=2):
+def filter_kickoff_within_hours(rows, hours=2, after_minutes=15):
     now = now_my()
+    start = now - timedelta(minutes=after_minutes)
     end = now + timedelta(hours=hours)
     out = []
     for m in rows:
@@ -173,7 +199,7 @@ def filter_kickoff_within_hours(rows, hours=2):
             kt = datetime.fromisoformat(ko)
         except Exception:
             continue
-        if now <= kt <= end:
+        if start <= kt <= end:
             out.append(m)
     return out
 
@@ -270,7 +296,7 @@ def build_workbook(history, close_ts=None):
         items3 = [(k, v) for k, v in items3 if (v.get("close") or {}).get("ts") == close_ts]
     items3.sort(key=lambda x: (x[1].get("league", ""), x[1].get("kickoff") or ""))
     close_dates = sorted({v["close"].get("ts", "")[:10] for _, v in items3 if v.get("close")})
-    note3 = "临盘：未来2小时内开赛 | 手动close | 抓取日期: " + (", ".join(close_dates) if close_dates else "无")
+    note3 = "临盘：未来2h内(含开赛后15分钟) | 手动close | 抓取日期: " + (", ".join(close_dates) if close_dates else "无")
     sheet_note(ws3, ["联赛", "时间", "主队", "客队", "抓取时间"] + ODDS_HEADERS, note3)
     for _, v in items3:
         e = v["close"]
@@ -281,7 +307,7 @@ def build_workbook(history, close_ts=None):
         [v for v in history.values() if isinstance(v, dict)],
         key=lambda v: (v.get("league", ""), v.get("kickoff") or ""),
     )
-    note4 = f"导出时间: {now_my().strftime('%Y-%m-%d %H:%M')} | 早=首次 中=赛前2\~5天 临=2h内手动"
+    note4 = f"导出时间: {now_my().strftime('%Y-%m-%d %H:%M')} | 早=首次 中=赛前2\~5天 临=2h手动"
     sheet_note(
         ws4,
         ["联赛", "时间", "主队", "客队",
@@ -327,9 +353,12 @@ def main():
         if isinstance(v, dict) and not v.get("league") and "|" in k:
             v["league"] = k.split("|")[0]
 
+    history = prune_history(history, keep_past_days=2)
+
     if CLEAR_OLD_CLOSE:
         history = clear_all_close(history)
-        save_history(history)
+
+    save_history(history)
 
     n_new_early = 0
     n_mid = 0
@@ -340,8 +369,8 @@ def main():
         days = 2 if mode == "close" else 16
         rows = fetch_pinnacle(name, lid, days_ahead=days)
         if mode == "close":
-            rows = filter_kickoff_within_hours(rows, hours=2)
-            print(f"  → 未来2小时内 {len(rows)} 场")
+            rows = filter_kickoff_within_hours(rows, hours=2, after_minutes=15)
+            print(f"  → 临盘窗口 {len(rows)} 场")
         else:
             print(f"  → {len(rows)} 场")
         for m in rows:
@@ -366,7 +395,7 @@ def main():
     wb.save(fname)
 
     if mode == "close":
-        caption = f"临盘(未来2h) | {ts}\n更新 {n_close} 场 | history 共 {len(history)} 场"
+        caption = f"临盘(2h+开赛后15m) | {ts}\n更新 {n_close} 场 | history 共 {len(history)} 场"
     else:
         caption = f"盘口 {mode} | {ts}\nhistory {len(history)} 场 | 新早{n_new_early} 中{n_mid} 临{n_close}"
     send_file(fname, caption=caption)
