@@ -92,7 +92,6 @@ def clear_all_close(history):
     print(f"已清空旧临盘: {n} 场")
     return history
 
-def prune_history(history, keep_past_days=2):
 def prune_history(history, grace_hours=3):
     """删掉不在 LEAGUES 的联赛，以及开赛已超过 grace_hours 小时的场"""
     valid = {name for name, _ in LEAGUES}
