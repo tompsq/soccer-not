@@ -354,7 +354,7 @@ def main():
         if isinstance(v, dict) and not v.get("league") and "|" in k:
             v["league"] = k.split("|")[0]
 
-    history = prune_history(history, keep_past_days=2)
+    history = prune_history(history, grace_hours=3)
 
     if CLEAR_OLD_CLOSE:
         history = clear_all_close(history)
