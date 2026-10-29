@@ -1,5 +1,6 @@
-import os, time, json, requests
+import os, time, json, io, csv, requests
 from datetime import datetime, timedelta
+from collections import defaultdict
 from openpyxl import Workbook
 from openpyxl.styles import Font
 
@@ -13,6 +14,14 @@ LEAGUES = [
     ("英冠", 1977), ("葡超", 2386), ("苏超", 2421), ("比甲", 1817),
     ("荷甲", 1928), ("欧冠", 2627), ("欧联", 2630), ("法甲", 2036),
 ]
+
+FORM_LEAGUES = [
+    ("英超", "E0"), ("英冠", "E1"), ("西甲", "SP1"), ("意甲", "I1"),
+    ("德甲", "D1"), ("法甲", "F1"), ("荷甲", "N1"), ("葡超", "P1"),
+    ("苏超", "SC0"), ("比甲", "B1"),
+]
+FORM_SEASONS = ["2627", "2526"]
+N_LAST = 6
 
 H = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
@@ -93,7 +102,6 @@ def clear_all_close(history):
     return history
 
 def prune_history(history, grace_hours=3):
-    """删掉不在 LEAGUES 的联赛，以及开赛已超过 grace_hours 小时的场"""
     valid = {name for name, _ in LEAGUES}
     cutoff = now_my() - timedelta(hours=grace_hours)
     drop = []
@@ -247,6 +255,112 @@ def update_history(history, league, m, mode, ts):
     history[key] = rec
     return history
 
+def download_form_csv(season, code):
+    url = f"https://www.football-data.co.uk/mmz4281/{season}/{code}.csv"
+    try:
+        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=30)
+        if r.status_code == 200 and "Date" in r.text[:800]:
+            return r.text
+    except Exception as e:
+        print(f"form下载失败 {season}/{code}:", e)
+    return None
+
+def parse_form_matches(text):
+    rows = list(csv.DictReader(io.StringIO(text)))
+    out = []
+    for row in rows:
+        ds = (row.get("Date") or "").strip()
+        home = (row.get("HomeTeam") or "").strip()
+        away = (row.get("AwayTeam") or "").strip()
+        try:
+            hg, ag = int(row.get("FTHG")), int(row.get("FTAG"))
+        except Exception:
+            continue
+        if not ds or not home or not away:
+            continue
+        dt = None
+        for fmt in ("%d/%m/%y", "%d/%m/%Y"):
+            try:
+                dt = datetime.strptime(ds, fmt)
+                break
+            except Exception:
+                pass
+        if dt:
+            out.append((dt, home, away, hg, ag))
+    out.sort(key=lambda x: x[0])
+    return out
+
+def _one_form(lst, n=N_LAST):
+    lst = sorted(lst, key=lambda x: x[0])[-n:]
+    if not lst:
+        return None
+    pts = gf = ga = 0
+    seq = []
+    for _, _, g_f, g_a, p in lst:
+        pts += p
+        gf += g_f
+        ga += g_a
+        seq.append("W" if p == 3 else ("D" if p == 1 else "L"))
+    return {"场次": len(lst), "积分": pts, "进球": gf, "失球": ga, "净胜": gf - ga, "战绩": "".join(seq)}
+
+def build_forms_from_matches(matches):
+    by = defaultdict(list)
+    for dt, home, away, hg, ag in matches:
+        hp, ap = (3, 0) if hg > ag else ((1, 1) if hg == ag else (0, 3))
+        by[home].append((dt, True, hg, ag, hp))
+        by[away].append((dt, False, ag, hg, ap))
+    res = {}
+    for team, lst in by.items():
+        res[team] = {
+            "all": _one_form(lst),
+            "home": _one_form([x for x in lst if x[1]]),
+            "away": _one_form([x for x in lst if not x[1]]),
+        }
+    return res
+
+def fetch_all_forms():
+    today = now_my().replace(hour=0, minute=0, second=0, microsecond=0)
+    all_rows = []
+    for cn, code in FORM_LEAGUES:
+        text = None
+        for season in FORM_SEASONS:
+            text = download_form_csv(season, code)
+            if text:
+                print(f"form {cn}: 赛季 {season}")
+                break
+        if not text:
+            print(f"form {cn}: 无CSV")
+            continue
+        matches = [m for m in parse_form_matches(text) if m[0] < today]
+        forms = build_forms_from_matches(matches)
+        for team in sorted(forms.keys()):
+            a, h, aw = forms[team]["all"], forms[team]["home"], forms[team]["away"]
+            all_rows.append([
+                cn, team,
+                a["场次"] if a else 0,
+                a["积分"] if a else None, a["进球"] if a else None, a["失球"] if a else None,
+                a["净胜"] if a else None, a["战绩"] if a else "",
+                h["积分"] if h else None, h["进球"] if h else None, h["失球"] if h else None, h["战绩"] if h else "",
+                aw["积分"] if aw else None, aw["进球"] if aw else None, aw["失球"] if aw else None, aw["战绩"] if aw else "",
+            ])
+        time.sleep(0.5)
+    return all_rows
+
+def add_form_sheet(wb):
+    rows = fetch_all_forms()
+    ws = wb.create_sheet("近6场状态")
+    ws.append([f"近{N_LAST}场纯联赛 | {now_my().strftime('%Y-%m-%d %H:%M')} | football-data.co.uk"])
+    ws.append([])
+    headers = [
+        "联赛", "球队", "近6场次", "近6积分", "近6进球", "近6失球", "近6净胜", "近6战绩",
+        "主场近6积分", "主场近6进球", "主场近6失球", "主场近6战绩",
+        "客场近6积分", "客场近6进球", "客场近6失球", "客场近6战绩",
+    ]
+    ws.append(headers)
+    for r in rows:
+        ws.append(r)
+    print(f"已写入近6场: {len(rows)} 队")
+
 def sheet_note(ws, headers, note):
     ws.append([note])
     ws["A1"].font = Font(bold=True, color="0000AA")
@@ -285,7 +399,7 @@ def build_workbook(history, close_ts=None):
     items2 = [(k, v) for k, v in history.items() if isinstance(v, dict) and v.get("mid")]
     items2.sort(key=lambda x: (x[1].get("league", ""), x[1].get("kickoff") or ""))
     mid_dates = sorted({v["mid"].get("ts", "")[:10] for _, v in items2 if v.get("mid")})
-    note2 = "中盘：开赛前约2\~5天（周四任务）| 抓取日期: " + (", ".join(mid_dates) if mid_dates else "无")
+    note2 = "中盘：开赛前约2\~5天 | 抓取日期: " + (", ".join(mid_dates) if mid_dates else "无")
     sheet_note(ws2, ["联赛", "时间", "主队", "客队", "抓取时间"] + ODDS_HEADERS, note2)
     for _, v in items2:
         e = v["mid"]
@@ -297,7 +411,7 @@ def build_workbook(history, close_ts=None):
         items3 = [(k, v) for k, v in items3 if (v.get("close") or {}).get("ts") == close_ts]
     items3.sort(key=lambda x: (x[1].get("league", ""), x[1].get("kickoff") or ""))
     close_dates = sorted({v["close"].get("ts", "")[:10] for _, v in items3 if v.get("close")})
-    note3 = "临盘：未来2h内(含开赛后15分钟) | 手动close | 抓取日期: " + (", ".join(close_dates) if close_dates else "无")
+    note3 = "临盘：未来2h内(含开赛后15分钟) | 抓取日期: " + (", ".join(close_dates) if close_dates else "无")
     sheet_note(ws3, ["联赛", "时间", "主队", "客队", "抓取时间"] + ODDS_HEADERS, note3)
     for _, v in items3:
         e = v["close"]
@@ -392,11 +506,17 @@ def main():
     print(f"history 场次: {len(history)} | 新早盘 {n_new_early} | 中盘更新 {n_mid} | 临盘更新 {n_close}")
 
     wb = build_workbook(history, close_ts=ts if mode == "close" else None)
+    if mode == "close":
+        try:
+            add_form_sheet(wb)
+        except Exception as e:
+            print("近6场附带失败:", e)
+
     fname = f"league_odds_{mode}_{now_my().strftime('%Y%m%d_%H%M')}.xlsx"
     wb.save(fname)
 
     if mode == "close":
-        caption = f"临盘(2h+开赛后15m) | {ts}\n更新 {n_close} 场 | history 共 {len(history)} 场"
+        caption = f"临盘+近6场 | {ts}\n临盘更新 {n_close} 场 | history {len(history)} 场"
     else:
         caption = f"盘口 {mode} | {ts}\nhistory {len(history)} 场 | 新早{n_new_early} 中{n_mid} 临{n_close}"
     send_file(fname, caption=caption)
