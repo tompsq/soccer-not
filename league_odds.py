@@ -501,7 +501,7 @@ def main():
     if mode == "close":
         caption = f"临盘+近6场 | {ts}\n临盘更新 {n_close} 场 | history {len(history)} 场"
     else:
-        caption = f"盘口 {mode} | {ts}\nhistory {len(history)} 场 | 新早{n_new_early} 中{n_mid} 临{n_close}"
+        caption = f"盘口 {mode} | {ts}\nhistory {len(history)} 场 | 新早{n_new_early} 临{n_close}"
     send_file(fname, caption=caption)
     print("已保存并尝试发送:", fname)
 
