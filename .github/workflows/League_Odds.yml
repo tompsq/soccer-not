@@ -4,8 +4,6 @@ on:
   schedule:
     # 每周一 大马 06:00 = UTC 22:00 周日 → 扫早盘
     - cron: "0 22 * * 0"
-    # 每周四 大马 10:00 = UTC 02:00 周四 → 中盘
-    - cron: "0 2 * * 4"
   workflow_dispatch:
     inputs:
       mode:
