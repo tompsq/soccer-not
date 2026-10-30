@@ -384,64 +384,52 @@ ODDS_HEADERS = ["主胜", "平局", "客胜", "亚盘", "亚盘主", "亚盘客"
 def build_workbook(history, close_ts=None):
     wb = Workbook()
 
+    # 早盘
     ws = wb.active
     ws.title = "早盘"
     items = [(k, v) for k, v in history.items() if isinstance(v, dict) and v.get("early")]
     items.sort(key=lambda x: (x[1].get("league", ""), x[1].get("kickoff") or ""))
     early_dates = sorted({v["early"].get("ts", "")[:10] for _, v in items if v.get("early")})
-    note = "早盘：各场首次入库赔率 | 记录日期: " + (", ".join(early_dates) if early_dates else "无")
+    note = "早盘：首次入库(仅亚盘+大小) | 记录日期: " + (", ".join(early_dates) if early_dates else "无")
     sheet_note(ws, ["联赛", "时间", "主队", "客队", "记录时间"] + ODDS_HEADERS, note)
     for _, v in items:
         e = v["early"]
         ws.append([v.get("league"), v.get("time"), v.get("home"), v.get("away"), e.get("ts")] + row_odds(e))
 
-    ws2 = wb.create_sheet("中盘")
-    items2 = [(k, v) for k, v in history.items() if isinstance(v, dict) and v.get("mid")]
-    items2.sort(key=lambda x: (x[1].get("league", ""), x[1].get("kickoff") or ""))
-    mid_dates = sorted({v["mid"].get("ts", "")[:10] for _, v in items2 if v.get("mid")})
-    note2 = "中盘：开赛前约2\~5天 | 抓取日期: " + (", ".join(mid_dates) if mid_dates else "无")
-    sheet_note(ws2, ["联赛", "时间", "主队", "客队", "抓取时间"] + ODDS_HEADERS, note2)
-    for _, v in items2:
-        e = v["mid"]
-        ws2.append([v.get("league"), v.get("time"), v.get("home"), v.get("away"), e.get("ts")] + row_odds(e))
-
+    # 临盘
     ws3 = wb.create_sheet("临盘")
     items3 = [(k, v) for k, v in history.items() if isinstance(v, dict) and v.get("close")]
     if close_ts:
         items3 = [(k, v) for k, v in items3 if (v.get("close") or {}).get("ts") == close_ts]
     items3.sort(key=lambda x: (x[1].get("league", ""), x[1].get("kickoff") or ""))
     close_dates = sorted({v["close"].get("ts", "")[:10] for _, v in items3 if v.get("close")})
-    note3 = "临盘：未来2h内(含开赛后15分钟) | 抓取日期: " + (", ".join(close_dates) if close_dates else "无")
+    note3 = "临盘：未来2h(含开赛后15m) 仅亚盘+大小 | " + (", ".join(close_dates) if close_dates else "无")
     sheet_note(ws3, ["联赛", "时间", "主队", "客队", "抓取时间"] + ODDS_HEADERS, note3)
     for _, v in items3:
         e = v["close"]
         ws3.append([v.get("league"), v.get("time"), v.get("home"), v.get("away"), e.get("ts")] + row_odds(e))
 
+    # 对比：必须同时有 early 和 close
     ws4 = wb.create_sheet("对比")
-    all_items = sorted(
-        [v for v in history.values() if isinstance(v, dict)],
-        key=lambda v: (v.get("league", ""), v.get("kickoff") or ""),
-    )
-    note4 = f"导出时间: {now_my().strftime('%Y-%m-%d %H:%M')} | 早=首次 中=赛前2\~5天 临=2h手动"
+    both = [
+        v for v in history.values()
+        if isinstance(v, dict) and v.get("early") and v.get("close")
+    ]
+    both.sort(key=lambda v: (v.get("league", ""), v.get("kickoff") or ""))
+    note4 = f"仅含早盘+临盘齐全的场 | 导出 {now_my().strftime('%Y-%m-%d %H:%M')}"
     sheet_note(
         ws4,
         ["联赛", "时间", "主队", "客队",
          "早_抓取"] + [f"早_{h}" for h in ODDS_HEADERS] +
-        ["中_抓取"] + [f"中_{h}" for h in ODDS_HEADERS] +
         ["临_抓取"] + [f"临_{h}" for h in ODDS_HEADERS],
         note4,
     )
-    for v in all_items:
-        if not (v.get("early") or v.get("mid") or v.get("close")):
-            continue
-        e = v.get("early") or {}
-        m = v.get("mid") or {}
-        c = v.get("close") or {}
+    for v in both:
+        e, c = v["early"], v["close"]
         ws4.append(
             [v.get("league"), v.get("time"), v.get("home"), v.get("away"),
-             e.get("ts")] + row_odds(v.get("early")) +
-            [m.get("ts")] + row_odds(v.get("mid")) +
-            [c.get("ts")] + row_odds(v.get("close"))
+             e.get("ts")] + row_odds(e) +
+            [c.get("ts")] + row_odds(c)
         )
     return wb
 
