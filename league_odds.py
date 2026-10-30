@@ -437,13 +437,8 @@ def resolve_mode():
     mode = os.environ.get("RUN_MODE", "auto").strip().lower()
     if mode in ("close", "manual_close"):
         return "close"
-    if mode in ("mid", "thursday"):
-        return "mid"
-    if mode in ("early", "scan"):
-        return "scan"
-    now = datetime.utcnow()
-    if now.weekday() == 3:
-        return "mid"
+    if mode in ("early", "scan", "mid", "auto", "thursday"):
+        return "scan"   # mid 一律当 scan
     return "scan"
 
 def main():
