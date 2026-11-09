@@ -1,50 +1,750 @@
 {
-  "西甲|celta vigo|levante": {
-    "league": "西甲",
-    "home": "Celta Vigo",
-    "away": "Levante",
-    "kickoff": "2026-11-09T01:30",
-    "time": "11-09 01:30",
+  "英超|manchester city|fulham": {
+    "league": "英超",
+    "home": "Manchester City",
+    "away": "Fulham",
+    "kickoff": "2026-11-21T20:30",
+    "time": "11-21 20:30",
     "early": {
-      "ts": "2026-10-26 07:41:08",
-      "time": "11-09 01:30",
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 20:30",
       "1X2": {
-        "home": 1.84,
-        "away": 4.07,
-        "draw": 3.79
+        "home": 1.448,
+        "away": 6.16,
+        "draw": 4.98
       },
       "ah": [
-        -0.75,
-        2.11,
-        1.769
+        -1.25,
+        1.98,
+        1.877
       ],
       "ou": [
-        2.5,
-        1.935,
-        1.901
+        3.25,
+        2.05,
+        1.8
       ]
     },
     "mid": null,
     "close": null
   },
-  "西甲|villarreal|getafe": {
-    "league": "西甲",
-    "home": "Villarreal",
-    "away": "Getafe",
-    "kickoff": "2026-11-09T01:30",
-    "time": "11-09 01:30",
+  "英超|chelsea|leeds united": {
+    "league": "英超",
+    "home": "Chelsea",
+    "away": "Leeds United",
+    "kickoff": "2026-11-21T23:00",
+    "time": "11-21 23:00",
     "early": {
-      "ts": "2026-10-26 07:41:08",
-      "time": "11-09 01:30",
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 23:00",
       "1X2": {
-        "home": 1.529,
-        "away": 6.07,
-        "draw": 4.21
+        "home": 1.813,
+        "away": 4.2,
+        "draw": 3.83
+      },
+      "ah": [
+        -0.75,
+        2.06,
+        1.806
+      ],
+      "ou": [
+        2.75,
+        1.952,
+        1.885
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "英超|coventry city|crystal palace": {
+    "league": "英超",
+    "home": "Coventry City",
+    "away": "Crystal Palace",
+    "kickoff": "2026-11-21T23:00",
+    "time": "11-21 23:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 23:00",
+      "1X2": {
+        "home": 2.4,
+        "away": 2.86,
+        "draw": 3.56
+      },
+      "ah": [
+        0.0,
+        1.769,
+        2.11
+      ],
+      "ou": [
+        2.75,
+        1.909,
+        1.926
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "英超|aston villa|sunderland": {
+    "league": "英超",
+    "home": "Aston Villa",
+    "away": "Sunderland",
+    "kickoff": "2026-11-21T23:00",
+    "time": "11-21 23:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 23:00",
+      "1X2": {
+        "home": 1.73,
+        "away": 4.6,
+        "draw": 3.91
+      },
+      "ah": [
+        -0.75,
+        1.952,
+        1.901
+      ],
+      "ou": [
+        2.75,
+        1.962,
+        1.87
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "英超|tottenham hotspur|ipswich town": {
+    "league": "英超",
+    "home": "Tottenham Hotspur",
+    "away": "Ipswich Town",
+    "kickoff": "2026-11-21T23:00",
+    "time": "11-21 23:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 23:00",
+      "1X2": {
+        "home": 1.532,
+        "away": 5.74,
+        "draw": 4.43
       },
       "ah": [
         -1.0,
+        1.855,
+        2.0
+      ],
+      "ou": [
+        3.0,
+        1.99,
+        1.855
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "英超|bournemouth|nottingham forest": {
+    "league": "英超",
+    "home": "Bournemouth",
+    "away": "Nottingham Forest",
+    "kickoff": "2026-11-21T23:00",
+    "time": "11-21 23:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 23:00",
+      "1X2": {
+        "home": 1.99,
+        "away": 3.7,
+        "draw": 3.63
+      },
+      "ah": [
+        -0.5,
+        1.99,
+        1.862
+      ],
+      "ou": [
+        2.5,
+        1.8,
+        2.05
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "英超|newcastle united|arsenal": {
+    "league": "英超",
+    "home": "Newcastle United",
+    "away": "Arsenal",
+    "kickoff": "2026-11-22T01:30",
+    "time": "11-22 01:30",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 01:30",
+      "1X2": {
+        "home": 5.53,
+        "away": 1.575,
+        "draw": 4.22
+      },
+      "ah": [
+        1.0,
+        1.87,
+        1.98
+      ],
+      "ou": [
+        2.75,
+        1.885,
+        1.952
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "英超|hull city|brighton": {
+    "league": "英超",
+    "home": "Hull City",
+    "away": "Brighton",
+    "kickoff": "2026-11-22T22:00",
+    "time": "11-22 22:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 22:00",
+      "1X2": {
+        "home": 5.91,
+        "away": 1.518,
+        "draw": 4.44
+      },
+      "ah": [
+        1.0,
+        2.0,
+        1.862
+      ],
+      "ou": [
+        2.75,
+        1.826,
+        2.02
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "英超|liverpool|manchester united": {
+    "league": "英超",
+    "home": "Liverpool",
+    "away": "Manchester United",
+    "kickoff": "2026-11-23T00:30",
+    "time": "11-23 00:30",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-23 00:30",
+      "1X2": {
+        "home": 1.699,
+        "away": 4.55,
+        "draw": 4.1
+      },
+      "ah": [
+        -0.75,
+        1.901,
+        1.952
+      ],
+      "ou": [
+        3.0,
+        1.962,
+        1.877
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "英超|brentford|everton": {
+    "league": "英超",
+    "home": "Brentford",
+    "away": "Everton",
+    "kickoff": "2026-11-24T04:00",
+    "time": "11-24 04:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-24 04:00",
+      "1X2": {
+        "home": 2.04,
+        "away": 3.49,
+        "draw": 3.67
+      },
+      "ah": [
+        -0.5,
+        2.05,
+        1.82
+      ],
+      "ou": [
+        2.75,
+        1.98,
+        1.855
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "西甲|athletic bilbao|espanyol": {
+    "league": "西甲",
+    "home": "Athletic Bilbao",
+    "away": "Espanyol",
+    "kickoff": "2026-11-21T04:00",
+    "time": "11-21 04:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 04:00",
+      "1X2": {
+        "home": 1.476,
+        "away": 6.6,
+        "draw": 4.44
+      },
+      "ah": [
+        -1.0,
+        1.8,
+        2.07
+      ],
+      "ou": [
+        2.5,
+        1.8,
+        2.05
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "西甲|alaves|deportivo la coruna": {
+    "league": "西甲",
+    "home": "Alaves",
+    "away": "Deportivo La Coruna",
+    "kickoff": "2026-11-21T21:00",
+    "time": "11-21 21:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 21:00",
+      "1X2": {
+        "home": 2.11,
+        "away": 3.54,
+        "draw": 3.44
+      },
+      "ah": [
+        -0.5,
+        2.11,
+        1.769
+      ],
+      "ou": [
+        2.25,
+        1.877,
+        1.962
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "西甲|rayo vallecano|valencia": {
+    "league": "西甲",
+    "home": "Rayo Vallecano",
+    "away": "Valencia",
+    "kickoff": "2026-11-21T23:15",
+    "time": "11-21 23:15",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 23:15",
+      "1X2": {
+        "home": 1.971,
+        "away": 3.93,
+        "draw": 3.48
+      },
+      "ah": [
+        -0.5,
+        1.98,
+        1.877
+      ],
+      "ou": [
+        2.25,
+        1.787,
+        2.07
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "西甲|sevilla|real betis": {
+    "league": "西甲",
+    "home": "Sevilla",
+    "away": "Real Betis",
+    "kickoff": "2026-11-22T01:30",
+    "time": "11-22 01:30",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 01:30",
+      "1X2": {
+        "home": 2.96,
+        "away": 2.35,
+        "draw": 3.53
+      },
+      "ah": [
+        0.25,
+        1.826,
+        2.04
+      ],
+      "ou": [
+        2.75,
+        1.98,
+        1.855
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "西甲|real madrid|celta vigo": {
+    "league": "西甲",
+    "home": "Real Madrid",
+    "away": "Celta Vigo",
+    "kickoff": "2026-11-22T04:00",
+    "time": "11-22 04:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 04:00",
+      "1X2": {
+        "home": 1.204,
+        "away": 12.89,
+        "draw": 6.65
+      },
+      "ah": [
+        -2.0,
+        1.943,
+        1.893
+      ],
+      "ou": [
+        3.5,
+        2.0,
+        1.826
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "西甲|barcelona|villarreal": {
+    "league": "西甲",
+    "home": "Barcelona",
+    "away": "Villarreal",
+    "kickoff": "2026-11-22T21:00",
+    "time": "11-22 21:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 21:00",
+      "1X2": {
+        "home": 1.24,
+        "away": 10.22,
+        "draw": 6.43
+      },
+      "ah": [
+        -2.0,
+        1.87,
+        1.971
+      ],
+      "ou": [
+        4.0,
+        1.885,
+        1.926
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "西甲|racing santander|real sociedad": {
+    "league": "西甲",
+    "home": "Racing Santander",
+    "away": "Real Sociedad",
+    "kickoff": "2026-11-22T23:15",
+    "time": "11-22 23:15",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 23:15",
+      "1X2": {
+        "home": 3.15,
+        "away": 2.08,
+        "draw": 4.0
+      },
+      "ah": [
+        0.25,
+        2.02,
+        1.84
+      ],
+      "ou": [
+        3.25,
+        1.855,
+        1.98
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "西甲|osasuna|malaga": {
+    "league": "西甲",
+    "home": "Osasuna",
+    "away": "Malaga",
+    "kickoff": "2026-11-23T01:30",
+    "time": "11-23 01:30",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-23 01:30",
+      "1X2": {
+        "home": 1.752,
+        "away": 4.68,
+        "draw": 3.75
+      },
+      "ah": [
+        -0.5,
+        1.758,
+        2.13
+      ],
+      "ou": [
+        2.5,
+        1.952,
+        1.885
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "西甲|getafe|atletico madrid": {
+    "league": "西甲",
+    "home": "Getafe",
+    "away": "Atletico Madrid",
+    "kickoff": "2026-11-23T04:00",
+    "time": "11-23 04:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-23 04:00",
+      "1X2": {
+        "home": 5.6,
+        "away": 1.629,
+        "draw": 3.85
+      },
+      "ah": [
+        0.75,
+        2.04,
+        1.82
+      ],
+      "ou": [
+        2.5,
+        2.09,
+        1.769
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "西甲|levante|elche": {
+    "league": "西甲",
+    "home": "Levante",
+    "away": "Elche",
+    "kickoff": "2026-11-24T04:00",
+    "time": "11-24 04:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-24 04:00",
+      "1X2": {
+        "home": 2.16,
+        "away": 2.98,
+        "draw": 3.99
+      },
+      "ah": [
+        -0.25,
+        1.917,
+        1.935
+      ],
+      "ou": [
+        2.75,
+        1.833,
+        2.01
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "意甲|como|cagliari": {
+    "league": "意甲",
+    "home": "Como",
+    "away": "Cagliari",
+    "kickoff": "2026-11-21T22:00",
+    "time": "11-21 22:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 22:00",
+      "1X2": {
+        "home": 1.308,
+        "away": 8.98,
+        "draw": 5.61
+      },
+      "ah": [
+        -1.5,
+        1.917,
+        1.935
+      ],
+      "ou": [
+        3.0,
         1.909,
-        1.943
+        1.926
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "意甲|lazio|lecce": {
+    "league": "意甲",
+    "home": "Lazio",
+    "away": "Lecce",
+    "kickoff": "2026-11-21T22:00",
+    "time": "11-21 22:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 22:00",
+      "1X2": {
+        "home": 1.361,
+        "away": 8.06,
+        "draw": 5.11
+      },
+      "ah": [
+        -1.25,
+        1.813,
+        2.05
+      ],
+      "ou": [
+        3.0,
+        1.971,
+        1.87
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "意甲|parma|roma": {
+    "league": "意甲",
+    "home": "Parma",
+    "away": "Roma",
+    "kickoff": "2026-11-22T01:00",
+    "time": "11-22 01:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 01:00",
+      "1X2": {
+        "home": 8.8,
+        "away": 1.318,
+        "draw": 5.5
+      },
+      "ah": [
+        1.5,
+        1.943,
+        1.909
+      ],
+      "ou": [
+        3.0,
+        1.917,
+        1.917
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "意甲|napoli|torino": {
+    "league": "意甲",
+    "home": "Napoli",
+    "away": "Torino",
+    "kickoff": "2026-11-22T03:45",
+    "time": "11-22 03:45",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 03:45",
+      "1X2": {
+        "home": 1.481,
+        "away": 6.33,
+        "draw": 4.55
+      },
+      "ah": [
+        -1.25,
+        2.08,
+        1.787
+      ],
+      "ou": [
+        2.75,
+        1.901,
+        1.935
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "意甲|juventus|venezia": {
+    "league": "意甲",
+    "home": "Juventus",
+    "away": "Venezia",
+    "kickoff": "2026-11-22T19:30",
+    "time": "11-22 19:30",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 19:30",
+      "1X2": {
+        "home": 1.341,
+        "away": 8.14,
+        "draw": 5.37
+      },
+      "ah": [
+        -1.5,
+        2.03,
+        1.833
+      ],
+      "ou": [
+        3.0,
+        2.04,
+        1.813
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "意甲|sassuolo|genoa": {
+    "league": "意甲",
+    "home": "Sassuolo",
+    "away": "Genoa",
+    "kickoff": "2026-11-22T22:00",
+    "time": "11-22 22:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 22:00",
+      "1X2": {
+        "home": 2.41,
+        "away": 2.93,
+        "draw": 3.43
+      },
+      "ah": [
+        -0.25,
+        2.09,
+        1.787
+      ],
+      "ou": [
+        2.5,
+        1.962,
+        1.877
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "意甲|bologna|udinese": {
+    "league": "意甲",
+    "home": "Bologna",
+    "away": "Udinese",
+    "kickoff": "2026-11-22T22:00",
+    "time": "11-22 22:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 22:00",
+      "1X2": {
+        "home": 1.709,
+        "away": 4.94,
+        "draw": 3.8
+      },
+      "ah": [
+        -0.75,
+        1.926,
+        1.926
       ],
       "ou": [
         2.5,
@@ -55,172 +755,752 @@
     "mid": null,
     "close": null
   },
-  "西甲|atletico madrid|barcelona": {
-    "league": "西甲",
-    "home": "Atletico Madrid",
-    "away": "Barcelona",
-    "kickoff": "2026-11-09T04:00",
-    "time": "11-09 04:00",
+  "意甲|ac milan|frosinone": {
+    "league": "意甲",
+    "home": "AC Milan",
+    "away": "Frosinone",
+    "kickoff": "2026-11-23T01:00",
+    "time": "11-23 01:00",
     "early": {
-      "ts": "2026-10-26 07:41:08",
-      "time": "11-09 04:00",
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-23 01:00",
       "1X2": {
-        "home": 3.65,
-        "away": 1.847,
-        "draw": 4.2
-      },
-      "ah": [
-        0.5,
-        2.0,
-        1.855
-      ],
-      "ou": [
-        3.5,
-        1.855,
-        1.99
-      ]
-    },
-    "mid": null,
-    "close": {
-      "ts": "2026-11-09 03:40:43",
-      "time": "11-09 04:00",
-      "1X2": {
-        "home": 3.54,
-        "away": 1.926,
-        "draw": 4.43
-      },
-      "ah": [
-        0.5,
-        1.99,
-        1.935
-      ],
-      "ou": [
-        3.5,
-        1.862,
-        2.06
-      ]
-    }
-  },
-  "德甲|hoffenheim|schalke 04": {
-    "league": "德甲",
-    "home": "Hoffenheim",
-    "away": "Schalke 04",
-    "kickoff": "2026-11-09T02:30",
-    "time": "11-09 02:30",
-    "early": {
-      "ts": "2026-10-26 07:41:08",
-      "time": "11-09 02:30",
-      "1X2": {
-        "home": 1.549,
-        "away": 5.13,
-        "draw": 4.64
+        "home": 1.559,
+        "away": 5.21,
+        "draw": 4.55
       },
       "ah": [
         -1.0,
-        1.893,
-        1.962
+        1.87,
+        1.98
       ],
       "ou": [
-        3.25,
-        1.926,
-        1.909
+        3.5,
+        1.901,
+        1.935
       ]
     },
     "mid": null,
     "close": null
   },
-  "法甲|lens|marseille": {
-    "league": "法甲",
-    "home": "Lens",
-    "away": "Marseille",
-    "kickoff": "2026-11-09T03:45",
-    "time": "11-09 03:45",
+  "意甲|atalanta|internazionale": {
+    "league": "意甲",
+    "home": "Atalanta",
+    "away": "Internazionale",
+    "kickoff": "2026-11-23T03:45",
+    "time": "11-23 03:45",
     "early": {
-      "ts": "2026-10-26 07:41:08",
-      "time": "11-09 03:45",
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-23 03:45",
       "1X2": {
-        "home": 2.15,
-        "away": 3.07,
-        "draw": 3.85
+        "home": 4.78,
+        "away": 1.61,
+        "draw": 4.51
       },
       "ah": [
-        -0.25,
-        1.893,
-        1.962
+        0.75,
+        2.13,
+        1.758
       ],
       "ou": [
         3.25,
+        1.826,
+        2.02
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "意甲|monza|fiorentina": {
+    "league": "意甲",
+    "home": "Monza",
+    "away": "Fiorentina",
+    "kickoff": "2026-11-24T03:45",
+    "time": "11-24 03:45",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-24 03:45",
+      "1X2": {
+        "home": 3.56,
+        "away": 1.99,
+        "draw": 3.76
+      },
+      "ah": [
+        0.5,
+        1.862,
+        2.0
+      ],
+      "ou": [
+        2.75,
+        1.763,
+        2.1
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "德甲|bayern munich|fc koln": {
+    "league": "德甲",
+    "home": "Bayern Munich",
+    "away": "FC Koln",
+    "kickoff": "2026-11-21T03:30",
+    "time": "11-21 03:30",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 03:30",
+      "1X2": {
+        "home": 1.087,
+        "away": 17.79,
+        "draw": 12.66
+      },
+      "ah": [
+        -2.75,
+        1.885,
+        1.935
+      ],
+      "ou": [
+        4.25,
+        1.935,
+        1.87
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "德甲|union berlin|rb leipzig": {
+    "league": "德甲",
+    "home": "Union Berlin",
+    "away": "RB Leipzig",
+    "kickoff": "2026-11-21T22:30",
+    "time": "11-21 22:30",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 22:30",
+      "1X2": {
+        "home": 4.83,
+        "away": 1.617,
+        "draw": 4.41
+      },
+      "ah": [
+        1.0,
+        1.84,
+        2.02
+      ],
+      "ou": [
+        3.25,
+        1.952,
+        1.885
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "德甲|eintracht frankfurt|hoffenheim": {
+    "league": "德甲",
+    "home": "Eintracht Frankfurt",
+    "away": "Hoffenheim",
+    "kickoff": "2026-11-21T22:30",
+    "time": "11-21 22:30",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 22:30",
+      "1X2": {
+        "home": 2.41,
+        "away": 2.7,
+        "draw": 3.84
+      },
+      "ah": [
+        -0.25,
+        2.12,
+        1.763
+      ],
+      "ou": [
+        3.5,
+        1.909,
+        1.926
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "德甲|borussia monchengladbach|borussia dortmund": {
+    "league": "德甲",
+    "home": "Borussia Monchengladbach",
+    "away": "Borussia Dortmund",
+    "kickoff": "2026-11-21T22:30",
+    "time": "11-21 22:30",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 22:30",
+      "1X2": {
+        "home": 4.66,
+        "away": 1.649,
+        "draw": 4.32
+      },
+      "ah": [
+        0.75,
+        2.05,
+        1.82
+      ],
+      "ou": [
+        3.25,
+        1.971,
+        1.87
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "德甲|bayer leverkusen|paderborn": {
+    "league": "德甲",
+    "home": "Bayer Leverkusen",
+    "away": "Paderborn",
+    "kickoff": "2026-11-21T22:30",
+    "time": "11-21 22:30",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 22:30",
+      "1X2": {
+        "home": 1.253,
+        "away": 8.49,
+        "draw": 6.93
+      },
+      "ah": [
+        -1.75,
+        1.87,
+        1.962
+      ],
+      "ou": [
+        3.75,
+        2.07,
+        1.769
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "德甲|elversberg|freiburg": {
+    "league": "德甲",
+    "home": "Elversberg",
+    "away": "Freiburg",
+    "kickoff": "2026-11-21T22:30",
+    "time": "11-21 22:30",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 22:30",
+      "1X2": {
+        "home": 3.45,
+        "away": 2.03,
+        "draw": 3.78
+      },
+      "ah": [
+        0.25,
+        2.1,
+        1.775
+      ],
+      "ou": [
+        3.25,
+        2.01,
+        1.833
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "德甲|schalke 04|stuttgart": {
+    "league": "德甲",
+    "home": "Schalke 04",
+    "away": "Stuttgart",
+    "kickoff": "2026-11-22T01:30",
+    "time": "11-22 01:30",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 01:30",
+      "1X2": {
+        "home": 4.19,
+        "away": 1.746,
+        "draw": 4.18
+      },
+      "ah": [
+        0.75,
+        1.909,
+        1.943
+      ],
+      "ou": [
+        3.25,
+        1.952,
+        1.885
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "德甲|augsburg|mainz 05": {
+    "league": "德甲",
+    "home": "Augsburg",
+    "away": "Mainz 05",
+    "kickoff": "2026-11-22T22:30",
+    "time": "11-22 22:30",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 22:30",
+      "1X2": {
+        "home": 2.73,
+        "away": 2.38,
+        "draw": 3.85
+      },
+      "ah": [
+        0.25,
+        1.781,
+        2.09
+      ],
+      "ou": [
+        3.25,
+        1.901,
+        1.935
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "德甲|werder bremen|hamburger sv": {
+    "league": "德甲",
+    "home": "Werder Bremen",
+    "away": "Hamburger SV",
+    "kickoff": "2026-11-23T00:30",
+    "time": "11-23 00:30",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-23 00:30",
+      "1X2": {
+        "home": 1.676,
+        "away": 4.46,
+        "draw": 4.34
+      },
+      "ah": [
+        -0.75,
+        1.855,
+        2.0
+      ],
+      "ou": [
+        3.0,
+        1.833,
+        2.01
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "英冠|millwall|queens park rangers": {
+    "league": "英冠",
+    "home": "Millwall",
+    "away": "Queens Park Rangers",
+    "kickoff": "2026-11-21T20:30",
+    "time": "11-21 20:30",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 20:30",
+      "1X2": {
+        "home": 2.43,
+        "away": 2.84,
+        "draw": 3.52
+      },
+      "ah": [
+        0.0,
+        1.787,
+        2.09
+      ],
+      "ou": [
+        2.75,
+        1.962,
+        1.877
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "英冠|southampton|derby county": {
+    "league": "英冠",
+    "home": "Southampton",
+    "away": "Derby County",
+    "kickoff": "2026-11-21T20:30",
+    "time": "11-21 20:30",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 20:30",
+      "1X2": {
+        "home": 1.394,
+        "away": 7.1,
+        "draw": 5.1
+      },
+      "ah": [
+        -1.25,
+        1.855,
+        2.0
+      ],
+      "ou": [
+        3.0,
+        1.877,
+        1.962
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "英冠|norwich city|cardiff city": {
+    "league": "英冠",
+    "home": "Norwich City",
+    "away": "Cardiff City",
+    "kickoff": "2026-11-21T20:30",
+    "time": "11-21 20:30",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 20:30",
+      "1X2": {
+        "home": 1.725,
+        "away": 4.04,
+        "draw": 4.47
+      },
+      "ah": [
+        -0.75,
+        1.909,
+        1.943
+      ],
+      "ou": [
+        3.5,
+        1.862,
+        1.98
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "英冠|stoke city|birmingham city": {
+    "league": "英冠",
+    "home": "Stoke City",
+    "away": "Birmingham City",
+    "kickoff": "2026-11-21T23:00",
+    "time": "11-21 23:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 23:00",
+      "1X2": {
+        "home": 2.89,
+        "away": 2.45,
+        "draw": 3.41
+      },
+      "ah": [
+        0.0,
+        2.1,
+        1.775
+      ],
+      "ou": [
+        2.5,
+        1.901,
+        1.935
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "英冠|lincoln city|wrexham": {
+    "league": "英冠",
+    "home": "Lincoln City",
+    "away": "Wrexham",
+    "kickoff": "2026-11-21T23:00",
+    "time": "11-21 23:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 23:00",
+      "1X2": {
+        "home": 2.89,
+        "away": 2.53,
+        "draw": 3.28
+      },
+      "ah": [
+        0.0,
+        2.07,
+        1.8
+      ],
+      "ou": [
+        2.5,
+        2.01,
+        1.833
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "英冠|wolverhampton|charlton athletic": {
+    "league": "英冠",
+    "home": "Wolverhampton",
+    "away": "Charlton Athletic",
+    "kickoff": "2026-11-21T23:00",
+    "time": "11-21 23:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 23:00",
+      "1X2": {
+        "home": 1.318,
+        "away": 8.79,
+        "draw": 5.49
+      },
+      "ah": [
+        -1.5,
+        1.935,
+        1.917
+      ],
+      "ou": [
+        3.0,
+        1.99,
+        1.847
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "英冠|swansea city|west bromwich albion": {
+    "league": "英冠",
+    "home": "Swansea City",
+    "away": "West Bromwich Albion",
+    "kickoff": "2026-11-21T23:00",
+    "time": "11-21 23:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 23:00",
+      "1X2": {
+        "home": 2.58,
+        "away": 2.8,
+        "draw": 3.3
+      },
+      "ah": [
+        0.0,
+        1.847,
+        2.01
+      ],
+      "ou": [
+        2.5,
+        1.98,
+        1.855
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "英冠|sheffield united|watford": {
+    "league": "英冠",
+    "home": "Sheffield United",
+    "away": "Watford",
+    "kickoff": "2026-11-21T23:00",
+    "time": "11-21 23:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 23:00",
+      "1X2": {
+        "home": 1.61,
+        "away": 5.21,
+        "draw": 4.17
+      },
+      "ah": [
+        -1.0,
+        2.06,
+        1.813
+      ],
+      "ou": [
+        2.75,
+        1.917,
+        1.917
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "英冠|bolton wanderers|portsmouth": {
+    "league": "英冠",
+    "home": "Bolton Wanderers",
+    "away": "Portsmouth",
+    "kickoff": "2026-11-21T23:00",
+    "time": "11-21 23:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 23:00",
+      "1X2": {
+        "home": 2.88,
+        "away": 2.49,
+        "draw": 3.37
+      },
+      "ah": [
+        0.0,
+        2.08,
+        1.794
+      ],
+      "ou": [
+        2.5,
+        1.862,
+        1.98
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "英冠|west ham united|preston north end": {
+    "league": "英冠",
+    "home": "West Ham United",
+    "away": "Preston North End",
+    "kickoff": "2026-11-21T23:00",
+    "time": "11-21 23:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 23:00",
+      "1X2": {
+        "home": 1.183,
+        "away": 12.99,
+        "draw": 7.73
+      },
+      "ah": [
+        -2.0,
+        1.84,
+        2.02
+      ],
+      "ou": [
+        3.5,
+        1.901,
+        1.935
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "英冠|burnley|blackburn rovers": {
+    "league": "英冠",
+    "home": "Burnley",
+    "away": "Blackburn Rovers",
+    "kickoff": "2026-11-22T20:00",
+    "time": "11-22 20:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 20:00",
+      "1X2": {
+        "home": 1.826,
+        "away": 4.17,
+        "draw": 3.81
+      },
+      "ah": [
+        -0.5,
+        1.826,
+        2.03
+      ],
+      "ou": [
+        2.75,
+        2.0,
+        1.847
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "苏超|hibernian|dundee united": {
+    "league": "苏超",
+    "home": "Hibernian",
+    "away": "Dundee United",
+    "kickoff": "2026-11-21T23:00",
+    "time": "11-21 23:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 23:00",
+      "1X2": {
+        "home": 1.877,
+        "away": 3.85,
+        "draw": 3.91
+      },
+      "ah": [
+        -0.5,
+        1.877,
+        1.98
+      ],
+      "ou": [
+        3.0,
         1.98,
         1.862
       ]
     },
     "mid": null,
-    "close": {
-      "ts": "2026-11-09 03:40:43",
-      "time": "11-09 03:45",
-      "1X2": {
-        "home": 2.2,
-        "away": 3.2,
-        "draw": 3.78
-      },
-      "ah": [
-        -0.25,
-        1.926,
-        1.98
-      ],
-      "ou": [
-        2.75,
-        1.787,
-        2.13
-      ]
-    }
+    "close": null
   },
-  "意甲|internazionale|como": {
-    "league": "意甲",
-    "home": "Internazionale",
-    "away": "Como",
-    "kickoff": "2026-11-09T01:00",
-    "time": "11-09 01:00",
+  "苏超|celtic|st mirren": {
+    "league": "苏超",
+    "home": "Celtic",
+    "away": "St Mirren",
+    "kickoff": "2026-11-21T23:00",
+    "time": "11-21 23:00",
     "early": {
-      "ts": "2026-11-02 09:08:03",
-      "time": "11-09 01:00",
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 23:00",
       "1X2": {
-        "home": 1.781,
-        "away": 4.0,
-        "draw": 4.19
+        "home": 1.184,
+        "away": 11.73,
+        "draw": 7.8
       },
       "ah": [
-        -0.75,
-        2.0,
-        1.862
+        -2.25,
+        1.99,
+        1.847
       ],
       "ou": [
-        3.25,
-        2.0,
-        1.84
+        4.0,
+        2.01,
+        1.82
       ]
     },
     "mid": null,
     "close": null
   },
-  "意甲|fiorentina|juventus": {
-    "league": "意甲",
-    "home": "Fiorentina",
-    "away": "Juventus",
-    "kickoff": "2026-11-09T03:45",
-    "time": "11-09 03:45",
+  "苏超|kilmarnock|aberdeen": {
+    "league": "苏超",
+    "home": "Kilmarnock",
+    "away": "Aberdeen",
+    "kickoff": "2026-11-21T23:00",
+    "time": "11-21 23:00",
     "early": {
-      "ts": "2026-11-02 09:08:03",
-      "time": "11-09 03:45",
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 23:00",
       "1X2": {
-        "home": 3.76,
-        "away": 1.952,
-        "draw": 3.68
+        "home": 2.71,
+        "away": 2.56,
+        "draw": 3.48
       },
       "ah": [
-        0.5,
+        0.0,
+        1.99,
+        1.87
+      ],
+      "ou": [
+        2.75,
         1.893,
-        1.962
+        1.943
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "苏超|falkirk|st johnstone": {
+    "league": "苏超",
+    "home": "Falkirk",
+    "away": "St Johnstone",
+    "kickoff": "2026-11-21T23:00",
+    "time": "11-21 23:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 23:00",
+      "1X2": {
+        "home": 1.926,
+        "away": 3.92,
+        "draw": 3.64
+      },
+      "ah": [
+        -0.5,
+        1.935,
+        1.917
       ],
       "ou": [
         2.75,
@@ -229,93 +1509,85 @@
       ]
     },
     "mid": null,
-    "close": {
-      "ts": "2026-11-09 03:40:43",
-      "time": "11-09 03:45",
-      "1X2": {
-        "home": 3.38,
-        "away": 2.28,
-        "draw": 3.44
-      },
-      "ah": [
-        0.25,
-        1.962,
-        1.962
-      ],
-      "ou": [
-        2.5,
-        1.893,
-        2.01
-      ]
-    }
+    "close": null
   },
-  "葡超|rio ave|braga": {
-    "league": "葡超",
-    "home": "Rio Ave",
-    "away": "Braga",
-    "kickoff": "2026-11-09T04:30",
-    "time": "11-09 04:30",
+  "苏超|dundee fc|hearts": {
+    "league": "苏超",
+    "home": "Dundee FC",
+    "away": "Hearts",
+    "kickoff": "2026-11-22T01:45",
+    "time": "11-22 01:45",
     "early": {
-      "ts": "2026-11-02 09:08:03",
-      "time": "11-09 04:30",
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 01:45",
       "1X2": {
-        "home": 5.9,
-        "away": 1.543,
-        "draw": 4.23
+        "home": 3.68,
+        "away": 1.926,
+        "draw": 3.87
       },
       "ah": [
-        1.0,
-        1.909,
-        1.943
-      ],
-      "ou": [
-        2.5,
-        1.82,
-        2.02
-      ]
-    },
-    "mid": null,
-    "close": {
-      "ts": "2026-11-09 03:40:43",
-      "time": "11-09 04:30",
-      "1X2": {
-        "home": 6.24,
-        "away": 1.529,
-        "draw": 4.54
-      },
-      "ah": [
-        1.0,
-        2.03,
-        1.885
-      ],
-      "ou": [
-        2.75,
-        1.87,
-        2.03
-      ]
-    }
-  },
-  "比甲|union saint-gilloise|genk": {
-    "league": "比甲",
-    "home": "Union Saint-Gilloise",
-    "away": "Genk",
-    "kickoff": "2026-11-09T01:30",
-    "time": "11-09 01:30",
-    "early": {
-      "ts": "2026-11-02 09:08:03",
-      "time": "11-09 01:30",
-      "1X2": {
-        "home": 1.602,
-        "away": 5.11,
-        "draw": 4.3
-      },
-      "ah": [
-        -1.0,
-        2.03,
-        1.833
+        0.5,
+        1.917,
+        1.935
       ],
       "ou": [
         3.0,
+        1.893,
+        1.943
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "苏超|motherwell|rangers": {
+    "league": "苏超",
+    "home": "Motherwell",
+    "away": "Rangers",
+    "kickoff": "2026-11-22T04:00",
+    "time": "11-22 04:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 04:00",
+      "1X2": {
+        "home": 5.09,
+        "away": 1.556,
+        "draw": 4.67
+      },
+      "ah": [
+        1.0,
+        1.943,
+        1.909
+      ],
+      "ou": [
+        3.0,
+        1.885,
+        1.952
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "荷甲|nec nijmegen|psv": {
+    "league": "荷甲",
+    "home": "NEC Nijmegen",
+    "away": "PSV",
+    "kickoff": "2026-11-21T23:30",
+    "time": "11-21 23:30",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 23:30",
+      "1X2": {
+        "home": 4.11,
+        "away": 1.694,
+        "draw": 4.58
+      },
+      "ah": [
+        0.75,
+        1.99,
+        1.862
+      ],
+      "ou": [
+        3.75,
         1.935,
         1.901
       ]
@@ -323,19 +1595,579 @@
     "mid": null,
     "close": null
   },
-  "比甲|sint truidense|zulte waregem": {
-    "league": "比甲",
-    "home": "Sint Truidense",
-    "away": "Zulte Waregem",
-    "kickoff": "2026-11-09T02:15",
-    "time": "11-09 02:15",
+  "荷甲|fc utrecht|cambuur leeuwaarden": {
+    "league": "荷甲",
+    "home": "FC Utrecht",
+    "away": "Cambuur Leeuwaarden",
+    "kickoff": "2026-11-22T01:45",
+    "time": "11-22 01:45",
     "early": {
-      "ts": "2026-11-02 09:08:03",
-      "time": "11-09 02:15",
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 01:45",
       "1X2": {
-        "home": 1.781,
-        "away": 4.14,
-        "draw": 4.03
+        "home": 1.917,
+        "away": 3.53,
+        "draw": 4.1
+      },
+      "ah": [
+        -0.5,
+        1.917,
+        1.935
+      ],
+      "ou": [
+        3.25,
+        1.971,
+        1.862
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "荷甲|feyenoord|excelsior": {
+    "league": "荷甲",
+    "home": "Feyenoord",
+    "away": "Excelsior",
+    "kickoff": "2026-11-22T01:45",
+    "time": "11-22 01:45",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 01:45",
+      "1X2": {
+        "home": 1.172,
+        "away": 12.29,
+        "draw": 8.62
+      },
+      "ah": [
+        -2.0,
+        1.813,
+        2.05
+      ],
+      "ou": [
+        3.5,
+        1.862,
+        1.98
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "荷甲|telstar|pec zwolle": {
+    "league": "荷甲",
+    "home": "Telstar",
+    "away": "PEC Zwolle",
+    "kickoff": "2026-11-22T04:00",
+    "time": "11-22 04:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 04:00",
+      "1X2": {
+        "home": 2.02,
+        "away": 3.43,
+        "draw": 3.81
+      },
+      "ah": [
+        -0.5,
+        2.03,
+        1.833
+      ],
+      "ou": [
+        3.0,
+        1.893,
+        1.935
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "荷甲|groningen|heerenveen": {
+    "league": "荷甲",
+    "home": "Groningen",
+    "away": "Heerenveen",
+    "kickoff": "2026-11-22T04:00",
+    "time": "11-22 04:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 04:00",
+      "1X2": {
+        "home": 2.51,
+        "away": 2.58,
+        "draw": 3.83
+      },
+      "ah": [
+        0.0,
+        1.901,
+        1.952
+      ],
+      "ou": [
+        3.25,
+        1.847,
+        1.99
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "荷甲|fc twente|willem ii": {
+    "league": "荷甲",
+    "home": "FC Twente",
+    "away": "Willem II",
+    "kickoff": "2026-11-22T19:15",
+    "time": "11-22 19:15",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 19:15",
+      "1X2": {
+        "home": 1.056,
+        "away": 27.07,
+        "draw": 18.56
+      },
+      "ah": [
+        -3.0,
+        1.917,
+        1.935
+      ],
+      "ou": [
+        4.0,
+        1.813,
+        2.04
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "荷甲|ajax|ado den haag": {
+    "league": "荷甲",
+    "home": "Ajax",
+    "away": "ADO Den Haag",
+    "kickoff": "2026-11-22T21:30",
+    "time": "11-22 21:30",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 21:30",
+      "1X2": {
+        "home": 1.159,
+        "away": 13.95,
+        "draw": 8.6
+      },
+      "ah": [
+        -2.25,
+        1.935,
+        1.917
+      ],
+      "ou": [
+        3.75,
+        1.855,
+        1.98
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "荷甲|sparta rotterdam|az alkmaar": {
+    "league": "荷甲",
+    "home": "Sparta Rotterdam",
+    "away": "AZ Alkmaar",
+    "kickoff": "2026-11-22T21:30",
+    "time": "11-22 21:30",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 21:30",
+      "1X2": {
+        "home": 4.12,
+        "away": 1.746,
+        "draw": 4.24
+      },
+      "ah": [
+        0.75,
+        1.917,
+        1.935
+      ],
+      "ou": [
+        3.25,
+        1.901,
+        1.935
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "荷甲|go ahead eagles|fortuna sittard": {
+    "league": "荷甲",
+    "home": "Go Ahead Eagles",
+    "away": "Fortuna Sittard",
+    "kickoff": "2026-11-22T23:45",
+    "time": "11-22 23:45",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 23:45",
+      "1X2": {
+        "home": 1.654,
+        "away": 4.68,
+        "draw": 4.29
+      },
+      "ah": [
+        -0.75,
+        1.826,
+        2.04
+      ],
+      "ou": [
+        3.25,
+        1.99,
+        1.847
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "欧冠|galatasaray|aston villa": {
+    "league": "欧冠",
+    "home": "Galatasaray",
+    "away": "Aston Villa",
+    "kickoff": "2026-11-25T01:45",
+    "time": "11-25 01:45",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-25 01:45",
+      "1X2": {
+        "home": 2.62,
+        "away": 2.46,
+        "draw": 3.85
+      },
+      "ah": [
+        0.0,
+        1.99,
+        1.87
+      ],
+      "ou": [
+        3.25,
+        1.909,
+        1.926
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "欧冠|bodo glimt|lask linz": {
+    "league": "欧冠",
+    "home": "Bodo Glimt",
+    "away": "LASK Linz",
+    "kickoff": "2026-11-25T01:45",
+    "time": "11-25 01:45",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-25 01:45",
+      "1X2": {
+        "home": 1.518,
+        "away": 5.08,
+        "draw": 5.06
+      },
+      "ah": [
+        -1.0,
+        1.813,
+        2.05
+      ],
+      "ou": [
+        3.75,
+        1.926,
+        1.909
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "欧冠|rb leipzig|lens": {
+    "league": "欧冠",
+    "home": "RB Leipzig",
+    "away": "Lens",
+    "kickoff": "2026-11-25T04:00",
+    "time": "11-25 04:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-25 04:00",
+      "1X2": {
+        "home": 1.442,
+        "away": 5.52,
+        "draw": 5.57
+      },
+      "ah": [
+        -1.25,
+        1.855,
+        2.0
+      ],
+      "ou": [
+        3.75,
+        1.99,
+        1.855
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "欧冠|real madrid|psv": {
+    "league": "欧冠",
+    "home": "Real Madrid",
+    "away": "PSV",
+    "kickoff": "2026-11-25T04:00",
+    "time": "11-25 04:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-25 04:00",
+      "1X2": {
+        "home": 1.195,
+        "away": 10.23,
+        "draw": 8.06
+      },
+      "ah": [
+        -2.25,
+        1.943,
+        1.893
+      ],
+      "ou": [
+        4.25,
+        1.909,
+        1.909
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "欧冠|como|aek athens": {
+    "league": "欧冠",
+    "home": "Como",
+    "away": "AEK Athens",
+    "kickoff": "2026-11-25T04:00",
+    "time": "11-25 04:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-25 04:00",
+      "1X2": {
+        "home": 1.323,
+        "away": 7.24,
+        "draw": 6.25
+      },
+      "ah": [
+        -1.5,
+        1.847,
+        2.01
+      ],
+      "ou": [
+        3.5,
+        1.952,
+        1.885
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "欧冠|feyenoord|porto": {
+    "league": "欧冠",
+    "home": "Feyenoord",
+    "away": "Porto",
+    "kickoff": "2026-11-25T04:00",
+    "time": "11-25 04:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-25 04:00",
+      "1X2": {
+        "home": 2.83,
+        "away": 2.38,
+        "draw": 3.65
+      },
+      "ah": [
+        0.25,
+        1.794,
+        2.08
+      ],
+      "ou": [
+        3.0,
+        2.01,
+        1.833
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "欧冠|arsenal|borussia dortmund": {
+    "league": "欧冠",
+    "home": "Arsenal",
+    "away": "Borussia Dortmund",
+    "kickoff": "2026-11-25T04:00",
+    "time": "11-25 04:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-25 04:00",
+      "1X2": {
+        "home": 1.37,
+        "away": 8.03,
+        "draw": 5.0
+      },
+      "ah": [
+        -1.25,
+        1.847,
+        2.01
+      ],
+      "ou": [
+        2.75,
+        1.806,
+        2.05
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "欧冠|manchester city|napoli": {
+    "league": "欧冠",
+    "home": "Manchester City",
+    "away": "Napoli",
+    "kickoff": "2026-11-25T04:00",
+    "time": "11-25 04:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-25 04:00",
+      "1X2": {
+        "home": 1.233,
+        "away": 10.1,
+        "draw": 6.7
+      },
+      "ah": [
+        -2.0,
+        2.03,
+        1.813
+      ],
+      "ou": [
+        3.5,
+        1.833,
+        2.0
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "欧冠|slovan bratislava|real betis": {
+    "league": "欧冠",
+    "home": "Slovan Bratislava",
+    "away": "Real Betis",
+    "kickoff": "2026-11-25T04:00",
+    "time": "11-25 04:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-25 04:00",
+      "1X2": {
+        "home": 8.63,
+        "away": 1.271,
+        "draw": 6.35
+      },
+      "ah": [
+        1.75,
+        1.885,
+        1.943
+      ],
+      "ou": [
+        3.5,
+        1.952,
+        1.87
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "法甲|troyes|le havre": {
+    "league": "法甲",
+    "home": "Troyes",
+    "away": "Le Havre",
+    "kickoff": "2026-11-21T03:45",
+    "time": "11-21 03:45",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-21 03:45",
+      "1X2": {
+        "home": 2.01,
+        "away": 3.6,
+        "draw": 3.65
+      },
+      "ah": [
+        -0.5,
+        2.02,
+        1.84
+      ],
+      "ou": [
+        2.5,
+        1.781,
+        2.08
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "法甲|nice|paris saint-germain": {
+    "league": "法甲",
+    "home": "Nice",
+    "away": "Paris Saint-Germain",
+    "kickoff": "2026-11-22T00:15",
+    "time": "11-22 00:15",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 00:15",
+      "1X2": {
+        "home": 5.93,
+        "away": 1.45,
+        "draw": 5.1
+      },
+      "ah": [
+        1.25,
+        1.917,
+        1.935
+      ],
+      "ou": [
+        3.5,
+        2.02,
+        1.826
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "法甲|lille|lyon": {
+    "league": "法甲",
+    "home": "Lille",
+    "away": "Lyon",
+    "kickoff": "2026-11-22T03:45",
+    "time": "11-22 03:45",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 03:45",
+      "1X2": {
+        "home": 2.37,
+        "away": 3.09,
+        "draw": 3.33
+      },
+      "ah": [
+        -0.25,
+        2.04,
+        1.826
+      ],
+      "ou": [
+        2.5,
+        1.943,
+        1.893
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "法甲|lens|toulouse": {
+    "league": "法甲",
+    "home": "Lens",
+    "away": "Toulouse",
+    "kickoff": "2026-11-22T03:45",
+    "time": "11-22 03:45",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 03:45",
+      "1X2": {
+        "home": 1.769,
+        "away": 4.08,
+        "draw": 4.16
       },
       "ah": [
         -0.75,
@@ -343,114 +2175,152 @@
         1.855
       ],
       "ou": [
-        3.0,
-        1.935,
-        1.893
+        2.75,
+        1.787,
+        2.07
       ]
     },
     "mid": null,
     "close": null
   },
-  "荷甲|fc utrecht|nec nijmegen": {
-    "league": "荷甲",
-    "home": "FC Utrecht",
-    "away": "NEC Nijmegen",
-    "kickoff": "2026-11-09T03:00",
-    "time": "11-09 03:00",
+  "法甲|strasbourg|brest": {
+    "league": "法甲",
+    "home": "Strasbourg",
+    "away": "Brest",
+    "kickoff": "2026-11-22T03:45",
+    "time": "11-22 03:45",
     "early": {
-      "ts": "2026-11-02 09:08:03",
-      "time": "11-09 03:00",
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 03:45",
       "1X2": {
-        "home": 2.37,
-        "away": 2.69,
-        "draw": 3.93
+        "home": 2.18,
+        "away": 3.08,
+        "draw": 3.79
       },
       "ah": [
-        0.0,
-        1.813,
-        2.06
-      ],
-      "ou": [
-        3.25,
-        1.943,
-        1.885
-      ]
-    },
-    "mid": null,
-    "close": null
-  },
-  "葡超|vitoria guimaraes|porto": {
-    "league": "葡超",
-    "home": "Vitoria Guimaraes",
-    "away": "Porto",
-    "kickoff": "2026-11-09T02:00",
-    "time": "11-09 02:00",
-    "early": {
-      "ts": "2026-11-09 00:05:27",
-      "time": "11-09 02:00",
-      "1X2": {
-        "home": 6.36,
-        "away": 1.518,
-        "draw": 4.56
-      },
-      "ah": [
-        1.0,
-        2.01,
-        1.901
-      ],
-      "ou": [
-        2.5,
-        1.862,
-        2.03
-      ]
-    },
-    "mid": null,
-    "close": null
-  },
-  "葡超|estrela da amadora|benfica": {
-    "league": "葡超",
-    "home": "Estrela da Amadora",
-    "away": "Benfica",
-    "kickoff": "2026-11-09T04:30",
-    "time": "11-09 04:30",
-    "early": {
-      "ts": "2026-11-09 03:30:36",
-      "time": "11-09 04:30",
-      "1X2": {
-        "home": 13.35,
-        "away": 1.182,
-        "draw": 8.44
-      },
-      "ah": [
-        2.0,
-        1.952,
+        -0.25,
+        1.917,
         1.935
       ],
       "ou": [
-        3.5,
-        1.909,
-        1.962
+        2.75,
+        1.769,
+        2.09
       ]
     },
     "mid": null,
-    "close": {
-      "ts": "2026-11-09 03:40:43",
-      "time": "11-09 04:30",
+    "close": null
+  },
+  "法甲|monaco|auxerre": {
+    "league": "法甲",
+    "home": "Monaco",
+    "away": "Auxerre",
+    "kickoff": "2026-11-22T03:45",
+    "time": "11-22 03:45",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 03:45",
       "1X2": {
-        "home": 12.81,
-        "away": 1.19,
-        "draw": 8.24
+        "home": 1.391,
+        "away": 7.1,
+        "draw": 5.16
       },
       "ah": [
-        2.0,
-        1.909,
-        1.98
+        -1.25,
+        1.833,
+        2.03
       ],
       "ou": [
-        3.5,
-        1.926,
-        1.943
+        3.0,
+        1.781,
+        2.08
       ]
-    }
+    },
+    "mid": null,
+    "close": null
+  },
+  "法甲|paris fc|angers": {
+    "league": "法甲",
+    "home": "Paris FC",
+    "away": "Angers",
+    "kickoff": "2026-11-22T22:00",
+    "time": "11-22 22:00",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-22 22:00",
+      "1X2": {
+        "home": 1.389,
+        "away": 7.64,
+        "draw": 4.91
+      },
+      "ah": [
+        -1.25,
+        1.885,
+        1.971
+      ],
+      "ou": [
+        2.75,
+        1.826,
+        2.02
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "法甲|lorient|rennes": {
+    "league": "法甲",
+    "home": "Lorient",
+    "away": "Rennes",
+    "kickoff": "2026-11-23T00:15",
+    "time": "11-23 00:15",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-23 00:15",
+      "1X2": {
+        "home": 3.05,
+        "away": 2.32,
+        "draw": 3.46
+      },
+      "ah": [
+        0.25,
+        1.847,
+        2.01
+      ],
+      "ou": [
+        2.75,
+        2.02,
+        1.826
+      ]
+    },
+    "mid": null,
+    "close": null
+  },
+  "法甲|marseille|le mans": {
+    "league": "法甲",
+    "home": "Marseille",
+    "away": "Le Mans",
+    "kickoff": "2026-11-23T03:45",
+    "time": "11-23 03:45",
+    "early": {
+      "ts": "2026-11-09 09:19:09",
+      "time": "11-23 03:45",
+      "1X2": {
+        "home": 1.446,
+        "away": 6.32,
+        "draw": 4.9
+      },
+      "ah": [
+        -1.25,
+        1.962,
+        1.893
+      ],
+      "ou": [
+        3.0,
+        1.787,
+        2.07
+      ]
+    },
+    "mid": null,
+    "close": null
   }
 }
