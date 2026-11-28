@@ -1,50 +1,4 @@
 {
-  "英超|nottingham forest|chelsea": {
-    "league": "英超",
-    "home": "Nottingham Forest",
-    "away": "Chelsea",
-    "kickoff": "2026-11-28T04:00",
-    "time": "11-28 04:00",
-    "early": {
-      "ts": "2026-11-16 09:28:39",
-      "time": "11-28 04:00",
-      "1X2": {
-        "home": 2.72,
-        "away": 2.52,
-        "draw": 3.54
-      },
-      "ah": [
-        0.0,
-        2.0,
-        1.855
-      ],
-      "ou": [
-        2.75,
-        1.926,
-        1.909
-      ]
-    },
-    "mid": null,
-    "close": {
-      "ts": "2026-11-28 03:39:49",
-      "time": "11-28 04:00",
-      "1X2": {
-        "home": 2.47,
-        "away": 2.9,
-        "draw": 3.59
-      },
-      "ah": [
-        -0.25,
-        2.15,
-        1.8
-      ],
-      "ou": [
-        2.75,
-        2.04,
-        1.87
-      ]
-    }
-  },
   "英超|manchester united|brentford": {
     "league": "英超",
     "home": "Manchester United",
@@ -297,52 +251,6 @@
     "mid": null,
     "close": null
   },
-  "西甲|levante|racing santander": {
-    "league": "西甲",
-    "home": "Levante",
-    "away": "Racing Santander",
-    "kickoff": "2026-11-28T04:00",
-    "time": "11-28 04:00",
-    "early": {
-      "ts": "2026-11-16 09:28:39",
-      "time": "11-28 04:00",
-      "1X2": {
-        "home": 2.09,
-        "away": 3.2,
-        "draw": 3.89
-      },
-      "ah": [
-        -0.5,
-        2.1,
-        1.781
-      ],
-      "ou": [
-        3.25,
-        2.05,
-        1.8
-      ]
-    },
-    "mid": null,
-    "close": {
-      "ts": "2026-11-28 03:39:49",
-      "time": "11-28 04:00",
-      "1X2": {
-        "home": 2.05,
-        "away": 3.48,
-        "draw": 3.93
-      },
-      "ah": [
-        -0.5,
-        2.06,
-        1.87
-      ],
-      "ou": [
-        3.25,
-        2.08,
-        1.84
-      ]
-    }
-  },
   "西甲|real betis|rayo vallecano": {
     "league": "西甲",
     "home": "Real Betis",
@@ -369,7 +277,25 @@
       ]
     },
     "mid": null,
-    "close": null
+    "close": {
+      "ts": "2026-11-28 20:21:06",
+      "time": "11-28 21:00",
+      "1X2": {
+        "home": 1.625,
+        "away": 5.45,
+        "draw": 4.35
+      },
+      "ah": [
+        -1.0,
+        2.04,
+        1.885
+      ],
+      "ou": [
+        3.25,
+        2.03,
+        1.877
+      ]
+    }
   },
   "西甲|malaga|athletic bilbao": {
     "league": "西甲",
@@ -595,52 +521,6 @@
     "mid": null,
     "close": null
   },
-  "意甲|venezia|bologna": {
-    "league": "意甲",
-    "home": "Venezia",
-    "away": "Bologna",
-    "kickoff": "2026-11-28T03:45",
-    "time": "11-28 03:45",
-    "early": {
-      "ts": "2026-11-16 09:28:39",
-      "time": "11-28 03:45",
-      "1X2": {
-        "home": 3.66,
-        "away": 2.02,
-        "draw": 3.56
-      },
-      "ah": [
-        0.25,
-        2.13,
-        1.758
-      ],
-      "ou": [
-        2.5,
-        1.806,
-        2.04
-      ]
-    },
-    "mid": null,
-    "close": {
-      "ts": "2026-11-28 03:39:49",
-      "time": "11-28 03:45",
-      "1X2": {
-        "home": 3.1,
-        "away": 2.56,
-        "draw": 3.21
-      },
-      "ah": [
-        0.0,
-        2.17,
-        1.787
-      ],
-      "ou": [
-        2.25,
-        2.02,
-        1.885
-      ]
-    }
-  },
   "意甲|frosinone|parma": {
     "league": "意甲",
     "home": "Frosinone",
@@ -667,7 +547,25 @@
       ]
     },
     "mid": null,
-    "close": null
+    "close": {
+      "ts": "2026-11-28 20:21:06",
+      "time": "11-28 22:00",
+      "1X2": {
+        "home": 1.444,
+        "away": 6.7,
+        "draw": 5.25
+      },
+      "ah": [
+        -1.25,
+        1.901,
+        2.02
+      ],
+      "ou": [
+        3.5,
+        2.0,
+        1.909
+      ]
+    }
   },
   "意甲|torino|lazio": {
     "league": "意甲",
@@ -888,34 +786,6 @@
         2.5,
         1.87,
         1.971
-      ]
-    },
-    "mid": null,
-    "close": null
-  },
-  "德甲|werder bremen|borussia monchengladbach": {
-    "league": "德甲",
-    "home": "Werder Bremen",
-    "away": "Borussia Monchengladbach",
-    "kickoff": "2026-11-28T03:30",
-    "time": "11-28 03:30",
-    "early": {
-      "ts": "2026-11-16 09:28:39",
-      "time": "11-28 03:30",
-      "1X2": {
-        "home": 1.746,
-        "away": 4.05,
-        "draw": 4.33
-      },
-      "ah": [
-        -0.75,
-        1.943,
-        1.909
-      ],
-      "ou": [
-        3.0,
-        1.758,
-        2.11
       ]
     },
     "mid": null,
@@ -1145,52 +1015,6 @@
     "mid": null,
     "close": null
   },
-  "葡超|maritimo|nacional da madeira": {
-    "league": "葡超",
-    "home": "Maritimo",
-    "away": "Nacional da Madeira",
-    "kickoff": "2026-11-28T04:15",
-    "time": "11-28 04:15",
-    "early": {
-      "ts": "2026-11-16 09:28:39",
-      "time": "11-28 04:15",
-      "1X2": {
-        "home": 2.2,
-        "away": 3.44,
-        "draw": 3.31
-      },
-      "ah": [
-        -0.25,
-        1.893,
-        1.962
-      ],
-      "ou": [
-        2.25,
-        1.862,
-        1.98
-      ]
-    },
-    "mid": null,
-    "close": {
-      "ts": "2026-11-28 03:39:49",
-      "time": "11-28 04:15",
-      "1X2": {
-        "home": 2.16,
-        "away": 3.89,
-        "draw": 3.21
-      },
-      "ah": [
-        -0.25,
-        1.84,
-        2.08
-      ],
-      "ou": [
-        2.25,
-        2.03,
-        1.87
-      ]
-    }
-  },
   "葡超|arouca|rio ave": {
     "league": "葡超",
     "home": "Arouca",
@@ -1414,52 +1238,6 @@
     },
     "mid": null,
     "close": null
-  },
-  "法甲|brest|paris fc": {
-    "league": "法甲",
-    "home": "Brest",
-    "away": "Paris FC",
-    "kickoff": "2026-11-28T03:45",
-    "time": "11-28 03:45",
-    "early": {
-      "ts": "2026-11-16 09:28:39",
-      "time": "11-28 03:45",
-      "1X2": {
-        "home": 3.21,
-        "away": 2.29,
-        "draw": 3.35
-      },
-      "ah": [
-        0.25,
-        1.877,
-        1.971
-      ],
-      "ou": [
-        2.75,
-        2.01,
-        1.833
-      ]
-    },
-    "mid": null,
-    "close": {
-      "ts": "2026-11-28 03:39:49",
-      "time": "11-28 03:45",
-      "1X2": {
-        "home": 3.37,
-        "away": 2.29,
-        "draw": 3.43
-      },
-      "ah": [
-        0.25,
-        1.952,
-        1.971
-      ],
-      "ou": [
-        2.5,
-        1.926,
-        1.98
-      ]
-    }
   },
   "法甲|angers|lens": {
     "league": "法甲",
@@ -2861,52 +2639,6 @@
     "mid": null,
     "close": null
   },
-  "比甲|oud-heverlee leuven|kv kortrijk": {
-    "league": "比甲",
-    "home": "Oud-Heverlee Leuven",
-    "away": "KV Kortrijk",
-    "kickoff": "2026-11-28T03:45",
-    "time": "11-28 03:45",
-    "early": {
-      "ts": "2026-11-23 10:04:26",
-      "time": "11-28 03:45",
-      "1X2": {
-        "home": 1.943,
-        "away": 3.61,
-        "draw": 3.88
-      },
-      "ah": [
-        -0.5,
-        1.943,
-        1.901
-      ],
-      "ou": [
-        3.0,
-        2.0,
-        1.84
-      ]
-    },
-    "mid": null,
-    "close": {
-      "ts": "2026-11-28 03:39:49",
-      "time": "11-28 03:45",
-      "1X2": {
-        "home": 2.01,
-        "away": 3.71,
-        "draw": 3.79
-      },
-      "ah": [
-        -0.5,
-        2.01,
-        1.893
-      ],
-      "ou": [
-        2.75,
-        1.87,
-        2.02
-      ]
-    }
-  },
   "比甲|kvc westerlo|raal la louviere": {
     "league": "比甲",
     "home": "KVC Westerlo",
@@ -3126,34 +2858,6 @@
         2.75,
         1.98,
         1.855
-      ]
-    },
-    "mid": null,
-    "close": null
-  },
-  "荷甲|groningen|willem ii": {
-    "league": "荷甲",
-    "home": "Groningen",
-    "away": "Willem II",
-    "kickoff": "2026-11-28T03:00",
-    "time": "11-28 03:00",
-    "early": {
-      "ts": "2026-11-23 10:04:26",
-      "time": "11-28 03:00",
-      "1X2": {
-        "home": 1.388,
-        "away": 6.6,
-        "draw": 5.5
-      },
-      "ah": [
-        -1.5,
-        1.98,
-        1.877
-      ],
-      "ou": [
-        3.5,
-        1.935,
-        1.901
       ]
     },
     "mid": null,
@@ -3691,52 +3395,6 @@
     "mid": null,
     "close": null
   },
-  "英冠|southampton|middlesbrough": {
-    "league": "英冠",
-    "home": "Southampton",
-    "away": "Middlesbrough",
-    "kickoff": "2026-11-28T04:00",
-    "time": "11-28 04:00",
-    "early": {
-      "ts": "2026-11-27 01:38:50",
-      "time": "11-28 04:00",
-      "1X2": {
-        "home": 2.9,
-        "away": 2.3,
-        "draw": 3.72
-      },
-      "ah": [
-        0.25,
-        1.847,
-        2.03
-      ],
-      "ou": [
-        3.0,
-        2.0,
-        1.862
-      ]
-    },
-    "mid": null,
-    "close": {
-      "ts": "2026-11-28 03:39:49",
-      "time": "11-28 04:00",
-      "1X2": {
-        "home": 3.14,
-        "away": 2.25,
-        "draw": 3.72
-      },
-      "ah": [
-        0.25,
-        1.935,
-        1.962
-      ],
-      "ou": [
-        3.0,
-        2.0,
-        1.893
-      ]
-    }
-  },
   "英冠|lincoln city|wolverhampton": {
     "league": "英冠",
     "home": "Lincoln City",
@@ -3763,7 +3421,25 @@
       ]
     },
     "mid": null,
-    "close": null
+    "close": {
+      "ts": "2026-11-28 20:21:06",
+      "time": "11-28 20:30",
+      "1X2": {
+        "home": 6.56,
+        "away": 1.529,
+        "draw": 4.38
+      },
+      "ah": [
+        1.0,
+        2.01,
+        1.901
+      ],
+      "ou": [
+        2.5,
+        1.877,
+        2.01
+      ]
+    }
   },
   "英冠|blackburn rovers|charlton athletic": {
     "league": "英冠",
@@ -3791,7 +3467,25 @@
       ]
     },
     "mid": null,
-    "close": null
+    "close": {
+      "ts": "2026-11-28 20:21:06",
+      "time": "11-28 20:30",
+      "1X2": {
+        "home": 2.02,
+        "away": 3.82,
+        "draw": 3.64
+      },
+      "ah": [
+        -0.5,
+        2.02,
+        1.885
+      ],
+      "ou": [
+        2.5,
+        1.917,
+        1.971
+      ]
+    }
   },
   "英冠|preston north end|norwich city": {
     "league": "英冠",
@@ -3819,7 +3513,25 @@
       ]
     },
     "mid": null,
-    "close": null
+    "close": {
+      "ts": "2026-11-28 20:21:06",
+      "time": "11-28 20:30",
+      "1X2": {
+        "home": 4.43,
+        "away": 1.781,
+        "draw": 4.07
+      },
+      "ah": [
+        0.75,
+        1.901,
+        2.01
+      ],
+      "ou": [
+        3.0,
+        2.03,
+        1.862
+      ]
+    }
   },
   "英冠|wrexham|portsmouth": {
     "league": "英冠",
